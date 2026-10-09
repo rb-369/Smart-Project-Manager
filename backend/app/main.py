@@ -30,6 +30,9 @@ app.add_middleware(
 )
 
 
+from app.api.v1.auth import router as auth_router
+
+
 @app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
 def health_check():
     """Verify backend service is operational."""
@@ -38,3 +41,7 @@ def health_check():
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION
     }
+
+
+# Include Routers
+app.include_router(auth_router, prefix=settings.API_V1_STR)
