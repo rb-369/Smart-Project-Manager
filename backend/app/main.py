@@ -31,6 +31,7 @@ app.add_middleware(
 
 
 from app.api.v1.auth import router as auth_router
+from app.api.v1.github import router as github_router
 
 
 @app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
@@ -45,3 +46,4 @@ def health_check():
 
 # Include Routers
 app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(github_router, prefix=settings.API_V1_STR)
