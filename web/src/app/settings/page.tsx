@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { GitHubStatus } from '@/types';
 import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
 import { KeyRound, ShieldCheck, CheckCircle2, AlertCircle, GitBranch, Lock } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -46,32 +45,45 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090d] text-[#f4f5f8] flex flex-col">
+    <div className="min-h-screen bg-[#050508] text-[#f8fafc] relative overflow-hidden flex flex-col">
+      {/* Ambient Optical Glow Orbs */}
+      <div className="liquid-glow-orb-purple -top-40 left-1/4" />
+      <div className="liquid-glow-orb-cyan top-48 -right-40" />
+      <div className="liquid-glow-orb-emerald -bottom-20 left-1/3" />
+      <div className="liquid-glow-orb-magenta bottom-96 -left-32" />
+
+      {/* Floating Island Navigation */}
       <Navbar />
 
-      <div className="flex-1 flex">
-        <Sidebar />
-
-        <main className="flex-1 p-6 lg:p-8 max-w-4xl mx-auto space-y-7">
-          <div className="pb-4 border-b border-white/[0.07]">
-            <h1 className="text-xl font-bold text-white tracking-tight">
+      <main className="relative z-10 flex-1 pt-24 pb-20 px-4 sm:px-8 max-w-4xl mx-auto w-full space-y-7">
+        <div className="glass-shell">
+          <div className="glass-core p-6">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 glow-cyan animate-pulse" />
+              <span className="text-[11px] font-mono text-cyan-300 uppercase tracking-widest font-semibold">
+                Security & Authentication
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">
               Settings & Integrations
             </h1>
-            <p className="text-xs text-[#94a3b8] mt-1">
+            <p className="text-xs text-[#94a3b8] mt-1 leading-relaxed">
               Configure encrypted credentials and background repository synchronizers.
             </p>
           </div>
+        </div>
 
-          {/* GitHub Connection Bento Card */}
-          <div className="bento-card p-6 space-y-6">
+        {/* GitHub Connection Glass Card */}
+        <div className="glass-shell">
+          <div className="glass-core p-6 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-sky-400">
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-cyan-400 shadow-inner">
                   <GitBranch className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm text-white">GitHub Ingestion Pipeline</h3>
-                  <p className="text-xs text-[#94a3b8]">
+                  <p className="text-xs text-[#94a3b8] mt-0.5">
                     Periodic polling & on-demand sync for public and private repositories.
                   </p>
                 </div>
@@ -101,7 +113,7 @@ export default function SettingsPage() {
                     placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    className="w-full bg-[#0c0e15] border border-white/[0.08] focus:border-indigo-500/50 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-[#64748b] focus:outline-none font-mono transition shadow-inner"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-white/20 rounded-2xl pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-[#64748b] focus:outline-none font-mono transition shadow-inner"
                   />
                 </div>
                 <div className="flex items-center gap-2 text-xs text-[#64748b] mt-2">
@@ -111,14 +123,14 @@ export default function SettingsPage() {
               </div>
 
               {message && (
-                <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
+                <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   {message}
                 </div>
               )}
 
               {error && (
-                <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
+                <div className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   {error}
                 </div>
@@ -127,14 +139,14 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={loading || !token.trim()}
-                className="bento-btn-primary px-4 py-2.5 text-xs font-semibold rounded-xl text-white disabled:opacity-50 transition cursor-pointer shadow-md"
+                className="glass-pill-btn !py-2.5 !px-5 text-xs font-semibold bg-violet-600/30 border-violet-500/40 text-white"
               >
                 {loading ? 'Encrypting & Storing...' : 'Save & Encrypt Token'}
               </button>
             </form>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

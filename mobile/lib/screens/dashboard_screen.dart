@@ -86,22 +86,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: Row(
           children: [
             Container(
-              width: 24,
-              height: 24,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primary, AppTheme.accent],
                 ),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withValues(alpha: 0.4),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
               alignment: Alignment.center,
               child: const Text(
                 'DC',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white),
               ),
             ),
-            const SizedBox(width: 8),
-            const Text('DevCommand'),
+            const SizedBox(width: 10),
+            const Text(
+              'DevCommand',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: -0.3),
+            ),
           ],
         ),
         actions: [
@@ -118,119 +127,124 @@ class _DashboardScreenState extends State<DashboardScreen> {
           await _fetchProjects();
         },
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accent))
             : ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 children: [
-                  // Top Bento Pulse Card with Live Gradient Accent
+                  // Top Liquid Glass Pulse Card
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(1.5),
                     decoration: BoxDecoration(
-                      color: AppTheme.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0x1FFFFFFF)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      color: const Color(0x10FFFFFF),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0x1EFFFFFF)),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'ENGINEERING PULSE',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF818CF8),
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppTheme.prodColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(99),
-                                border: Border.all(color: AppTheme.prodColor.withValues(alpha: 0.3)),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0x1FFFFFFF), Color(0x0AFFFFFF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: const Color(0x28FFFFFF)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Row(
                                 children: [
-                                  Icon(Icons.circle, size: 6, color: AppTheme.prodColor),
-                                  SizedBox(width: 4),
+                                  Icon(Icons.auto_awesome, size: 14, color: AppTheme.accent),
+                                  SizedBox(width: 6),
                                   Text(
-                                    'Live',
+                                    'ENGINEERING PULSE',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.prodColor,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFA78BFA),
+                                      letterSpacing: 0.8,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.glowEmerald.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(99),
+                                  border: Border.all(color: AppTheme.glowEmerald.withValues(alpha: 0.35)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.circle, size: 6, color: AppTheme.glowEmerald),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Live',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.glowEmerald,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '$avgProgress%',
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  Text(
+                                    'sprint velocity • $activeCount active repos',
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                                  ),
+                                ],
+                              ),
+                              CircularPercentIndicator(
+                                radius: 26.0,
+                                lineWidth: 4.5,
+                                percent: (avgProgress / 100.0).clamp(0.0, 1.0),
+                                center: Text(
                                   '$avgProgress%',
-                                  style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: -0.5,
-                                  ),
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                                 ),
-                                const Text(
-                                  'velocity milestone rate',
-                                  style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '${_projects.length} Repos',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  '$activeCount active in progress',
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF818CF8)),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+                                progressColor: AppTheme.accent,
+                                backgroundColor: const Color(0x22FFFFFF),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
                   // Actionable Triage Notification if repos need review
                   if (needsReview.isNotEmpty) ...[
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF191614),
+                        color: const Color(0x18F59E0B),
                         border: Border.all(color: AppTheme.p1Color.withValues(alpha: 0.4)),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,9 +273,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   p.name,
                                   style: const TextStyle(fontSize: 11, color: Colors.white),
                                 ),
-                                backgroundColor: AppTheme.surfaceRaised,
-                                side: const BorderSide(color: Color(0xFF333852)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                backgroundColor: const Color(0x25FFFFFF),
+                                side: const BorderSide(color: Color(0x35FFFFFF)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
                                 onPressed: () {
                                   Navigator.push(
                                     context,
@@ -276,10 +290,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                   ],
 
-                  // Segmented Category Filter with Holographic Highlight
+                  // Segmented Category Filter with Liquid Glass Pills
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -287,17 +301,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         final isSel = _selectedFilter == f;
                         final label = f == 'ALL' ? 'All Projects' : f[0] + f.substring(1).toLowerCase();
                         return Padding(
-                          padding: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.only(right: 8),
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(99),
                             onTap: () => setState(() => _selectedFilter = f),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: isSel ? const Color(0xFF1E2235) : AppTheme.surface,
-                                borderRadius: BorderRadius.circular(8),
+                                color: isSel ? const Color(0x2E8B5CF6) : const Color(0x0CFFFFFF),
+                                borderRadius: BorderRadius.circular(99),
                                 border: Border.all(
-                                  color: isSel ? const Color(0xFF6366F1) : const Color(0x1FFFFFFF),
+                                  color: isSel ? const Color(0x808B5CF6) : const Color(0x18FFFFFF),
                                 ),
                               ),
                               child: Text(
@@ -314,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       }).toList(),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
                   // Project Cards
                   if (filtered.isEmpty)
@@ -335,10 +349,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildProjectCard(ProjectSummary p) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(1.5),
+      decoration: BoxDecoration(
+        color: const Color(0x10FFFFFF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0x1CFFFFFF)),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         onTap: () {
           Navigator.push(
             context,
@@ -347,8 +367,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ).then((_) => _fetchProjects());
         },
-        child: Padding(
-          padding: const EdgeInsets.all(15),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0x1AFFFFFF), Color(0x08FFFFFF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0x22FFFFFF)),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -362,10 +391,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                               decoration: BoxDecoration(
-                                color: const Color(0x1FFFFFFF),
-                                borderRadius: BorderRadius.circular(5),
+                                color: const Color(0x1EFFFFFF),
+                                borderRadius: BorderRadius.circular(99),
                               ),
                               child: Text(
                                 p.projectType,
@@ -404,23 +433,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     percent: (p.progressPercentage / 100.0).clamp(0.0, 1.0),
                     center: Text(
                       '${p.progressPercentage}%',
-                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
-                    progressColor: p.progressPercentage == 100 ? AppTheme.prodColor : AppTheme.primary,
-                    backgroundColor: const Color(0xFF171A27),
+                    progressColor: p.progressPercentage == 100 ? AppTheme.prodColor : AppTheme.accent,
+                    backgroundColor: const Color(0x22FFFFFF),
                   ),
                 ],
               ),
               if (p.goal != null) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   p.goal!,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFFCBD5E1)),
+                  style: const TextStyle(fontSize: 12, color: Color(0xFFCBD5E1), height: 1.3),
                 ),
               ],
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -428,7 +457,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     '${p.completedFeatures}/${p.totalFeatures} completed',
                     style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                   ),
-                  const Icon(Icons.arrow_forward, size: 14, color: Color(0xFF818CF8)),
+                  const Icon(Icons.arrow_forward, size: 14, color: AppTheme.accent),
                 ],
               ),
             ],
@@ -438,3 +467,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+

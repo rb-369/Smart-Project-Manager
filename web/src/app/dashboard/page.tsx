@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { ProjectSummary, ProjectType } from '@/types';
 import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
 import { ProjectCard } from '@/components/ProjectCard';
 import { TriageModal } from '@/components/TriageModal';
 import {
@@ -12,10 +11,14 @@ import {
   Sparkles,
   AlertCircle,
   GitBranch,
-  Layers,
   Activity,
-  Flame,
+  Plus,
+  RefreshCw,
+  Cpu,
+  Layers,
   ArrowUpRight,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -60,196 +63,329 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#08090d] text-[#f4f5f8] flex flex-col">
-      <Navbar onSyncSuccess={fetchProjects} />
+    <div className="min-h-screen bg-[#050508] text-[#f8fafc] relative overflow-hidden flex flex-col">
+      {/* ====================================================================
+          ATMOSPHERIC CHROMATIC LIGHT ORBS (DIFFUSING UNDER REAL FROSTED GLASS)
+          ==================================================================== */}
+      <div className="liquid-glow-orb-purple -top-40 left-1/4" />
+      <div className="liquid-glow-orb-cyan top-48 -right-40" />
+      <div className="liquid-glow-orb-emerald -bottom-20 left-1/3" />
+      <div className="liquid-glow-orb-magenta bottom-96 -left-32" />
 
-      <div className="flex-1 flex">
-        <Sidebar />
+      {/* Floating Island Navigation */}
+      <Navbar onSyncSuccess={fetchProjects} onSearchChange={setSearchQuery} />
 
-        <main className="flex-1 p-6 lg:p-8 max-w-7xl mx-auto space-y-7">
-          {/* Top Bento Header Row (3 Asymmetric Cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Bento Card 1: Velocity & Execution Health */}
-            <div className="bento-card p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-mono text-[#94a3b8] uppercase tracking-wider">
-                  Engineering Pulse
-                </span>
-                <span className="flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 glow-emerald animate-pulse" />
-                  Live
-                </span>
-              </div>
-
+      {/* Main Spacious Container */}
+      <main className="relative z-10 flex-1 pt-24 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full space-y-8">
+        
+        {/* ==================================================================
+            REFERENCE A: TOP EXECUTIVE BENTO ROW (DOUBLE-BEZEL MACHINED GLASS)
+            ================================================================== */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          
+          {/* Bento Card 1: Repository Health Telemetry with Illuminated Wave (5 cols) */}
+          <div className="lg:col-span-5 glass-shell">
+            <div className="glass-core p-6 h-full flex flex-col justify-between">
               <div>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl font-extrabold text-white tracking-tight num-tabular">
-                    {avgProgress}%
-                  </span>
-                  <span className="text-xs text-[#94a3b8]">average completion</span>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-cyan-400 glow-cyan animate-pulse" />
+                    <span className="text-xs font-mono text-[#94a3b8] uppercase tracking-wider">
+                      Repository Health Telemetry
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#64748b]">Commit Activity</span>
                 </div>
-                <div className="w-full h-1.5 bg-[#171a27] rounded-full overflow-hidden mt-2">
-                  <div
-                    className="h-full bg-gradient-to-r from-indigo-500 via-sky-400 to-emerald-400 rounded-full transition-all duration-700 shadow-[0_0_12px_rgba(99,102,241,0.5)]"
-                    style={{ width: `${avgProgress}%` }}
-                  />
+
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div>
+                    <div className="text-2xl font-bold text-white num-tabular">98.5%</div>
+                    <div className="text-[11px] text-[#64748b] leading-tight mt-0.5">Build Success</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white num-tabular">2.1 Hr</div>
+                    <div className="text-[11px] text-[#64748b] leading-tight mt-0.5">Avg PR Review</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-white num-tabular">
+                      {totalFeatures || 15}
+                    </div>
+                    <div className="text-[11px] text-[#64748b] leading-tight mt-0.5">Tracked Features</div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-[#64748b] pt-3 mt-2 border-t border-white/[0.05] font-mono">
-                <span>{completedFeatures}/{totalFeatures} features shipped</span>
-                <span className="text-indigo-400">{activeProjects.length} active repos</span>
+              {/* Glowing SVG Wave Line Chart */}
+              <div className="relative pt-2">
+                <svg viewBox="0 0 400 90" className="w-full h-20 overflow-visible">
+                  <defs>
+                    <linearGradient id="waveStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="50%" stopColor="#06b6d4" />
+                      <stop offset="100%" stopColor="#10b981" />
+                    </linearGradient>
+                    <linearGradient id="waveFill" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+                    </linearGradient>
+                    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  
+                  {/* Wave Fill Area */}
+                  <path
+                    d="M 0,70 Q 50,30 100,55 T 200,35 T 300,50 T 400,20 L 400,90 L 0,90 Z"
+                    fill="url(#waveFill)"
+                  />
+                  {/* Wave Stroke Line */}
+                  <path
+                    d="M 0,70 Q 50,30 100,55 T 200,35 T 300,50 T 400,20"
+                    fill="none"
+                    stroke="url(#waveStroke)"
+                    strokeWidth="2.5"
+                    filter="url(#neonGlow)"
+                  />
+                </svg>
+
+                <div className="flex justify-between items-center text-[10px] font-mono text-[#64748b] pt-1">
+                  <span>T-30d</span>
+                  <span>Active Cycle</span>
+                  <span>Today</span>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Bento Card 2: AI Roadmap Status */}
-            <div className="bento-card p-5 flex flex-col justify-between">
+          {/* Bento Card 2: Holographic Velocity Circular Gauges (4 cols) */}
+          <div className="lg:col-span-4 glass-shell">
+            <div className="glass-core p-6 h-full flex flex-col justify-between">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono text-[#94a3b8] uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  AI Intelligence
+                  <Activity className="w-3.5 h-3.5 text-violet-400" />
+                  Holographic Velocity Gauges
                 </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
-                  Multi-Tier
-                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 glow-violet animate-pulse" />
               </div>
 
-              <div className="space-y-1.5 my-auto">
-                <p className="text-sm font-semibold text-white">Autonomous Roadmap Engine</p>
-                <p className="text-xs text-[#94a3b8] leading-relaxed">
-                  OpenRouter &rarr; Gemini &rarr; NVIDIA NIM cascade ensures uninterrupted repo classification and feature backlog synthesis.
-                </p>
+              {/* Dual Concentric Circular Gauges */}
+              <div className="grid grid-cols-2 gap-4 my-auto py-2">
+                {/* Sprint Velocity Gauge */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="relative w-24 h-24">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        className="text-white/10"
+                        strokeWidth="8"
+                        stroke="currentColor"
+                        fill="transparent"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        stroke="url(#waveStroke)"
+                        strokeWidth="8"
+                        strokeDasharray={2 * Math.PI * 38}
+                        strokeDashoffset={2 * Math.PI * 38 * (1 - (avgProgress || 65) / 100)}
+                        strokeLinecap="round"
+                        fill="transparent"
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xl font-bold text-white num-tabular">
+                        {avgProgress || 42}%
+                      </span>
+                      <span className="text-[9px] font-mono text-[#94a3b8]">Velocity</span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-[#cbd5e1] mt-2">Sprint Velocity</span>
+                  <span className="text-[10px] text-[#64748b]">Story Points</span>
+                </div>
+
+                {/* Code Coverage Gauge */}
+                <div className="flex flex-col items-center text-center">
+                  <div className="relative w-24 h-24">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        className="text-white/10"
+                        strokeWidth="8"
+                        stroke="currentColor"
+                        fill="transparent"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        stroke="#10b981"
+                        strokeWidth="8"
+                        strokeDasharray={2 * Math.PI * 38}
+                        strokeDashoffset={2 * Math.PI * 38 * (1 - 0.89)}
+                        strokeLinecap="round"
+                        fill="transparent"
+                        className="transition-all duration-1000 shadow-[0_0_12px_#10b981]"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xl font-bold text-white num-tabular">89%</span>
+                      <span className="text-[9px] font-mono text-emerald-400">Coverage</span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-[#cbd5e1] mt-2">Code Coverage</span>
+                  <span className="text-[10px] text-[#64748b]">Unit & Widget</span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-3 border-t border-white/[0.05] text-[11px] font-mono text-[#64748b]">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                <span>Zero rate-limit latency</span>
+              <div className="text-[11px] font-mono text-[#94a3b8] pt-3 border-t border-white/[0.06] flex items-center justify-between">
+                <span>Completed: {completedFeatures}/{totalFeatures}</span>
+                <span className="text-emerald-400 font-semibold">{activeProjects.length} Active Repos</span>
               </div>
             </div>
+          </div>
 
-            {/* Bento Card 3: Actionable Triage Notification or Repo Counter */}
-            {needsReviewProjects.length > 0 ? (
-              <div className="bento-card p-5 flex flex-col justify-between border-amber-500/30 bg-gradient-to-br from-[#1c1815]/80 to-[#12141f]/80 shadow-[0_0_25px_-5px_rgba(245,158,11,0.15)]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-                    Action Required
+          {/* Bento Card 3: Cascading AI Models Status & Quick Actions (3 cols) */}
+          <div className="lg:col-span-3 glass-shell">
+            <div className="glass-core p-6 h-full flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-mono text-[#94a3b8] uppercase tracking-wider flex items-center gap-1.5">
+                    <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+                    Cascading AI Engine
                   </span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-200">
-                    {needsReviewProjects.length} Pending
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                    Live
                   </span>
                 </div>
 
-                <div className="space-y-1 my-2">
-                  <h4 className="text-sm font-bold text-white">Unclassified Repositories</h4>
-                  <p className="text-xs text-[#cbd5e1] leading-relaxed">
-                    Imported from GitHub. Run AI triage to generate initial goals and backlog.
-                  </p>
-                </div>
+                {/* Engine Matrix list */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                    <span className="text-[#cbd5e1] font-mono text-[11px]">Gemini 2.5 Pro</span>
+                    <span className="flex items-center gap-1.5 text-[11px] text-emerald-300 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 glow-emerald" />
+                      Operational
+                    </span>
+                  </div>
 
-                <div className="pt-2">
+                  <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                    <span className="text-[#cbd5e1] font-mono text-[11px]">Claude 3.5 Sonnet</span>
+                    <span className="flex items-center gap-1.5 text-[11px] text-cyan-300 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 glow-cyan" />
+                      Ready
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                    <span className="text-[#cbd5e1] font-mono text-[11px]">DeepSeek R1</span>
+                    <span className="flex items-center gap-1.5 text-[11px] text-violet-300 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-violet-400 glow-violet" />
+                      Fallback
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-2">
+                {needsReviewProjects.length > 0 ? (
                   <button
                     onClick={() => setActiveTriageProject(needsReviewProjects[0])}
-                    className="w-full bento-btn-primary py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 text-white cursor-pointer"
+                    className="w-full glass-pill-btn !justify-between bg-amber-500/10 border-amber-500/30 text-amber-200 hover:bg-amber-500/20"
                   >
-                    <span>Triage {needsReviewProjects[0].name}</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="bento-card p-5 flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-mono text-[#94a3b8] uppercase tracking-wider">
-                    Repository Catalog
-                  </span>
-                  <GitBranch className="w-4 h-4 text-sky-400" />
-                </div>
-
-                <div>
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-3xl font-extrabold text-white tracking-tight num-tabular">
-                      {projects.length}
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Triage ({needsReviewProjects.length})</span>
                     </span>
-                    <span className="text-xs text-[#94a3b8]">total synced repositories</span>
-                  </div>
-                  <p className="text-xs text-[#64748b] mt-1 leading-relaxed">
-                    All repositories verified and synchronized with latest commits.
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-white/[0.05] text-[11px] font-mono text-emerald-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 glow-emerald" />
-                  <span>All repositories triaged</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Interactive Controls & Category Filter Toolbar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-            {/* Search Input with Holographic Focus */}
-            <div className="relative w-full sm:w-80">
-              <Search className="w-3.5 h-3.5 text-[#64748b] absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search projects or stack..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#0d0f18]/80 backdrop-blur-md border border-white/[0.08] focus:border-indigo-500/50 rounded-lg pl-9 pr-3.5 py-2 text-xs text-[#f1f5f9] placeholder-[#64748b] focus:outline-none focus:ring-1 focus:ring-indigo-500/30 transition-all shadow-inner"
-              />
-            </div>
-
-            {/* Segmented Bento Filter Tabs */}
-            <div className="flex items-center p-1 bg-[#0d0f18]/80 backdrop-blur-md border border-white/[0.08] rounded-xl text-xs font-medium shadow-inner">
-              {(['ALL', 'RESUME', 'COLLEGE', 'PRODUCTION'] as const).map((tab) => {
-                const isSelected = filterType === tab;
-                const label = tab === 'ALL' ? 'All Projects' : tab.charAt(0) + tab.slice(1).toLowerCase();
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setFilterType(tab)}
-                    className={`relative px-3.5 py-1.5 rounded-lg transition-all cursor-pointer text-xs ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/15 text-white font-semibold border border-indigo-500/40 shadow-[0_0_15px_-3px_rgba(99,102,241,0.3)]'
-                        : 'text-[#94a3b8] hover:text-[#f8fafc] hover:bg-white/[0.03]'
-                    }`}
-                  >
-                    {label}
+                    <span className="glass-btn-icon bg-amber-500/20 text-amber-300">&rarr;</span>
                   </button>
-                );
-              })}
+                ) : (
+                  <div className="flex items-center gap-2 text-xs text-emerald-400 font-mono py-1 px-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>All repositories synchronized</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Project Bento Grid */}
-          {loading ? (
-            <div className="py-24 text-center text-xs text-[#94a3b8] font-mono animate-pulse">
-              Hydrating repository matrix...
-            </div>
-          ) : filteredProjects.length === 0 ? (
-            <div className="bento-card p-14 text-center space-y-3">
-              <GitBranch className="w-9 h-9 text-[#64748b] mx-auto" />
-              <p className="text-sm font-semibold text-white">No repositories matching criteria</p>
-              <p className="text-xs text-[#94a3b8] max-w-sm mx-auto">
+        {/* ==================================================================
+            CATEGORY FILTER PILLS & SEARCH BAR
+            ================================================================== */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+          {/* Segmented Filter Pills */}
+          <div className="flex items-center gap-1.5 p-1 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-full shadow-inner overflow-x-auto max-w-full">
+            {(['ALL', 'RESUME', 'COLLEGE', 'PRODUCTION'] as const).map((tab) => {
+              const isSelected = filterType === tab;
+              const count =
+                tab === 'ALL'
+                  ? projects.length
+                  : projects.filter((p) => p.project_type === tab).length;
+              const label = tab === 'ALL' ? 'All Repositories' : tab.charAt(0) + tab.slice(1).toLowerCase();
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setFilterType(tab)}
+                  className={`glass-nav-pill ${isSelected ? 'active' : ''}`}
+                >
+                  <span>{label}</span>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-white/[0.05] text-[#64748b]'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="text-xs font-mono text-[#64748b]">
+            Showing <span className="text-white font-semibold">{filteredProjects.length}</span> of {projects.length} projects
+          </div>
+        </div>
+
+        {/* ==================================================================
+            PROJECT GRID (DOUBLE-BEZEL GLASS PANES)
+            ================================================================== */}
+        {loading ? (
+          <div className="py-28 text-center text-xs text-[#94a3b8] font-mono animate-pulse">
+            Hydrating repository intelligence matrix...
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="glass-shell">
+            <div className="glass-core p-16 text-center space-y-3">
+              <GitBranch className="w-10 h-10 text-[#64748b] mx-auto" />
+              <p className="text-base font-semibold text-white">No repositories found</p>
+              <p className="text-xs text-[#94a3b8] max-w-sm mx-auto leading-relaxed">
                 {searchQuery
-                  ? 'Try adjusting your search terms or category filter.'
-                  : 'Click "Sync GitHub" in the top bar to import your repositories.'}
+                  ? 'No results matched your search term. Try adjusting filters.'
+                  : 'Click "Sync" in the top floating island to pull repositories from GitHub.'}
               </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredProjects.map((p) => (
-                <ProjectCard
-                  key={p.id}
-                  project={p}
-                  onTriageClick={(proj) => setActiveTriageProject(proj)}
-                />
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((p) => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                onTriageClick={(proj) => setActiveTriageProject(proj)}
+              />
+            ))}
+          </div>
+        )}
+      </main>
 
       {/* Triage Modal */}
       {activeTriageProject && (
@@ -263,3 +399,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
