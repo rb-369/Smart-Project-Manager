@@ -8,15 +8,12 @@ import { Sidebar } from '@/components/Sidebar';
 import { ProjectCard } from '@/components/ProjectCard';
 import { TriageModal } from '@/components/TriageModal';
 import {
-  FolderKanban,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  AlertTriangle,
-  Plus,
   Search,
-  Filter,
-  Layers,
+  SlidersHorizontal,
+  Sparkles,
+  AlertCircle,
+  Plus,
+  GitBranch,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -58,144 +55,138 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#090a0f] text-[#f4f4f7] flex flex-col">
       <Navbar onSyncSuccess={fetchProjects} />
 
       <div className="flex-1 flex">
         <Sidebar />
 
-        <main className="flex-1 p-8 max-w-7xl mx-auto space-y-8">
-          {/* Header Title */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <main className="flex-1 p-6 max-w-7xl mx-auto space-y-6">
+          {/* Engineering Header & Status Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#1c1d28]">
             <div>
-              <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-                Project Command Center
+              <h1 className="text-xl font-semibold text-[#f4f4f7] tracking-tight">
+                Repository Command Center
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
-                Automated GitHub synchronization, prioritized backlogs, and AI intelligence.
+              <p className="text-xs text-[#7c8091] mt-0.5">
+                Automated GitHub synchronization, prioritized roadmaps, and AI recommendations.
               </p>
             </div>
-          </div>
 
-          {/* Metric Overview Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="glass-panel p-4 rounded-xl border border-slate-800 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg bg-indigo-600/15 text-indigo-400 flex items-center justify-center font-bold">
-                <FolderKanban className="w-5 h-5" />
+            {/* High-Density Metric Strip (Replacing Cheesy Stat Boxes) */}
+            <div className="flex items-center gap-4 text-xs font-mono bg-[#111218] border border-[#222433] px-3.5 py-1.5 rounded-md">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#64687a]">Total:</span>
+                <span className="font-semibold text-[#f4f4f7] num-tabular">{projects.length}</span>
               </div>
-              <div>
-                <p className="text-xs text-slate-400">Total Projects</p>
-                <p className="text-xl font-bold text-white">{projects.length}</p>
+              <span className="text-[#26283a]">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#64687a]">Active:</span>
+                <span className="font-semibold text-emerald-400 num-tabular">{activeProjects.length}</span>
               </div>
-            </div>
-
-            <div className="glass-panel p-4 rounded-xl border border-slate-800 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg bg-blue-600/15 text-blue-400 flex items-center justify-center font-bold">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-400">In Progress</p>
-                <p className="text-xl font-bold text-white">{activeProjects.length}</p>
-              </div>
-            </div>
-
-            <div className="glass-panel p-4 rounded-xl border border-slate-800 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg bg-emerald-600/15 text-emerald-400 flex items-center justify-center font-bold">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-400">Average Completion</p>
-                <p className="text-xl font-bold text-white">{avgProgress}%</p>
-              </div>
-            </div>
-
-            <div className="glass-panel p-4 rounded-xl border border-slate-800 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg bg-amber-600/15 text-amber-400 flex items-center justify-center font-bold">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-400">Needs Review</p>
-                <p className="text-xl font-bold text-white">{needsReviewProjects.length}</p>
+              <span className="text-[#26283a]">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[#64687a]">Velocity:</span>
+                <span className="font-semibold text-blue-400 num-tabular">{avgProgress}%</span>
               </div>
             </div>
           </div>
 
-          {/* Needs Review Alert Tray */}
+          {/* Actionable Triage Notification Inbox if any repos need review */}
           {needsReviewProjects.length > 0 && (
-            <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-800/50 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <span>{needsReviewProjects.length} Newly Discovered GitHub Repositories Require Classification</span>
+            <div className="p-3.5 rounded-lg bg-[#15131a] border border-amber-900/40 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-amber-200">
+                    {needsReviewProjects.length} newly ingested {needsReviewProjects.length === 1 ? 'repository requires' : 'repositories require'} triage
+                  </p>
+                  <p className="text-[11px] text-[#8b8a96]">
+                    Classify project category and initial feature backlogs via AI or manual review.
+                  </p>
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {needsReviewProjects.map((p) => (
-                  <div key={p.id} className="p-3 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-xs text-slate-200">{p.name}</p>
-                      <p className="text-[11px] text-slate-500">{p.primary_language || 'Repo'}</p>
-                    </div>
-                    <button
-                      onClick={() => setActiveTriageProject(p)}
-                      className="px-2.5 py-1 text-xs font-semibold rounded-md bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1 cursor-pointer transition shadow"
-                    >
-                      <Sparkles className="w-3 h-3 text-indigo-200" />
-                      Review AI
-                    </button>
-                  </div>
+
+              <div className="flex items-center gap-2">
+                {needsReviewProjects.slice(0, 2).map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setActiveTriageProject(p)}
+                    className="text-xs font-medium px-2.5 py-1 rounded bg-[#201c24] hover:bg-[#2c2633] text-amber-300 border border-amber-700/40 transition cursor-pointer"
+                  >
+                    Triage {p.name}
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Search & Filter Controls */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-            <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
-              {(['ALL', 'COLLEGE', 'RESUME', 'PRODUCTION'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setFilterType(t)}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition whitespace-nowrap cursor-pointer ${
-                    filterType === t
-                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
-                      : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:bg-slate-800'
-                  }`}
-                >
-                  {t === 'ALL' ? 'All Projects' : t.replace('_', ' ')}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" />
+          {/* Precision Controls Toolbar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-80">
+              <Search className="w-3.5 h-3.5 text-[#555866] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder="Filter repositories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900/80 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-[#111218] border border-[#222433] rounded-md pl-8 pr-3 py-1.5 text-xs text-[#f4f4f7] placeholder-[#555866] focus:outline-none focus:border-blue-500 transition font-sans"
               />
+            </div>
+
+            {/* Segmented Filter Controls */}
+            <div className="flex items-center p-0.5 bg-[#111218] border border-[#222433] rounded-md text-xs font-medium">
+              {(['ALL', 'RESUME', 'COLLEGE', 'PRODUCTION'] as const).map((tab) => {
+                const isSelected = filterType === tab;
+                const label = tab === 'ALL' ? 'All Repos' : tab.charAt(0) + tab.slice(1).toLowerCase();
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setFilterType(tab)}
+                    className={`px-3 py-1 rounded transition cursor-pointer text-xs ${
+                      isSelected
+                        ? 'bg-[#1e202d] text-[#ffffff] font-semibold'
+                        : 'text-[#6e7285] hover:text-[#c4c7d6]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Projects Grid */}
+          {/* Project List / Grid */}
           {loading ? (
-            <div className="py-20 text-center text-xs text-slate-400">Loading projects...</div>
+            <div className="py-20 text-center text-xs text-[#6e7285] font-mono">
+              Fetching repositories...
+            </div>
           ) : filteredProjects.length === 0 ? (
-            <div className="py-16 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/20 p-8">
-              <Layers className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-300">No projects found</p>
-              <p className="text-xs text-slate-500 mt-1">Click "Sync GitHub" above to import your repositories.</p>
+            <div className="craft-panel p-12 rounded-lg text-center space-y-3">
+              <GitBranch className="w-8 h-8 text-[#4a4e60] mx-auto" />
+              <p className="text-sm font-medium text-[#c4c7d6]">No matching repositories found</p>
+              <p className="text-xs text-[#6e7285] max-w-sm mx-auto">
+                {searchQuery
+                  ? 'Try adjusting your search query or filter settings.'
+                  : 'Click "Sync GitHub" in the top bar to fetch your public & private repositories.'}
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredProjects.map((p) => (
+                <ProjectCard
+                  key={p.id}
+                  project={p}
+                  onTriageClick={(proj) => setActiveTriageProject(proj)}
+                />
               ))}
             </div>
           )}
         </main>
       </div>
 
+      {/* AI Triage Review Modal */}
       {activeTriageProject && (
         <TriageModal
           project={activeTriageProject}

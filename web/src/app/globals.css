@@ -1,56 +1,69 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0f19;
-  --foreground: #f8fafc;
-  --surface: #111827;
-  --surface-hover: #1f2937;
-  --border: #1e293b;
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
+  --background: #090a0f;
+  --foreground: #f4f4f7;
+  --surface: #111218;
+  --surface-raised: #171822;
+  --surface-hover: #1c1d2a;
+  --border: #222433;
+  --border-subtle: #191b26;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* Glassmorphism & Custom Elements */
-.glass-panel {
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Precision Surfaces & Panels (No Cheesy Blur) */
+.craft-panel {
+  background-color: #111218;
+  border: 1px solid #222433;
 }
 
-.glass-card {
-  background: rgba(17, 24, 39, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+.craft-card {
+  background-color: #111218;
+  border: 1px solid #222433;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
 }
 
-.glass-card:hover {
-  background: rgba(30, 41, 59, 0.7);
-  border-color: rgba(99, 102, 241, 0.35);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+.craft-card:hover {
+  background-color: #161722;
+  border-color: #31354a;
 }
 
-/* Custom Scrollbar */
+/* Precision Tabular Numbers for Metrics and Progress */
+.num-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Browser Surface Details (Impeccable craft floor requirements) */
+::selection {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #090a0f;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  background: #222433;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #31354a;
 }

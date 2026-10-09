@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color background = Color(0xFF0F172A); // slate-900
-  static const Color surface = Color(0xFF1E293B);    // slate-800
-  static const Color card = Color(0xFF1E293B);       // slate-800
-  static const Color border = Color(0xFF334155);     // slate-700
-  
-  static const Color primary = Color(0xFF6366F1);    // indigo-500
-  static const Color primaryLight = Color(0xFF818CF8);
-  static const Color accent = Color(0xFF38BDF8);     // sky-400
+  // Obsidian & Graphite Precision Palette
+  static const Color background = Color(0xFF090A0F); // Deep obsidian
+  static const Color surface = Color(0xFF111218);    // Graphite surface
+  static const Color card = Color(0xFF111218);       // Card background
+  static const Color surfaceRaised = Color(0xFF181A24);
+  static const Color border = Color(0xFF222433);     // 1px Hairline border
+  static const Color borderSubtle = Color(0xFF191B26);
 
-  // Priority Colors
-  static const Color p0Color = Color(0xFFEF4444);    // red-500
-  static const Color p1Color = Color(0xFFF59E0B);    // amber-500
-  static const Color p2Color = Color(0xFF3B82F6);    // blue-500
-  static const Color p3Color = Color(0xFF64748B);    // slate-500
+  static const Color primary = Color(0xFF3B82F6);    // Precision blue
+  static const Color primaryLight = Color(0xFF60A5FA);
+  static const Color accent = Color(0xFF60A5FA);
+
+  // Semantic Priority Colors
+  static const Color p0Color = Color(0xFFF43F5E);    // Rose / Vermillion
+  static const Color p1Color = Color(0xFFF59E0B);    // Amber
+  static const Color p2Color = Color(0xFF3B82F6);    // Blue
+  static const Color p3Color = Color(0xFF64748B);    // Slate
 
   // Status & Project Type Colors
-  static const Color collegeColor = Color(0xFFA855F7); // purple-500
-  static const Color resumeColor = Color(0xFF06B6D4);  // cyan-500
-  static const Color prodColor = Color(0xFF10B981);    // emerald-500
+  static const Color collegeColor = Color(0xFF8B5CF6);
+  static const Color resumeColor = Color(0xFF0EA5E9);
+  static const Color prodColor = Color(0xFF10B981);
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -33,37 +36,40 @@ class AppTheme {
         error: p0Color,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: surface,
+        backgroundColor: background,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+          color: Color(0xFFF4F4F7),
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
         ),
       ),
       cardTheme: CardThemeData(
         color: card,
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           side: const BorderSide(color: border, width: 1),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: surface,
-        selectedItemColor: primaryLight,
-        unselectedItemColor: Color(0xFF94A3B8),
-        elevation: 8,
+        backgroundColor: background,
+        selectedItemColor: Color(0xFFF4F4F7),
+        unselectedItemColor: Color(0xFF64687A),
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         ),
       ),
     );

@@ -63,26 +63,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sync error: $e. Check GitHub PAT in settings.')),
+        SnackBar(content: Text('Sync failed: $e')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final needsReview = _projects.where((p) => p.needsReview).toList();
+    final activeCount = _projects.where((p) => p.status == 'IN_PROGRESS').length;
+    final avgProgress = _projects.isNotEmpty
+        ? (_projects.fold<int>(0, (acc, p) => acc + p.progressPercentage) / _projects.length).round()
+        : 0;
+
     final filtered = _projects.where((p) {
       if (_selectedFilter == 'ALL') return true;
       return p.projectType == _selectedFilter;
     }).toList();
-
-    final needsReview = _projects.where((p) => p.needsReview).toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('DevCommand'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync, color: AppTheme.accent),
+            icon: const Icon(Icons.sync, size: 20, color: Color(0xFF8B8F9E)),
             tooltip: 'Sync GitHub',
             onPressed: _syncGitHub,
           ),
@@ -94,65 +98,70 @@ class _DashboardScreenState extends State<DashboardScreen> {
           await _fetchProjects();
         },
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
             : ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 children: [
-                  // Metrics Row
-                  Row(
-                    children: [
-                      _buildStatCard('Total', _projects.length.toString(), Icons.folder, AppTheme.primary),
-                      const SizedBox(width: 8),
-                      _buildStatCard(
-                        'Active',
-                        _projects.where((p) => p.status == 'IN_PROGRESS').length.toString(),
-                        Icons.timelapse,
-                        AppTheme.accent,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildStatCard(
-                        'Review',
-                        needsReview.length.toString(),
-                        Icons.auto_awesome,
-                        AppTheme.p1Color,
-                      ),
-                    ],
+                  // High-Density Metric Status Bar (Eliminates Cartoon Boxes)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.border),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildMetricItem('Total Repos', _projects.length.toString(), const Color(0xFFF4F4F7)),
+                        Container(width: 1, height: 20, color: AppTheme.border),
+                        _buildMetricItem('Active', activeCount.toString(), AppTheme.prodColor),
+                        Container(width: 1, height: 20, color: AppTheme.border),
+                        _buildMetricItem('Avg Velocity', '$avgProgress%', AppTheme.primaryLight),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  // Needs Review Banner if any
+                  // Actionable Triage Banner if repos need review
                   if (needsReview.isNotEmpty) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.p1Color.withValues(alpha: 0.15),
-                        border: Border.all(color: AppTheme.p1Color.withValues(alpha: 0.4)),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFF16141A),
+                        border: Border.all(color: AppTheme.p1Color.withValues(alpha: 0.35)),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.warning_amber_rounded, color: AppTheme.p1Color, size: 18),
+                              const Icon(Icons.info_outline, color: AppTheme.p1Color, size: 16),
                               const SizedBox(width: 6),
                               Text(
-                                '${needsReview.length} Repositories Need Review',
+                                '${needsReview.length} newly synced ${needsReview.length == 1 ? 'repo requires' : 'repos require'} triage',
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.p1Color,
-                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFFDE68A),
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Wrap(
                             spacing: 6,
+                            runSpacing: 4,
                             children: needsReview.map((p) {
                               return ActionChip(
-                                label: Text(p.name, style: const TextStyle(fontSize: 11)),
-                                backgroundColor: AppTheme.surface,
+                                label: Text(
+                                  p.name,
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFFF4F4F7)),
+                                ),
+                                backgroundColor: AppTheme.surfaceRaised,
+                                side: const BorderSide(color: Color(0xFF2E3142)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                                 onPressed: () {
                                   Navigator.push(
                                     context,
@@ -167,42 +176,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                   ],
 
-                  // Filter Chips
+                  // Segmented Category Filter
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: ['ALL', 'COLLEGE', 'RESUME', 'PRODUCTION'].map((f) {
                         final isSel = _selectedFilter == f;
+                        final label = f == 'ALL' ? 'All' : f[0] + f.substring(1).toLowerCase();
                         return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            label: Text(f == 'ALL' ? 'All' : f),
-                            selected: isSel,
-                            onSelected: (_) => setState(() => _selectedFilter = f),
-                            selectedColor: AppTheme.primary,
-                            labelStyle: TextStyle(
-                              color: isSel ? Colors.white : Colors.grey[400],
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                          padding: const EdgeInsets.only(right: 6),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(6),
+                            onTap: () => setState(() => _selectedFilter = f),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: isSel ? const Color(0xFF1C1D2A) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isSel ? const Color(0xFF35394E) : AppTheme.border,
+                                ),
+                              ),
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  color: isSel ? const Color(0xFFF4F4F7) : const Color(0xFF7C8091),
+                                  fontWeight: isSel ? FontWeight.w600 : FontWeight.w400,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
                           ),
                         );
                       }).toList(),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                   // Project Cards
                   if (filtered.isEmpty)
                     Container(
-                      padding: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(40),
                       alignment: Alignment.center,
-                      child: Text(
-                        'No projects in this category',
-                        style: TextStyle(color: Colors.grey[500]),
+                      child: const Text(
+                        'No repositories found in this category',
+                        style: TextStyle(color: Color(0xFF555866), fontSize: 13),
                       ),
                     )
                   else
@@ -213,32 +234,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.border),
+  Widget _buildMetricItem(String label, String value, Color valueColor) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: valueColor),
         ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[400])),
-          ],
+        const SizedBox(height: 1),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 10, color: Color(0xFF7C8091)),
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildProjectCard(ProjectSummary p) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         onTap: () {
           Navigator.push(
             context,
@@ -248,7 +264,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ).then((_) => _fetchProjects());
         },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -262,25 +278,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppTheme.primary.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
+                                color: const Color(0xFF161722),
+                                border: Border.all(color: AppTheme.border),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 p.projectType,
                                 style: const TextStyle(
-                                  color: AppTheme.primaryLight,
+                                  color: Color(0xFF8B8F9E),
                                   fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                             if (p.primaryLanguage != null) ...[
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 8),
                               Text(
                                 p.primaryLanguage!,
-                                style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF8B8F9E)),
                               ),
                             ],
                           ],
@@ -288,31 +305,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         const SizedBox(height: 6),
                         Text(
                           p.name,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFF4F4F7),
+                            letterSpacing: -0.2,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   CircularPercentIndicator(
-                    radius: 24.0,
-                    lineWidth: 5.0,
+                    radius: 20.0,
+                    lineWidth: 3.5,
                     percent: (p.progressPercentage / 100.0).clamp(0.0, 1.0),
                     center: Text(
                       '${p.progressPercentage}%',
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
                     ),
-                    progressColor: AppTheme.prodColor,
-                    backgroundColor: AppTheme.border,
+                    progressColor: p.progressPercentage == 100 ? AppTheme.prodColor : AppTheme.primary,
+                    backgroundColor: const Color(0xFF1B1C26),
                   ),
                 ],
               ),
               if (p.goal != null) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   p.goal!,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[300]),
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF9CA0B0)),
                 ),
               ],
               const SizedBox(height: 10),
@@ -320,10 +342,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${p.completedFeatures}/${p.totalFeatures} features done',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    '${p.completedFeatures}/${p.totalFeatures} completed',
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF64687A)),
                   ),
-                  const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+                  const Icon(Icons.arrow_forward, size: 14, color: Color(0xFF64687A)),
                 ],
               ),
             ],
