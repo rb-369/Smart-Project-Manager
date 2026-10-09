@@ -12,8 +12,9 @@ import {
   Trash2,
   Code,
   Loader2,
-  Cpu,
+  Sparkles,
   X,
+  Layers,
 } from 'lucide-react';
 
 export default function IdeasPage() {
@@ -118,116 +119,120 @@ export default function IdeasPage() {
   };
 
   const priorityStyles: Record<string, string> = {
-    P0: 'border-rose-500/30 bg-rose-500/10 text-rose-400',
-    P1: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
-    P2: 'border-blue-500/30 bg-blue-500/10 text-blue-400',
+    P0: 'border-rose-500/30 bg-rose-500/10 text-rose-300 glow-rose',
+    P1: 'border-amber-500/30 bg-amber-500/10 text-amber-300 glow-amber',
+    P2: 'border-sky-500/30 bg-sky-500/10 text-sky-300 glow-blue',
   };
 
   return (
-    <div className="min-h-screen bg-[#090a0f] text-[#f4f4f7] flex flex-col">
+    <div className="min-h-screen bg-[#08090d] text-[#f4f5f8] flex flex-col">
       <Navbar />
 
       <div className="flex-1 flex">
         <Sidebar />
 
-        <main className="flex-1 p-6 max-w-6xl mx-auto space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#1c1d28]">
+        <main className="flex-1 p-6 lg:p-8 max-w-6xl mx-auto space-y-7">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/[0.07]">
             <div>
-              <h1 className="text-xl font-semibold text-[#f4f4f7] tracking-tight flex items-center gap-2">
-                Future Project Priority Incubator
-              </h1>
-              <p className="text-xs text-[#7c8091] mt-0.5">
-                Queue and prioritize future concepts before writing a single line of code.
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-amber-400 glow-amber" />
+                <h1 className="text-xl font-bold text-white tracking-tight">
+                  Future Project Incubator
+                </h1>
+              </div>
+              <p className="text-xs text-[#94a3b8] mt-1">
+                Queue and prioritize upcoming project architectures before writing a single commit.
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleFetchAiProjects}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-[#13151f] hover:bg-[#1c1e2c] text-[#c5c8d6] border border-[#252838] shadow-sm transition cursor-pointer"
+                className="bento-btn-primary flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg shadow-sm transition cursor-pointer"
               >
-                <Cpu className="w-3.5 h-3.5 text-blue-400" />
+                <Sparkles className="w-3.5 h-3.5 text-sky-400" />
                 AI Project Ideas
               </button>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-md bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-sm transition cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_15px_-3px_rgba(99,102,241,0.4)] transition cursor-pointer flex items-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Add Idea
+                Add Concept
               </button>
             </div>
           </div>
 
-          {/* Ideas Kanban Columns */}
+          {/* Ideas Bento Kanban Columns */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {(['P0', 'P1', 'P2'] as const).map((prio) => {
               const columnIdeas = ideas.filter((i) => i.priority === prio && i.status !== 'PROMOTED');
               const columnTitles = {
                 P0: 'P0 // Next Immediate Build',
                 P1: 'P1 // Upcoming Priority',
-                P2: 'P2 // Long-Term Backlog',
+                P2: 'P2 // Future Research & Backlog',
               };
 
               return (
-                <div key={prio} className="space-y-3">
+                <div key={prio} className="space-y-3.5">
                   <div className="flex items-center justify-between px-1 text-xs font-mono">
-                    <span className="text-[#8b8f9e] font-semibold">{columnTitles[prio]}</span>
-                    <span className="text-[11px] px-1.5 py-0.2 rounded bg-[#161722] text-[#6b6f80] border border-[#222433]">
+                    <span className="text-[#cbd5e1] font-semibold">{columnTitles[prio]}</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/[0.04] text-[#94a3b8] border border-white/[0.08]">
                       {columnIdeas.length}
                     </span>
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {columnIdeas.map((idea) => (
                       <div
                         key={idea.id}
-                        className="craft-card p-3.5 rounded-lg space-y-2.5 transition"
+                        className="bento-card p-4 space-y-3 transition-all"
                       >
                         <div>
-                          <div className="flex items-center justify-between gap-2 mb-1.5">
-                            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[#14151f] text-[#8b8f9e] border border-[#202230]">
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.04] text-[#a5b4fc] border border-white/[0.08]">
                               {idea.project_type}
                             </span>
                             <button
                               onClick={() => handleDelete(idea.id)}
-                              className="text-[#4c4f5f] hover:text-rose-400 transition"
+                              className="text-[#64748b] hover:text-rose-400 transition-colors p-1"
                               title="Delete idea"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          <h4 className="font-semibold text-xs text-[#f4f4f7] leading-tight">{idea.title}</h4>
+                          <h4 className="font-semibold text-sm text-white leading-snug">{idea.title}</h4>
                           {idea.elevator_pitch && (
-                            <p className="text-[11px] text-[#7c8091] mt-1 leading-relaxed">{idea.elevator_pitch}</p>
+                            <p className="text-xs text-[#94a3b8] mt-1.5 leading-relaxed">{idea.elevator_pitch}</p>
                           )}
                         </div>
 
                         {idea.target_tech_stack && (
-                          <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#8b8f9e]">
-                            <Code className="w-3 h-3 text-blue-400" />
-                            {idea.target_tech_stack}
+                          <div className="flex items-center gap-1.5 text-xs font-mono text-[#cbd5e1] bg-white/[0.02] p-2 rounded-lg border border-white/[0.04]">
+                            <Code className="w-3.5 h-3.5 text-sky-400" />
+                            <span>{idea.target_tech_stack}</span>
                           </div>
                         )}
 
-                        <div className="pt-2 border-t border-[#1c1d28] flex items-center justify-between">
+                        <div className="pt-2.5 border-t border-white/[0.06] flex items-center justify-between">
                           <span
-                            className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border ${priorityStyles[prio]}`}
+                            className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border ${priorityStyles[prio]}`}
                           >
                             {prio}
                           </span>
                           <button
                             onClick={() => handlePromote(idea.id)}
-                            className="flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition cursor-pointer"
+                            className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
                           >
-                            Promote to Active <ArrowRight className="w-3 h-3" />
+                            <span>Promote to Active</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
                     ))}
                     {columnIdeas.length === 0 && (
-                      <div className="p-6 text-center rounded-lg border border-dashed border-[#1f202c] text-xs text-[#525565] font-mono">
-                        No items in {prio}
+                      <div className="bento-card p-8 text-center text-xs text-[#64748b] font-mono border-dashed">
+                        No concepts in {prio}
                       </div>
                     )}
                   </div>
@@ -238,83 +243,83 @@ export default function IdeasPage() {
         </main>
       </div>
 
-      {/* Add Idea Modal */}
+      {/* Add Concept Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
           <form
             onSubmit={handleCreateIdea}
-            className="bg-[#111218] border border-[#242738] rounded-lg w-full max-w-lg p-5 space-y-4 shadow-2xl"
+            className="bento-card bg-[#0e101a] border border-white/20 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-[#1c1d28]">
-              <h3 className="font-semibold text-sm text-[#f4f4f7]">Capture Future Project Concept</h3>
+            <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.08]">
+              <h3 className="font-bold text-sm text-white">Capture Future Project Architecture</h3>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="text-[#64687a] hover:text-white"
+                className="text-[#64748b] hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#8b8f9e] mb-1">Title</label>
+              <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">Project Title</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Distributed Task Queue"
+                placeholder="e.g. Distributed Consensus Engine"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-[#0d0e14] border border-[#222433] rounded-md px-3 py-1.5 text-xs text-[#f4f4f7] focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#0c0e15] border border-white/[0.08] focus:border-indigo-500/50 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#8b8f9e] mb-1">Elevator Pitch</label>
+              <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">Elevator Pitch & Purpose</label>
               <textarea
-                placeholder="What problem does it solve and why is it worth building?"
+                placeholder="What core problem does it solve and what makes it exceptional?"
                 value={elevatorPitch}
                 onChange={(e) => setElevatorPitch(e.target.value)}
-                className="w-full bg-[#0d0e14] border border-[#222433] rounded-md px-3 py-1.5 text-xs text-[#f4f4f7] h-20 focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#0c0e15] border border-white/[0.08] focus:border-indigo-500/50 rounded-lg px-3 py-2 text-xs text-white h-20 focus:outline-none"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#8b8f9e] mb-1">Target Stack</label>
+                <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">Target Stack</label>
                 <input
                   type="text"
-                  placeholder="e.g. Go, Redis, Docker"
+                  placeholder="e.g. Rust, Tokio, gRPC"
                   value={techStack}
                   onChange={(e) => setTechStack(e.target.value)}
-                  className="w-full bg-[#0d0e14] border border-[#222433] rounded-md px-3 py-1.5 text-xs text-[#f4f4f7] focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#0c0e15] border border-white/[0.08] focus:border-indigo-500/50 rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#8b8f9e] mb-1">Priority</label>
+                <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">Incubator Priority</label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as FutureProjectPriority)}
-                  className="w-full bg-[#0d0e14] border border-[#222433] rounded-md px-3 py-1.5 text-xs text-[#f4f4f7] focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#0c0e15] border border-white/[0.08] focus:border-indigo-500/50 rounded-lg px-3 py-2 text-xs text-white focus:outline-none font-mono"
                 >
-                  <option value="P0">P0 (Immediate)</option>
-                  <option value="P1">P1 (High)</option>
-                  <option value="P2">P2 (Long-term)</option>
+                  <option value="P0">P0 (Immediate Build)</option>
+                  <option value="P1">P1 (Upcoming)</option>
+                  <option value="P2">P2 (Long-term Backlog)</option>
                 </select>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-[#1c1d28]">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="px-3 py-1.5 text-xs text-[#8b8f9e] hover:text-white"
+                className="px-3.5 py-1.5 text-xs text-[#94a3b8] hover:text-white"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-3.5 py-1.5 text-xs font-medium rounded-md bg-[#3b82f6] hover:bg-[#2563eb] text-white"
+                className="bento-btn-primary px-4 py-2 text-xs font-semibold rounded-lg text-white"
               >
                 Save to Incubator
               </button>
@@ -325,46 +330,46 @@ export default function IdeasPage() {
 
       {/* AI Discover Projects Modal */}
       {showAiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
-          <div className="bg-[#111218] border border-[#252838] rounded-lg w-full max-w-xl max-h-[85vh] overflow-y-auto p-5 shadow-2xl">
-            <div className="flex items-center justify-between pb-3.5 border-b border-[#1c1d28] mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="bento-card bg-[#0e101a] border border-white/20 rounded-2xl w-full max-w-xl max-h-[85vh] overflow-y-auto p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-4">
               <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-blue-400" />
-                <h3 className="font-semibold text-sm text-[#f4f4f7]">AI Suggested Next Projects</h3>
+                <Sparkles className="w-4 h-4 text-sky-400 animate-pulse" />
+                <h3 className="font-bold text-sm text-white">AI Suggested Project Concepts</h3>
               </div>
               <button
                 onClick={() => setShowAiModal(false)}
-                className="text-[#64687a] hover:text-white p-1"
+                className="text-[#64748b] hover:text-white p-1"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {aiLoading ? (
-              <div className="py-12 flex flex-col items-center justify-center text-center">
-                <Loader2 className="w-5 h-5 animate-spin text-blue-400 mb-2" />
-                <p className="text-xs text-[#7c8091] font-mono">Analyzing project catalog for skill expansion...</p>
+              <div className="py-14 flex flex-col items-center justify-center text-center">
+                <Loader2 className="w-6 h-6 animate-spin text-sky-400 mb-2" />
+                <p className="text-xs text-[#cbd5e1] font-mono">Analyzing skill gaps and trending technical domains...</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {aiSuggestions.map((p, i) => (
                   <div
                     key={i}
-                    className="p-3.5 rounded-lg bg-[#14151f] border border-[#222433] flex items-start justify-between gap-3"
+                    className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-start justify-between gap-3 hover:border-white/15 transition-all"
                   >
-                    <div className="flex-1 space-y-1">
+                    <div className="flex-1 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#181a26] text-[#8b8f9e] border border-[#252738]">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.04] text-[#a5b4fc] border border-white/[0.08]">
                           {p.project_type}
                         </span>
-                        <h4 className="text-xs font-semibold text-[#f4f4f7]">{p.title}</h4>
+                        <h4 className="text-xs font-bold text-white">{p.title}</h4>
                       </div>
-                      <p className="text-[11px] text-[#7c8091] leading-relaxed">{p.elevator_pitch}</p>
-                      <p className="text-[11px] font-mono text-blue-400">Stack: {p.target_tech_stack}</p>
+                      <p className="text-xs text-[#94a3b8] leading-relaxed">{p.elevator_pitch}</p>
+                      <p className="text-xs font-mono text-sky-400">Target Stack: {p.target_tech_stack}</p>
                     </div>
                     <button
                       onClick={() => handleAddAiProject(p)}
-                      className="px-2.5 py-1 text-xs font-medium rounded-md bg-[#1c1e2b] hover:bg-[#25283a] text-[#f4f4f7] border border-[#2e3146] shrink-0 transition"
+                      className="bento-btn-primary px-3 py-1.5 text-xs font-semibold rounded-lg shrink-0 transition"
                     >
                       <Plus className="w-3 h-3" /> Save
                     </button>

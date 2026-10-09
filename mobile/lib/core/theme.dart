@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Obsidian & Graphite Precision Palette
-  static const Color background = Color(0xFF090A0F); // Deep obsidian
-  static const Color surface = Color(0xFF111218);    // Graphite surface
-  static const Color card = Color(0xFF111218);       // Card background
-  static const Color surfaceRaised = Color(0xFF181A24);
-  static const Color border = Color(0xFF222433);     // 1px Hairline border
-  static const Color borderSubtle = Color(0xFF191B26);
+  // High-End Bento Glass & Holographic Palette
+  static const Color background = Color(0xFF08090D); // Deep titanium void
+  static const Color surface = Color(0xFF0E1017);    // Dark glass surface
+  static const Color card = Color(0xFF0E1017);       // Bento card
+  static const Color surfaceRaised = Color(0xFF141724);
+  static const Color border = Color(0xFF222638);     // Subtle hairline border
+  static const Color borderLight = Color(0xFF333852);
 
-  static const Color primary = Color(0xFF3B82F6);    // Precision blue
-  static const Color primaryLight = Color(0xFF60A5FA);
-  static const Color accent = Color(0xFF60A5FA);
+  static const Color primary = Color(0xFF6366F1);    // Holographic indigo
+  static const Color primaryLight = Color(0xFF818CF8);
+  static const Color accent = Color(0xFF38BDF8);     // Electric sky
 
   // Semantic Priority Colors
-  static const Color p0Color = Color(0xFFF43F5E);    // Rose / Vermillion
-  static const Color p1Color = Color(0xFFF59E0B);    // Amber
-  static const Color p2Color = Color(0xFF3B82F6);    // Blue
+  static const Color p0Color = Color(0xFFF43F5E);    // Luminous Rose
+  static const Color p1Color = Color(0xFFF59E0B);    // Luminous Amber
+  static const Color p2Color = Color(0xFF38BDF8);    // Luminous Sky
   static const Color p3Color = Color(0xFF64748B);    // Slate
 
   // Status & Project Type Colors
-  static const Color collegeColor = Color(0xFF8B5CF6);
-  static const Color resumeColor = Color(0xFF0EA5E9);
+  static const Color collegeColor = Color(0xFFA855F7);
+  static const Color resumeColor = Color(0xFF38BDF8);
   static const Color prodColor = Color(0xFF10B981);
 
   static ThemeData get darkTheme {
@@ -40,24 +40,24 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          color: Color(0xFFF4F4F7),
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.2,
+          color: Colors.white,
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
         ),
       ),
       cardTheme: CardThemeData(
         color: card,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          side: const BorderSide(color: border, width: 1),
-          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0x1FFFFFFF), width: 1),
+          borderRadius: BorderRadius.circular(14),
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: background,
-        selectedItemColor: Color(0xFFF4F4F7),
-        unselectedItemColor: Color(0xFF64687A),
+        backgroundColor: Color(0xFF0A0C13),
+        selectedItemColor: Color(0xFF818CF8),
+        unselectedItemColor: Color(0xFF64748B),
         elevation: 0,
         type: BottomNavigationBarType.fixed,
       ),
@@ -67,7 +67,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         ),

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { ProjectSummary, ProjectType, FeaturePriority } from '@/types';
-import { Cpu, Check, X, Loader2, AlertCircle } from 'lucide-react';
+import { Cpu, Check, X, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 
 interface TriageModalProps {
   project: ProjectSummary;
@@ -65,60 +65,61 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
-      <div className="bg-[#111218] border border-[#252838] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-5">
-        <div className="flex items-center justify-between pb-3.5 border-b border-[#1c1d28] mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-[#181a24] border border-[#282a3b] text-blue-400 flex items-center justify-center">
-              <Cpu className="w-4 h-4" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+      <div className="bento-card bg-[#0e101a] border border-white/20 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6">
+        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 animate-pulse" />
             </div>
             <div>
-              <h2 className="font-semibold text-sm text-[#f4f4f7]">Repository Triage</h2>
-              <p className="text-xs text-[#7c8091]">
-                Classify architecture & roadmap for <span className="text-[#f4f4f7] font-mono">{project.name}</span>
+              <h2 className="font-bold text-base text-white">Autonomous Repository Triage</h2>
+              <p className="text-xs text-[#94a3b8]">
+                Synthesizing architecture & backlog for <span className="text-white font-mono font-semibold">{project.name}</span>
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded text-[#64687a] hover:text-white transition">
+          <button onClick={onClose} className="p-1 rounded-lg text-[#64748b] hover:text-white transition">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {loading ? (
           <div className="py-16 flex flex-col items-center justify-center text-center">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-400 mb-2" />
-            <p className="text-xs font-mono text-[#c5c8d6]">Analyzing README & repository metadata...</p>
-            <p className="text-[11px] text-[#6b6f80] mt-1 font-mono">Cascading: OpenRouter &rarr; Gemini &rarr; NVIDIA</p>
+            <Loader2 className="w-7 h-7 animate-spin text-indigo-400 mb-3" />
+            <p className="text-xs font-mono text-white">Analyzing README & codebase context...</p>
+            <p className="text-[11px] text-[#94a3b8] mt-1 font-mono">Cascading: OpenRouter &rarr; Gemini &rarr; NVIDIA</p>
           </div>
         ) : (
           <div className="space-y-4">
             {error && (
-              <div className="p-3 rounded-md bg-rose-950/30 border border-rose-800/40 text-xs text-rose-300 flex items-center gap-2">
+              <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                 {error}
               </div>
             )}
 
             {providerUsed && (
-              <div className="text-[11px] font-mono text-[#6e7285] flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#14151f] border border-[#1e202c]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                Inference provider: <strong className="text-[#a0a4b5] uppercase">{providerUsed}</strong>
+              <div className="text-[11px] font-mono text-[#94a3b8] flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 glow-emerald" />
+                <span>Inference Engine:</span>
+                <strong className="text-indigo-300 uppercase">{providerUsed}</strong>
               </div>
             )}
 
             {/* Project Type Picker */}
             <div>
-              <label className="block text-xs font-medium text-[#8b8f9e] mb-1.5">Project Classification</label>
-              <div className="grid grid-cols-3 gap-2.5">
+              <label className="block text-xs font-semibold text-[#cbd5e1] mb-2">Project Classification</label>
+              <div className="grid grid-cols-3 gap-3">
                 {(['COLLEGE', 'RESUME', 'PRODUCTION'] as ProjectType[]).map((t) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setProjectType(t)}
-                    className={`py-2 px-3 text-xs font-medium rounded-md border text-center transition cursor-pointer font-mono ${
+                    className={`py-2 px-3 text-xs font-semibold rounded-xl border text-center transition cursor-pointer font-mono ${
                       projectType === t
-                        ? 'bg-[#181a26] border-blue-500/50 text-[#f4f4f7] font-semibold shadow-sm'
-                        : 'bg-[#0f1016] border-[#222433] text-[#6e7285] hover:text-[#c4c7d6]'
+                        ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/15 border-indigo-500/40 text-white shadow-[0_0_15px_-3px_rgba(99,102,241,0.3)]'
+                        : 'bg-white/[0.02] border-white/[0.06] text-[#64748b] hover:text-[#cbd5e1]'
                     }`}
                   >
                     {t}
@@ -129,32 +130,32 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
 
             {/* Goal Input */}
             <div>
-              <label className="block text-xs font-medium text-[#8b8f9e] mb-1.5">Target Objective</label>
+              <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">Target Deliverable Goal</label>
               <textarea
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 rows={2}
-                placeholder="What is the deliverable or goal for this project?"
-                className="w-full bg-[#0d0e14] border border-[#222433] rounded-md px-3 py-1.5 text-xs text-[#f4f4f7] placeholder-[#555866] focus:outline-none focus:border-blue-500"
+                placeholder="What is the objective or target milestone?"
+                className="w-full bg-[#0c0e15] border border-white/[0.08] focus:border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-white placeholder-[#64748b] focus:outline-none"
               />
             </div>
 
             {/* Proposed Initial Features */}
             <div>
-              <label className="block text-xs font-medium text-[#8b8f9e] mb-1.5">
+              <label className="block text-xs font-semibold text-[#cbd5e1] mb-1.5">
                 Synthesized Initial Features ({features.length})
               </label>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {features.map((f, i) => (
                   <div
                     key={i}
-                    className="p-2.5 rounded-md bg-[#13141e] border border-[#1f212e] flex items-start justify-between gap-3"
+                    className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-start justify-between gap-3"
                   >
                     <div className="space-y-0.5">
-                      <p className="text-xs font-medium text-[#f4f4f7]">{f.title}</p>
-                      {f.description && <p className="text-[11px] text-[#7c8091]">{f.description}</p>}
+                      <p className="text-xs font-semibold text-white">{f.title}</p>
+                      {f.description && <p className="text-[11px] text-[#94a3b8]">{f.description}</p>}
                     </div>
-                    <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-[#181a26] border border-[#252838] text-[#8b8f9e] shrink-0">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.08] text-[#a5b4fc] shrink-0">
                       {f.priority}
                     </span>
                   </div>
@@ -162,11 +163,11 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
               </div>
             </div>
 
-            <div className="flex justify-end gap-2.5 pt-3 border-t border-[#1c1d28]">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs text-[#8b8f9e] hover:text-white"
+                className="px-3.5 py-1.5 text-xs text-[#94a3b8] hover:text-white"
               >
                 Cancel
               </button>
@@ -174,7 +175,7 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
                 type="button"
                 onClick={handleConfirm}
                 disabled={submitting}
-                className="px-3.5 py-1.5 text-xs font-medium rounded-md bg-[#3b82f6] hover:bg-[#2563eb] text-white flex items-center gap-1.5 disabled:opacity-50 transition cursor-pointer shadow-sm"
+                className="bento-btn-primary px-4 py-2 text-xs font-semibold rounded-xl text-white flex items-center gap-1.5 disabled:opacity-50 transition cursor-pointer"
               >
                 {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                 Confirm & Import Features

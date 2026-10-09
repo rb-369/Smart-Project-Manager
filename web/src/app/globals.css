@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #090a0f;
-  --foreground: #f4f4f7;
-  --surface: #111218;
-  --surface-raised: #171822;
-  --surface-hover: #1c1d2a;
-  --border: #222433;
-  --border-subtle: #191b26;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
+  --background: #08090d;
+  --foreground: #f4f5f8;
+  --surface: #0e1017;
+  --surface-glass: rgba(14, 16, 23, 0.75);
+  --surface-raised: #141722;
+  --surface-hover: #191c2b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.14);
+  --border-iridescent: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(56, 189, 248, 0.3), rgba(236, 72, 153, 0.3));
+  
+  --accent-indigo: #6366f1;
+  --accent-sky: #38bdf8;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
@@ -18,52 +21,121 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.011em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.012em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 90% 25%, rgba(56, 189, 248, 0.06) 0%, transparent 35%),
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px;
 }
 
-/* Precision Surfaces & Panels (No Cheesy Blur) */
-.craft-panel {
-  background-color: #111218;
-  border: 1px solid #222433;
+/* Holographic Bento Glass Cards */
+.bento-card {
+  position: relative;
+  background: rgba(14, 16, 24, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 8px 24px -4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.craft-card {
-  background-color: #111218;
-  border: 1px solid #222433;
-  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+.bento-card:hover {
+  background: rgba(18, 21, 32, 0.85);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 16px 32px -8px rgba(0, 0, 0, 0.6),
+    0 0 20px -4px rgba(99, 102, 241, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
-.craft-card:hover {
-  background-color: #161722;
-  border-color: #31354a;
+/* Holographic Shimmer Border Effect */
+.holo-border {
+  position: relative;
+}
+.holo-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(56, 189, 248, 0.4), rgba(168, 85, 247, 0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.7;
 }
 
-/* Precision Tabular Numbers for Metrics and Progress */
+/* Bento Shimmer Glow Button */
+.bento-btn-primary {
+  position: relative;
+  background: linear-gradient(180deg, #2a2e45 0%, #171926 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.15s ease;
+}
+.bento-btn-primary:hover {
+  background: linear-gradient(180deg, #323753 0%, #1c1f30 100%);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 6px 18px rgba(99, 102, 241, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Active Indicator Glow */
+.glow-emerald {
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+.glow-blue {
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+.glow-amber {
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+.glow-rose {
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+}
+
+/* Tabular figures for telemetry numbers */
 .num-tabular {
   font-variant-numeric: tabular-nums;
 }
 
-/* Browser Surface Details (Impeccable craft floor requirements) */
+/* Refined Browser Custom Surfaces */
 ::selection {
-  background-color: #3b82f6;
+  background-color: rgba(99, 102, 241, 0.4);
   color: #ffffff;
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #090a0f;
+  background: #08090d;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222433;
+  background: #1e2232;
   border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #31354a;
+  background: #2b3047;
 }
