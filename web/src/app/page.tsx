@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
-  const [activePillar, setActivePillar] = useState<number | null>(null);
+  const [, setActivePillar] = useState<number | null>(null);
 
   // User Colorway Sequence: Blue, Lime, White, Violet
   const pillars = [
@@ -24,7 +24,7 @@ export default function Home() {
       hex: '#0A5CFF',
       rgb: 'RGB 10, 92, 255',
       cmyk: 'CMYK 88, 65, 0, 0',
-      bgClass: 'bg-[#0A5CFF] text-white border-blue-400/50',
+      bgClass: 'bg-[#0A5CFF] text-white border-blue-500',
       accentColor: '#ffffff',
       desc: 'Autonomous GitHub ingestion, webhook synchronization, and zero-leak token encryption.',
       image: '/brand/blue_louver.jpg',
@@ -52,7 +52,7 @@ export default function Home() {
       hex: '#FFFFFF',
       rgb: 'RGB 255, 255, 255',
       cmyk: 'CMYK 0, 0, 0, 0',
-      bgClass: 'bg-white text-black border-zinc-200',
+      bgClass: 'bg-white text-slate-900 border-slate-200',
       accentColor: '#000000',
       desc: 'Idea triage, ranked incubator backlogs, and rapid promotion to production SaaS.',
       image: '/brand/white_sculpture.jpg',
@@ -66,7 +66,7 @@ export default function Home() {
       hex: '#7020DD',
       rgb: 'RGB 120, 57, 235',
       cmyk: 'CMYK 67, 71, 0, 0',
-      bgClass: 'bg-[#7020DD] text-white border-purple-400/40',
+      bgClass: 'bg-[#7020DD] text-white border-purple-500',
       accentColor: '#ffffff',
       desc: 'Multi-tiered cascade: Gemini 2.5 Pro → Claude 3.5 Sonnet → NVIDIA NIM.',
       image: '/brand/violet_matrix.jpg',
@@ -76,8 +76,8 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-between relative overflow-hidden bg-grid-pattern selection:bg-[#C6FF20] selection:text-black">
-      {/* Dynamic Ambient Lighting (Blue, Lime, Violet) */}
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between relative overflow-hidden bg-grid-pattern-light selection:bg-[#C6FF20] selection:text-black">
+      {/* Soft Ambient Light Glows */}
       <div className="ambient-glow-blue -top-32 left-1/4" />
       <div className="ambient-glow-lime top-80 -right-24" />
       <div className="ambient-glow-violet bottom-20 left-1/3" />
@@ -86,35 +86,35 @@ export default function Home() {
       <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[94%] max-w-6xl z-50 floating-nav-island px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-black border border-white/20 flex items-center justify-center font-mono text-xs font-black text-white group-hover:border-[#0A5CFF] transition-colors">
-              <span className="text-white group-hover:text-[#0A5CFF] transition-colors">DC</span>
+            <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-mono text-xs font-black text-[#0A5CFF] group-hover:border-[#0A5CFF] transition-colors shadow-xs">
+              <span>DC</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-sm tracking-tight text-white leading-none">
-                Dev<span className="text-[#C6FF20]">Command</span>
+              <span className="font-extrabold text-sm tracking-tight text-slate-950 leading-none">
+                Dev<span className="text-[#0A5CFF]">Command</span>
               </span>
-              <span className="text-[9px] font-mono text-zinc-500 tracking-wider">
+              <span className="text-[9px] font-mono text-slate-500 tracking-wider font-semibold">
                 SPECTRUM: BLUE &bull; LIME &bull; WHITE &bull; VIOLET
               </span>
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-zinc-400">
+          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-mono text-slate-600">
             <span className="w-1.5 h-1.5 rounded-full bg-[#0A5CFF] pulse-blue" />
-            <span className="text-zinc-300 font-semibold">GRIDSTER V2.0</span>
+            <span className="text-slate-900 font-bold">GRIDSTER LIGHT</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <Link
             href="/settings"
-            className="text-xs text-zinc-400 hover:text-white transition-colors font-mono px-3 py-1.5 rounded-full hover:bg-white/[0.05]"
+            className="text-xs text-slate-600 hover:text-slate-950 transition-colors font-mono font-medium px-3 py-1.5 rounded-full hover:bg-slate-100"
           >
             API Setup
           </Link>
           <Link
             href="/dashboard"
-            className="btn-lime !py-1.5 !px-4 text-xs font-bold flex items-center gap-1.5"
+            className="btn-lime !py-1.5 !px-4 text-xs font-extrabold flex items-center gap-1.5"
           >
             <span>Launch Command Center</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -126,18 +126,18 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-16 space-y-12 relative z-10 w-full flex-1">
         <div className="max-w-3xl mx-auto text-center space-y-4 pt-4">
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-[11px] font-mono">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-mono">
             <span className="w-2 h-2 rounded-full bg-[#0A5CFF] pulse-blue" />
-            <span className="tracking-wide">QUADRANT ARCHITECTURE // BLUE &bull; LIME &bull; WHITE &bull; VIOLET</span>
+            <span className="tracking-wide font-bold">QUADRANT LIGHT // BLUE &bull; LIME &bull; WHITE &bull; VIOLET</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.1]">
             Turn chaotic repositories into high-velocity roadmaps.
           </h1>
 
           {/* Subtext (Max 20 words) */}
-          <p className="text-base text-zinc-400 max-w-xl mx-auto leading-relaxed">
+          <p className="text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
             Automated GitHub ingestion, multi-tier AI feature decomposition, and mathematical milestone velocity physics for ambitious engineers.
           </p>
 
@@ -145,31 +145,31 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link
               href="/dashboard"
-              className="w-full sm:w-auto btn-lime !py-3 !px-7 text-sm font-bold flex items-center justify-center gap-2"
+              className="w-full sm:w-auto btn-lime !py-3 !px-7 text-sm font-extrabold flex items-center justify-center gap-2"
             >
               <span>Enter Command Center</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/settings"
-              className="w-full sm:w-auto btn-outline-white !py-3 !px-6 text-sm font-mono text-zinc-300 hover:text-white flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto btn-outline-white !py-3 !px-6 text-sm font-mono text-slate-800 hover:text-black flex items-center justify-center gap-1.5"
             >
-              <Terminal className="w-4 h-4 text-zinc-400" />
+              <Terminal className="w-4 h-4 text-slate-500" />
               <span>Configure GitHub PAT</span>
             </Link>
           </div>
         </div>
 
         {/* ==================================================================
-            THE 4-PILLAR SPECTRUM: BLUE // LIME // WHITE // VIOLET
+            THE 4-PILLAR SPECTRUM SHOWCASE (LIGHT CANVAS)
             ================================================================== */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs font-mono text-zinc-500 px-1">
+          <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#0A5CFF] pulse-blue" />
-              <span className="uppercase text-zinc-400 font-semibold">Colorway Telemetry Matrix</span>
+              <span className="uppercase text-slate-700 font-bold">Colorway Telemetry Matrix</span>
             </div>
-            <span>SPECTRUM: BLUE &bull; LIME &bull; WHITE &bull; VIOLET</span>
+            <span className="font-semibold">SPECTRUM: BLUE &bull; LIME &bull; WHITE &bull; VIOLET</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -179,14 +179,14 @@ export default function Home() {
                   key={pillar.id}
                   onMouseEnter={() => setActivePillar(pillar.id)}
                   onMouseLeave={() => setActivePillar(null)}
-                  className={`rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden relative min-h-[460px] group shadow-2xl ${
+                  className={`rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden relative min-h-[460px] group shadow-lg ${
                     pillar.id === 0
-                      ? 'bg-[#0A5CFF] border-blue-400/50'
+                      ? 'bg-[#0A5CFF] border-blue-500'
                       : pillar.id === 1
                       ? 'bg-[#C6FF20] border-lime-300'
                       : pillar.id === 2
-                      ? 'bg-white border-zinc-200'
-                      : 'bg-[#7020DD] border-purple-400/40'
+                      ? 'bg-white border-slate-200'
+                      : 'bg-[#7020DD] border-purple-500'
                   }`}
                 >
                   {/* Top Bar Header */}
@@ -196,18 +196,18 @@ export default function Home() {
                       : pillar.id === 1
                       ? 'text-black/80 border-black/10'
                       : pillar.id === 2
-                      ? 'text-zinc-600 border-zinc-200'
+                      ? 'text-slate-600 border-slate-200'
                       : 'text-purple-200 border-white/20'
                   }`}>
                     <span className="font-bold tracking-wider">{pillar.meta}</span>
-                    <span className="text-[10px] font-mono opacity-80">0{pillar.id + 1}</span>
+                    <span className="text-[10px] font-mono opacity-80 font-bold">0{pillar.id + 1}</span>
                   </div>
 
                   {/* Mid Typographic Moment */}
                   <div className="px-5 py-6 flex-1 flex flex-col justify-between">
                     <div>
                       <p className={`text-xs font-mono uppercase tracking-widest mb-1 ${
-                        pillar.id === 1 || pillar.id === 2 ? 'text-black/60 font-semibold' : 'text-white/80'
+                        pillar.id === 1 || pillar.id === 2 ? 'text-black/60 font-bold' : 'text-white/80'
                       }`}>
                         {pillar.label}
                       </p>
@@ -242,13 +242,13 @@ export default function Home() {
                       {pillar.id === 2 ? (
                         <Link
                           href="/dashboard"
-                          className="swipe-pill hover:bg-black hover:border-[#0A5CFF] transition-colors"
+                          className="swipe-pill hover:bg-slate-100 hover:border-slate-400 transition-all"
                         >
                           <span>Swipe</span>
                           <span className="text-[#C6FF20] font-mono">&gt;&gt;</span>
                         </Link>
                       ) : (
-                        <div className="px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-[10px] font-mono text-zinc-300">
+                        <div className="px-2.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-slate-300 text-[10px] font-mono text-slate-900 font-bold shadow-xs">
                           {pillar.foot}
                         </div>
                       )}
@@ -261,47 +261,47 @@ export default function Home() {
         </div>
 
         {/* ==================================================================
-            TECHNICAL BENTO MATRIX (Engine Capabilities & Telemetry)
+            TECHNICAL BENTO MATRIX (Engine Capabilities on Light Theme)
             ================================================================== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-4">
           {/* Tile 1: GitHub Ingestion Pipeline with Blue Accents */}
           <div className="gridster-panel gridster-panel-blue p-6 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
                 <div className="flex items-center gap-2">
                   <GitBranch className="w-4 h-4 text-[#0A5CFF]" />
-                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                  <span className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                     GitHub Repo Pipeline
                   </span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#0A5CFF]/15 border border-[#0A5CFF]/30 text-[#0A5CFF] font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[#0A5CFF] font-bold">
                   SYNCED
                 </span>
               </div>
 
-              <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+              <p className="text-xs text-slate-600 mb-4 leading-relaxed">
                 Connect your GitHub Personal Access Token to auto-discover and triage new repositories.
               </p>
 
               <div className="space-y-2.5 font-mono text-xs">
-                <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#0A5CFF] pulse-blue" />
-                    <span className="text-zinc-200">DevCommand-Core</span>
+                    <span className="text-slate-800 font-semibold">DevCommand-Core</span>
                   </div>
-                  <span className="text-[11px] text-zinc-500">TypeScript</span>
+                  <span className="text-[11px] text-slate-500">TypeScript</span>
                 </div>
-                <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#7020DD] pulse-violet" />
-                    <span className="text-zinc-200">AI-Decomposition-Engine</span>
+                    <span className="text-slate-800 font-semibold">AI-Decomposition-Engine</span>
                   </div>
-                  <span className="text-[11px] text-zinc-500">FastAPI</span>
+                  <span className="text-[11px] text-slate-500">FastAPI</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 mt-4 border-t border-zinc-800/80 text-[11px] font-mono text-zinc-500 flex items-center justify-between">
+            <div className="pt-4 mt-4 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between">
               <span>Encrypted Token Vault</span>
               <span className="text-[#0A5CFF] font-bold">AES-256 ACTIVE</span>
             </div>
@@ -310,44 +310,44 @@ export default function Home() {
           {/* Tile 2: Priority-Weighted Velocity Physics with Lime */}
           <div className="gridster-panel gridster-panel-lime p-6 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
                 <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-[#C6FF20]" />
-                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                  <Layers className="w-4 h-4 text-lime-600" />
+                  <span className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                     Weighted Velocity Physics
                   </span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#C6FF20]/10 border border-[#C6FF20]/30 text-[#C6FF20]">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-lime-100 border border-lime-300 text-lime-800 font-bold">
                   FORMULA
                 </span>
               </div>
 
-              <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+              <p className="text-xs text-slate-600 mb-4 leading-relaxed">
                 Progress is computed with mathematical weighting rather than naive feature counts.
               </p>
 
               <div className="space-y-2 font-mono text-xs mb-4">
-                <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/80 border border-zinc-800/80">
-                  <span className="text-zinc-300">P0 Critical</span>
-                  <span className="text-[#C6FF20] font-bold">4x Multiplier</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                  <span className="text-slate-700 font-medium">P0 Critical</span>
+                  <span className="text-lime-700 font-bold">4x Multiplier</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/80 border border-zinc-800/80">
-                  <span className="text-zinc-300">P1 High</span>
-                  <span className="text-white font-medium">3x Multiplier</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                  <span className="text-slate-700 font-medium">P1 High</span>
+                  <span className="text-slate-900 font-bold">3x Multiplier</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900/80 border border-zinc-800/80">
-                  <span className="text-zinc-300">P2 Medium &bull; P3 Low</span>
-                  <span className="text-zinc-500">2x &bull; 1x Multiplier</span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200">
+                  <span className="text-slate-600">P2 Medium &bull; P3 Low</span>
+                  <span className="text-slate-500">2x &bull; 1x Multiplier</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-zinc-800 flex items-center justify-between">
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-mono text-zinc-500 uppercase">Formula Velocity</p>
-                <p className="text-lg font-black font-mono text-[#C6FF20] num-tabular">82.5%</p>
+                <p className="text-[10px] font-mono text-slate-500 uppercase font-semibold">Formula Velocity</p>
+                <p className="text-lg font-black font-mono text-slate-900 num-tabular">82.5%</p>
               </div>
-              <div className="w-32 h-2.5 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
+              <div className="w-32 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                 <div className="h-full bg-[#C6FF20] rounded-full w-[82.5%]" />
               </div>
             </div>
@@ -356,58 +356,58 @@ export default function Home() {
           {/* Tile 3: Multi-Tier AI Cascade with Violet */}
           <div className="gridster-panel gridster-panel-violet p-6 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-zinc-800 mb-4">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
                 <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                  <Cpu className="w-4 h-4 text-purple-600" />
+                  <span className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                     AI Cascade Redundancy
                   </span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 font-bold">
                   3 TIERS
                 </span>
               </div>
 
-              <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+              <p className="text-xs text-slate-600 mb-4 leading-relaxed">
                 Never fail an AI decomposition request. Automated failover guarantees continuous roadmap generation.
               </p>
 
               <div className="space-y-2 font-mono text-xs">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800">
-                  <span className="text-zinc-300">1. Gemini 2.5 Pro</span>
-                  <span className="text-[#C6FF20] text-[11px] font-semibold">Primary</span>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-800 font-medium">1. Gemini 2.5 Pro</span>
+                  <span className="text-[#0A5CFF] text-[11px] font-bold">Primary</span>
                 </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800">
-                  <span className="text-zinc-300">2. Claude 3.5 Sonnet</span>
-                  <span className="text-purple-300 text-[11px]">Fallback 1</span>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-800 font-medium">2. Claude 3.5 Sonnet</span>
+                  <span className="text-purple-600 text-[11px] font-semibold">Fallback 1</span>
                 </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800">
-                  <span className="text-zinc-300">3. NVIDIA NIM Meta Llama</span>
-                  <span className="text-zinc-500 text-[11px]">Fallback 2</span>
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-slate-600">3. NVIDIA NIM Meta Llama</span>
+                  <span className="text-slate-400 text-[11px]">Fallback 2</span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 mt-4 border-t border-zinc-800/80 text-[11px] font-mono text-purple-300 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />
+            <div className="pt-4 mt-4 border-t border-slate-100 text-[11px] font-mono text-purple-700 font-medium flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-purple-600" />
               <span>Zero Rate-Limit Fallback Guard</span>
             </div>
           </div>
         </div>
 
-        {/* Bottom CTA Banner */}
-        <div className="rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-950 via-zinc-900 to-black p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+        {/* Bottom CTA Banner (Clean light contrast) */}
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-slate-50 p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
           <div className="space-y-1 text-center md:text-left">
-            <h3 className="text-xl font-bold tracking-tight text-white">
+            <h3 className="text-xl font-extrabold tracking-tight text-slate-950">
               Ready to command your software architecture?
             </h3>
-            <p className="text-xs text-zinc-400 max-w-xl font-mono">
+            <p className="text-xs text-slate-600 max-w-xl font-mono">
               Initialize your local database, sync your repositories, and generate your first AI feature roadmap in under 60 seconds.
             </p>
           </div>
           <Link
             href="/dashboard"
-            className="btn-lime !py-3 !px-6 text-xs font-bold shrink-0 flex items-center gap-2"
+            className="btn-lime !py-3 !px-6 text-xs font-extrabold shrink-0 flex items-center gap-2"
           >
             <span>Open Command Center</span>
             <ArrowRight className="w-4 h-4" />
@@ -416,14 +416,14 @@ export default function Home() {
       </main>
 
       {/* Gridster Telemetry Footer */}
-      <footer className="relative z-10 border-t border-zinc-900 bg-black px-6 py-6 text-center text-xs text-zinc-500 font-mono flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto w-full gap-3">
+      <footer className="relative z-10 border-t border-slate-200 bg-white px-6 py-6 text-center text-xs text-slate-500 font-mono flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto w-full gap-3">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-white">DEVCOMMAND</span>
+          <span className="font-extrabold text-slate-900">DEVCOMMAND</span>
           <span>&bull;</span>
-          <span>GRIDSTER ARCHITECTURE</span>
+          <span>GRIDSTER LIGHT ARCHITECTURE</span>
         </div>
         <div className="flex items-center gap-4 text-[11px]">
-          <span className="text-zinc-500">BLUE // LIME // WHITE // VIOLET</span>
+          <span className="text-slate-500">BLUE // LIME // WHITE // VIOLET</span>
           <span className="text-[#0A5CFF] font-bold">ONLINE</span>
         </div>
       </footer>

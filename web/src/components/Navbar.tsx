@@ -57,33 +57,33 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
 
   return (
     <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[94%] max-w-6xl z-50 floating-nav-island px-4 py-2.5 flex items-center justify-between">
-      {/* Brand & Monogram Badge (Inspired by Gridster K-mark) */}
+      {/* Brand & Monogram Badge */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-black border border-white/20 flex items-center justify-center font-mono text-xs font-black text-white group-hover:border-[#0A5CFF] transition-colors shadow-sm">
-            <span className="text-white group-hover:text-[#0A5CFF] transition-colors">DC</span>
+          <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center font-mono text-xs font-black text-[#0A5CFF] group-hover:border-[#0A5CFF] transition-colors shadow-sm">
+            <span>DC</span>
           </div>
           <div className="hidden sm:flex flex-col">
-            <span className="font-bold text-sm tracking-tight text-white leading-none">
-              Dev<span className="text-[#C6FF20]">Command</span>
+            <span className="font-extrabold text-sm tracking-tight text-slate-900 leading-none">
+              Dev<span className="text-[#0A5CFF]">Command</span>
             </span>
-            <span className="text-[9px] font-mono text-zinc-500 tracking-wider uppercase">
-              BLUE &bull; LIME &bull; WHITE &bull; VIOLET
+            <span className="text-[9px] font-mono text-slate-500 tracking-wider uppercase font-semibold">
+              SPECTRUM: BLUE &bull; LIME &bull; WHITE &bull; VIOLET
             </span>
           </div>
         </Link>
 
         {/* Live Telemetry Node */}
-        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-zinc-400">
+        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200/80 text-[10px] font-mono text-slate-600">
           <span className="w-1.5 h-1.5 rounded-full bg-[#0A5CFF] pulse-blue" />
-          <span className="text-zinc-300 font-semibold">GRIDSTER V2.0</span>
-          <span className="text-zinc-600">|</span>
-          <span className="text-[#C6FF20]">ONLINE</span>
+          <span className="text-slate-900 font-bold">GRIDSTER LIGHT</span>
+          <span className="text-slate-300">|</span>
+          <span className="text-[#0A5CFF] font-semibold">ONLINE</span>
         </div>
       </div>
 
       {/* Center Navigation Pills */}
-      <nav className="flex items-center gap-1 bg-white/[0.03] p-1 rounded-full border border-white/[0.06]">
+      <nav className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-full border border-slate-200/60">
         {navLinks.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -93,7 +93,7 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
               href={item.href}
               className={`nav-pill ${isActive ? 'active' : ''}`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-black' : 'text-zinc-400'}`} />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-black' : 'text-slate-500'}`} />
               <span>{item.label}</span>
             </Link>
           );
@@ -103,15 +103,15 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
       {/* Right Tools & Action Button */}
       <div className="flex items-center gap-2.5">
         {/* Search */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-zinc-400 focus-within:border-[#C6FF20]/50 focus-within:bg-white/[0.08] transition">
-          <Search className="w-3.5 h-3.5 text-zinc-500" />
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-600 focus-within:border-[#0A5CFF] focus-within:bg-white transition">
+          <Search className="w-3.5 h-3.5 text-slate-400" />
           <input
             type="text"
             placeholder="Search projects..."
             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-            className="bg-transparent border-none outline-none text-xs text-white placeholder-zinc-500 w-24 focus:w-32 transition-all"
+            className="bg-transparent border-none outline-none text-xs text-slate-900 placeholder-slate-400 w-24 focus:w-32 transition-all"
           />
-          <kbd className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-white/[0.06] text-zinc-400 border border-white/[0.08]">
+          <kbd className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-white text-slate-500 border border-slate-200 shadow-2xs">
             ⌘K
           </kbd>
         </div>
@@ -121,14 +121,14 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
           <div
             className={`text-xs px-2.5 py-1 rounded-full border font-mono flex items-center gap-1.5 transition ${
               syncStatus.isError
-                ? 'bg-rose-950/40 border-rose-500/30 text-rose-300'
-                : 'bg-[#C6FF20]/10 border-[#C6FF20]/30 text-[#C6FF20]'
+                ? 'bg-rose-50 border-rose-300 text-rose-700'
+                : 'bg-[#C6FF20]/20 border-[#C6FF20] text-slate-900 font-bold'
             }`}
           >
             {syncStatus.isError ? (
-              <AlertCircle className="w-3 h-3 text-rose-400" />
+              <AlertCircle className="w-3 h-3 text-rose-600" />
             ) : (
-              <CheckCircle2 className="w-3 h-3 text-[#C6FF20]" />
+              <CheckCircle2 className="w-3 h-3 text-[#0A5CFF]" />
             )}
             <span className="text-[10px]">{syncStatus.message}</span>
           </div>
@@ -141,25 +141,27 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
           className="btn-outline-white !py-1.5 !px-3 text-xs"
           title="Sync with GitHub"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#C6FF20]' : 'text-zinc-300'}`} />
-          <span className="hidden sm:inline font-mono text-[11px]">{isSyncing ? 'Syncing' : 'Sync'}</span>
+          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#0A5CFF]' : 'text-slate-600'}`} />
+          <span className="hidden sm:inline font-mono text-[11px] font-bold text-slate-700">
+            {isSyncing ? 'Syncing' : 'Sync'}
+          </span>
         </button>
 
         {/* User Monogram or Launch CTA */}
         {pathname !== '/dashboard' ? (
           <Link
             href="/dashboard"
-            className="btn-lime !py-1.5 !px-3.5 text-xs font-bold flex items-center gap-1.5"
+            className="btn-lime !py-1.5 !px-3.5 text-xs font-extrabold flex items-center gap-1.5"
           >
             <span>Launch</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         ) : (
           <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-zinc-900 border border-white/20 flex items-center justify-center text-xs font-bold text-white shadow-inner">
+            <div className="w-8 h-8 rounded-full bg-white border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-900 shadow-sm">
               {userEmail ? userEmail.charAt(0).toUpperCase() : 'R'}
             </div>
-            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime border border-black" />
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-[#0A5CFF] pulse-blue border border-white" />
           </div>
         )}
       </div>

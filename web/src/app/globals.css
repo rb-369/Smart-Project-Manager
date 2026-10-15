@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --surface-dark: #09090b;
-  --surface-panel: #111115;
-  --surface-elevated: #17171d;
+  --background: #FFFFFF;
+  --foreground: #09090b;
+  --surface-light: #FFFFFF;
+  --surface-subtle: #F8FAFC;
+  --surface-panel: #FFFFFF;
+  --surface-elevated: #F1F5F9;
   
   /* Brand Spectrum: Blue, Lime, White, Violet */
   --brand-blue: #0A5CFF;
   --brand-lime: #C6FF20;
   --brand-white: #FFFFFF;
   --brand-violet: #7020DD;
-  --brand-black: #000000;
 
-  --border-hairline: rgba(255, 255, 255, 0.08);
-  --border-focused: rgba(255, 255, 255, 0.18);
-  --border-blue: rgba(10, 92, 255, 0.4);
-  --border-lime: rgba(198, 255, 32, 0.35);
-  --border-violet: rgba(112, 32, 221, 0.4);
+  --border-hairline: rgba(0, 0, 0, 0.07);
+  --border-focused: rgba(10, 92, 255, 0.35);
+  --border-blue: rgba(10, 92, 255, 0.25);
+  --border-lime: rgba(198, 255, 32, 0.6);
+  --border-violet: rgba(112, 32, 221, 0.25);
 }
 
 body {
@@ -34,14 +34,14 @@ body {
 }
 
 /* ==========================================================================
-   AMBIENT GRIDSTER ATMOSPHERE (BLUE + LIME + VIOLET)
+   AMBIENT LIGHT ATMOSPHERE (SOFT BLUE + LIME + VIOLET BLOOM ON WHITE)
    ========================================================================== */
 .ambient-glow-blue {
   position: absolute;
-  width: 580px;
-  height: 580px;
-  background: radial-gradient(circle, rgba(10, 92, 255, 0.22) 0%, rgba(10, 92, 255, 0.04) 50%, transparent 70%);
-  filter: blur(85px);
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(10, 92, 255, 0.09) 0%, rgba(10, 92, 255, 0.02) 50%, transparent 70%);
+  filter: blur(95px);
   pointer-events: none;
   z-index: 0;
   border-radius: 9999px;
@@ -51,8 +51,8 @@ body {
   position: absolute;
   width: 580px;
   height: 580px;
-  background: radial-gradient(circle, rgba(112, 32, 221, 0.2) 0%, rgba(112, 32, 221, 0.04) 50%, transparent 70%);
-  filter: blur(85px);
+  background: radial-gradient(circle, rgba(112, 32, 221, 0.08) 0%, rgba(112, 32, 221, 0.01) 50%, transparent 70%);
+  filter: blur(95px);
   pointer-events: none;
   z-index: 0;
   border-radius: 9999px;
@@ -60,101 +60,84 @@ body {
 
 .ambient-glow-lime {
   position: absolute;
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, rgba(198, 255, 32, 0.12) 0%, rgba(198, 255, 32, 0.02) 50%, transparent 70%);
-  filter: blur(95px);
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, rgba(198, 255, 32, 0.15) 0%, rgba(198, 255, 32, 0.03) 50%, transparent 70%);
+  filter: blur(100px);
   pointer-events: none;
   z-index: 0;
   border-radius: 9999px;
 }
 
-/* Subtle architectural grid pattern */
-.bg-grid-pattern {
+/* Subtle architectural grid pattern on light canvas */
+.bg-grid-pattern-light {
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
 /* ==========================================================================
-   PRECISION PANELS & BENTO TILES
+   PRECISION LIGHT PANELS & BENTO TILES
    ========================================================================== */
 .gridster-panel {
   position: relative;
-  background: #09090c;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 18px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
   overflow: hidden;
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 10px 30px -6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gridster-panel:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.85);
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    0 18px 40px -8px rgba(0, 0, 0, 0.09);
+  transform: translateY(-2px);
 }
 
 .gridster-panel-blue {
-  border-color: rgba(10, 92, 255, 0.3);
+  border-color: rgba(10, 92, 255, 0.2);
 }
 
 .gridster-panel-blue:hover {
-  border-color: rgba(10, 92, 255, 0.6);
-  box-shadow: 0 0 35px -5px rgba(10, 92, 255, 0.3);
+  border-color: rgba(10, 92, 255, 0.5);
+  box-shadow: 0 12px 35px -5px rgba(10, 92, 255, 0.15);
 }
 
 .gridster-panel-violet {
-  border-color: rgba(112, 32, 221, 0.25);
+  border-color: rgba(112, 32, 221, 0.2);
 }
 
 .gridster-panel-violet:hover {
-  border-color: rgba(112, 32, 221, 0.55);
-  box-shadow: 0 0 35px -5px rgba(112, 32, 221, 0.25);
+  border-color: rgba(112, 32, 221, 0.5);
+  box-shadow: 0 12px 35px -5px rgba(112, 32, 221, 0.15);
 }
 
 .gridster-panel-lime {
-  border-color: rgba(198, 255, 32, 0.25);
+  border-color: rgba(198, 255, 32, 0.5);
 }
 
 .gridster-panel-lime:hover {
-  border-color: rgba(198, 255, 32, 0.6);
-  box-shadow: 0 0 35px -5px rgba(198, 255, 32, 0.22);
-}
-
-/* Legacy Glass Support Mapped to Gridster System */
-.glass-shell {
-  position: relative;
-  background: rgba(17, 17, 21, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: 4px;
-  transition: all 0.25s ease;
-}
-
-.glass-shell:hover {
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
-}
-
-.glass-core {
-  background: rgba(9, 9, 12, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
+  border-color: rgba(198, 255, 32, 0.9);
+  box-shadow: 0 12px 35px -5px rgba(198, 255, 32, 0.25);
 }
 
 /* ==========================================================================
-   NAVIGATION ISLAND
+   FROSTED LIGHT NAVIGATION ISLAND
    ========================================================================== */
 .floating-nav-island {
-  background: rgba(8, 8, 10, 0.82);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 
-    0 20px 48px -10px rgba(0, 0, 0, 0.9),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+    0 10px 30px -4px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
   border-radius: 9999px;
   transition: all 0.25s ease;
 }
@@ -169,24 +152,24 @@ body {
   border-radius: 9999px;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #a1a1aa;
+  color: #64748b;
   transition: all 0.2s ease;
 }
 
 .nav-pill:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
+  color: #09090b;
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .nav-pill.active {
   color: #000000;
   background: #C6FF20;
   font-weight: 700;
-  box-shadow: 0 0 18px rgba(198, 255, 32, 0.35);
+  box-shadow: 0 2px 12px rgba(198, 255, 32, 0.4);
 }
 
 /* ==========================================================================
-   INTERACTIVE BUTTONS
+   INTERACTIVE BUTTONS (LIGHT THEME)
    ========================================================================== */
 /* Primary High-Voltage Acid Lime Button */
 .btn-lime {
@@ -200,24 +183,25 @@ body {
   background-color: #C6FF20;
   color: #000000;
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.01em;
-  box-shadow: 0 4px 20px rgba(198, 255, 32, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 18px rgba(198, 255, 32, 0.45);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-lime:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 28px rgba(198, 255, 32, 0.45);
-  background-color: #d2ff38;
+  box-shadow: 0 8px 24px rgba(198, 255, 32, 0.6);
+  background-color: #d4ff38;
 }
 
 .btn-lime:active {
   transform: scale(0.98);
 }
 
-/* Cyber Cobalt Blue Button */
+/* Electric Blue Button */
 .btn-blue {
   position: relative;
   display: inline-flex;
@@ -231,15 +215,15 @@ body {
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  box-shadow: 0 4px 20px rgba(10, 92, 255, 0.35);
+  box-shadow: 0 4px 20px rgba(10, 92, 255, 0.3);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-blue:hover {
   transform: translateY(-1px);
-  background-color: #1e6aff;
-  box-shadow: 0 6px 26px rgba(10, 92, 255, 0.55);
+  background-color: #1a6aff;
+  box-shadow: 0 6px 26px rgba(10, 92, 255, 0.45);
 }
 
 .btn-blue:active {
@@ -260,7 +244,7 @@ body {
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  box-shadow: 0 4px 20px rgba(112, 32, 221, 0.3);
+  box-shadow: 0 4px 18px rgba(112, 32, 221, 0.25);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -268,14 +252,14 @@ body {
 .btn-violet:hover {
   transform: translateY(-1px);
   background-color: #7c2bee;
-  box-shadow: 0 6px 26px rgba(112, 32, 221, 0.5);
+  box-shadow: 0 6px 24px rgba(112, 32, 221, 0.4);
 }
 
 .btn-violet:active {
   transform: scale(0.98);
 }
 
-/* Architectural Crisp White / Monospace Outline Button */
+/* Clean Crisp Outline Button */
 .btn-outline-white {
   position: relative;
   display: inline-flex;
@@ -284,41 +268,42 @@ body {
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #0F172A;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-outline-white:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: #F8FAFC;
+  border-color: rgba(0, 0, 0, 0.25);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .btn-outline-white:active {
   transform: scale(0.98);
 }
 
-/* Swipe Pill from Reference Image */
+/* Swipe Pill */
 .swipe-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem 0.85rem;
   border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: #09090b;
   font-size: 0.75rem;
   font-family: var(--font-geist-mono), monospace;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.05em;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 /* ==========================================================================
@@ -329,29 +314,29 @@ body {
 }
 
 .pulse-lime {
-  box-shadow: 0 0 10px rgba(198, 255, 32, 0.8);
+  box-shadow: 0 0 10px rgba(198, 255, 32, 0.85);
 }
 
 .pulse-violet {
-  box-shadow: 0 0 10px rgba(112, 32, 221, 0.8);
+  box-shadow: 0 0 10px rgba(112, 32, 221, 0.85);
 }
 
 .num-tabular {
   font-variant-numeric: tabular-nums;
 }
 
-/* Crisp Scrollbar */
+/* Crisp Scrollbar for Light Mode */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: #F8FAFC;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.18);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(198, 255, 32, 0.4);
+  background: rgba(10, 92, 255, 0.5);
 }
