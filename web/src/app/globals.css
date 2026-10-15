@@ -1,18 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050508;
-  --foreground: #f8fafc;
-  --surface: #0a0c13;
-  --surface-glass: rgba(10, 12, 19, 0.65);
-  --border-glass: rgba(255, 255, 255, 0.12);
-  --border-specular: rgba(255, 255, 255, 0.25);
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface-dark: #09090b;
+  --surface-panel: #111115;
+  --surface-elevated: #17171d;
   
-  --glow-cyan: #06b6d4;
-  --glow-violet: #8b5cf6;
-  --glow-emerald: #10b981;
-  --glow-amber: #f59e0b;
-  --glow-rose: #f43f5e;
+  /* Brand Spectrum from GridsterGP Spec */
+  --brand-black: #000000;
+  --brand-violet: #7020DD;
+  --brand-lime: #C6FF20;
+  --brand-white: #FFFFFF;
+
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-focused: rgba(255, 255, 255, 0.18);
+  --border-lime: rgba(198, 255, 32, 0.35);
+  --border-violet: rgba(112, 32, 221, 0.4);
 }
 
 body {
@@ -28,106 +32,113 @@ body {
 }
 
 /* ==========================================================================
-   LIQUID GLASS BACKGROUND OPTICAL GLOW ORBS
+   AMBIENT GRIDSTER ATMOSPHERE (PURE BLACK + ELECTRIC VIOLET + ACID LIME)
    ========================================================================== */
-.liquid-glow-orb-purple {
+.ambient-glow-violet {
   position: absolute;
   width: 580px;
   height: 580px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 70%);
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  border-radius: 9999px;
-}
-
-.liquid-glow-orb-cyan {
-  position: absolute;
-  width: 620px;
-  height: 620px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, rgba(6, 182, 212, 0.04) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(112, 32, 221, 0.22) 0%, rgba(112, 32, 221, 0.04) 50%, transparent 70%);
   filter: blur(85px);
   pointer-events: none;
   z-index: 0;
   border-radius: 9999px;
 }
 
-.liquid-glow-orb-emerald {
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0.03) 50%, transparent 70%);
-  filter: blur(75px);
-  pointer-events: none;
-  z-index: 0;
-  border-radius: 9999px;
-}
-
-.liquid-glow-orb-magenta {
+.ambient-glow-lime {
   position: absolute;
   width: 520px;
   height: 520px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.18) 0%, rgba(236, 72, 153, 0.03) 50%, transparent 70%);
-  filter: blur(80px);
+  background: radial-gradient(circle, rgba(198, 255, 32, 0.12) 0%, rgba(198, 255, 32, 0.02) 50%, transparent 70%);
+  filter: blur(95px);
   pointer-events: none;
   z-index: 0;
   border-radius: 9999px;
 }
 
+/* Subtle architectural grid pattern */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
 /* ==========================================================================
-   DOUBLE-BEZEL (DOPPELRAND) LIQUID GLASS ARCHITECTURE
+   PRECISION PANELS & BENTO TILES
    ========================================================================== */
-.glass-shell {
+.gridster-panel {
   position: relative;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 26px;
-  padding: 5px;
-  box-shadow: 
-    0 24px 48px -12px rgba(0, 0, 0, 0.7),
-    0 1px 2px rgba(0, 0, 0, 0.5);
+  background: #09090c;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  overflow: hidden;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-core {
-  position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.015) 100%);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 21px;
-  box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.5);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+.gridster-panel:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.85);
 }
 
-.glass-shell:hover .glass-core {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.025) 100%);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
-    0 0 30px -5px rgba(139, 92, 246, 0.18);
+.gridster-panel-violet {
+  border-color: rgba(112, 32, 221, 0.25);
+}
+
+.gridster-panel-violet:hover {
+  border-color: rgba(112, 32, 221, 0.55);
+  box-shadow: 0 0 35px -5px rgba(112, 32, 221, 0.25);
+}
+
+.gridster-panel-lime {
+  border-color: rgba(198, 255, 32, 0.25);
+}
+
+.gridster-panel-lime:hover {
+  border-color: rgba(198, 255, 32, 0.6);
+  box-shadow: 0 0 35px -5px rgba(198, 255, 32, 0.22);
+}
+
+/* Legacy Glass Support Mapped to Gridster System */
+.glass-shell {
+  position: relative;
+  background: rgba(17, 17, 21, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 4px;
+  transition: all 0.25s ease;
+}
+
+.glass-shell:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+}
+
+.glass-core {
+  background: rgba(9, 9, 12, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
 }
 
 /* ==========================================================================
-   FLOATING DETACHED ISLAND NAVIGATION BAR
+   NAVIGATION ISLAND
    ========================================================================== */
-.floating-glass-island {
-  background: rgba(8, 10, 16, 0.68);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+.floating-nav-island {
+  background: rgba(8, 8, 10, 0.82);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
-    0 24px 64px -12px rgba(0, 0, 0, 0.8),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.6);
+    0 20px 48px -10px rgba(0, 0, 0, 0.9),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
-/* Glass Island Pill Navigation Link */
-.glass-nav-pill {
+/* Nav Link Pill */
+.nav-pill {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -136,109 +147,156 @@ body {
   border-radius: 9999px;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: #a1a1aa;
   transition: all 0.2s ease;
 }
-.glass-nav-pill:hover {
+
+.nav-pill:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.06);
 }
-.glass-nav-pill.active {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
-    0 0 20px -3px rgba(139, 92, 246, 0.35);
+
+.nav-pill.active {
+  color: #000000;
+  background: #C6FF20;
+  font-weight: 700;
+  box-shadow: 0 0 18px rgba(198, 255, 32, 0.35);
 }
 
 /* ==========================================================================
-   BUTTON-IN-BUTTON INTERACTIVE GLASS BUTTONS
+   INTERACTIVE BUTTONS (GRIDSTER HIGH-CONTRAST)
    ========================================================================== */
-.glass-pill-btn {
+/* Primary High-Voltage Acid Lime Button */
+.btn-lime {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f8fafc;
+  background-color: #C6FF20;
+  color: #000000;
   font-size: 0.8125rem;
-  font-weight: 500;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 4px 20px rgba(198, 255, 32, 0.25);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.glass-pill-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
+
+.btn-lime:hover {
   transform: translateY(-1px);
-  box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.5),
-    0 0 20px -4px rgba(6, 182, 212, 0.35),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 28px rgba(198, 255, 32, 0.45);
+  background-color: #d2ff38;
 }
-.glass-pill-btn:active {
+
+.btn-lime:active {
   transform: scale(0.98);
 }
 
-.glass-btn-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.12);
-  display: flex;
+/* Secondary Electric Violet Button */
+.btn-violet {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  background-color: #7020DD;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: 0 4px 20px rgba(112, 32, 221, 0.3);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.glass-pill-btn:hover .glass-btn-icon {
-  transform: translateX(1px) translateY(-1px);
+
+.btn-violet:hover {
+  transform: translateY(-1px);
+  background-color: #7c2bee;
+  box-shadow: 0 6px 26px rgba(112, 32, 221, 0.5);
+}
+
+.btn-violet:active {
+  transform: scale(0.98);
+}
+
+/* Architectural Crisp White / Monospace Outline Button */
+.btn-outline-white {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-outline-white:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-outline-white:active {
+  transform: scale(0.98);
+}
+
+/* Swipe Pill from Reference Image */
+.swipe-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* ==========================================================================
-   SEMANTIC GLOWS & PRECISION METERS
+   STATUS PULSES & TELEMETRY
    ========================================================================== */
-.glow-emerald {
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.7);
+.pulse-lime {
+  box-shadow: 0 0 10px rgba(198, 255, 32, 0.8);
 }
-.glow-cyan {
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.7);
-}
-.glow-violet {
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
-}
-.glow-amber {
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.7);
-}
-.glow-rose {
-  box-shadow: 0 0 12px rgba(244, 63, 94, 0.7);
+
+.pulse-violet {
+  box-shadow: 0 0 10px rgba(112, 32, 221, 0.8);
 }
 
 .num-tabular {
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle Scrollbar */
+/* Crisp Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #050508;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(198, 255, 32, 0.4);
 }
-

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { ProjectSummary, ProjectType, FeaturePriority } from '@/types';
-import { Cpu, Check, X, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { Check, X, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 
 interface TriageModalProps {
   project: ProjectSummary;
@@ -22,12 +22,6 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
   const [features, setFeatures] = useState<Array<{ title: string; priority: FeaturePriority; description?: string }>>([]);
   const [providerUsed, setProviderUsed] = useState<string>('');
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchAITriage();
-    }
-  }, [isOpen]);
-
   const fetchAITriage = async () => {
     setLoading(true);
     setError(null);
@@ -43,6 +37,12 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAITriage();
+    }
+  }, [isOpen]);
 
   const handleConfirm = async () => {
     setSubmitting(true);

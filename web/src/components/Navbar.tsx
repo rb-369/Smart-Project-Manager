@@ -7,14 +7,12 @@ import { api } from '@/lib/api';
 import { 
   RefreshCw, 
   Search, 
-  Bell, 
-  Sparkles, 
   LayoutDashboard, 
-  FolderGit2, 
   Lightbulb, 
   Settings,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ArrowRight
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -38,16 +36,17 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
     setIsSyncing(true);
     setSyncStatus(null);
     try {
-      const res: any = await api.post('/github/sync');
-      const count = res.new_repos_imported || 0;
+      const res = await api.post<{ new_repos_imported?: number }>('/github/sync');
+      const count = res?.new_repos_imported || 0;
       setSyncStatus({
         message: count > 0 ? `+${count} imported` : 'Up to date',
       });
       if (onSyncSuccess) onSyncSuccess();
       setTimeout(() => setSyncStatus(null), 4000);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       setSyncStatus({
-        message: err.message || 'Sync failed',
+        message: error.message || 'Sync failed',
         isError: true,
       });
       setTimeout(() => setSyncStatus(null), 5000);
@@ -57,31 +56,33 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
   };
 
   return (
-    <header className="fixed top-5 left-1/2 -translate-x-1/2 w-[94%] max-w-6xl z-50 floating-glass-island px-4 py-2.5 flex items-center justify-between">
-      {/* Brand & Monogram */}
+    <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[94%] max-w-6xl z-50 floating-nav-island px-4 py-2.5 flex items-center justify-between">
+      {/* Brand & Monogram Badge (Inspired by Gridster K-mark) */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-500 via-cyan-400 to-emerald-400 rounded-xl blur-[3px] opacity-70 group-hover:opacity-100 transition duration-300" />
-            <div className="relative w-8 h-8 rounded-xl bg-[#080a10] border border-white/20 flex items-center justify-center font-mono text-xs font-bold text-white shadow-inner">
-              <span className="bg-gradient-to-br from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
-                DC
-              </span>
-            </div>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-lg bg-black border border-white/20 flex items-center justify-center font-mono text-xs font-black text-white group-hover:border-[#C6FF20] transition-colors shadow-sm">
+            <span className="text-white group-hover:text-[#C6FF20] transition-colors">DC</span>
           </div>
-          <span className="font-semibold text-sm text-[#f8fafc] tracking-tight hidden sm:inline-block">
-            Dev<span className="text-[#a5b4fc]">Command</span>
-          </span>
+          <div className="hidden sm:flex flex-col">
+            <span className="font-bold text-sm tracking-tight text-white leading-none">
+              Dev<span className="text-[#C6FF20]">Command</span>
+            </span>
+            <span className="text-[9px] font-mono text-zinc-500 tracking-wider uppercase">
+              GRIDSTER ARCHITECTURE
+            </span>
+          </div>
         </Link>
 
-        {/* Live System Indicator */}
-        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-[#94a3b8]">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 glow-emerald animate-pulse" />
-          <span>v1.0.0</span>
+        {/* Live Telemetry Node */}
+        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-zinc-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#C6FF20] pulse-lime" />
+          <span className="text-zinc-300 font-semibold">ONLINE</span>
+          <span className="text-zinc-600">|</span>
+          <span className="text-zinc-400">2026.10</span>
         </div>
       </div>
 
-      {/* Center Nav Pill Links */}
+      {/* Center Navigation Pills */}
       <nav className="flex items-center gap-1 bg-white/[0.03] p-1 rounded-full border border-white/[0.06]">
         {navLinks.map((item) => {
           const Icon = item.icon;
@@ -90,27 +91,27 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
             <Link
               key={item.href}
               href={item.href}
-              className={`glass-nav-pill ${isActive ? 'active' : ''}`}
+              className={`nav-pill ${isActive ? 'active' : ''}`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-300' : 'text-[#64748b]'}`} />
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-black' : 'text-zinc-400'}`} />
               <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Right Tools & Avatar */}
+      {/* Right Tools & Action Button */}
       <div className="flex items-center gap-2.5">
-        {/* Search Bar Input */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-[#94a3b8] focus-within:border-white/20 focus-within:bg-white/[0.08] transition">
-          <Search className="w-3.5 h-3.5 text-[#64748b]" />
+        {/* Search */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-zinc-400 focus-within:border-[#C6FF20]/50 focus-within:bg-white/[0.08] transition">
+          <Search className="w-3.5 h-3.5 text-zinc-500" />
           <input
             type="text"
             placeholder="Search projects..."
             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-            className="bg-transparent border-none outline-none text-xs text-[#f1f5f9] placeholder-[#64748b] w-28 focus:w-36 transition-all"
+            className="bg-transparent border-none outline-none text-xs text-white placeholder-zinc-500 w-24 focus:w-32 transition-all"
           />
-          <kbd className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-white/[0.06] text-[#94a3b8] border border-white/[0.08]">
+          <kbd className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-white/[0.06] text-zinc-400 border border-white/[0.08]">
             ⌘K
           </kbd>
         </div>
@@ -118,46 +119,50 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
         {/* Sync Status Badge */}
         {syncStatus && (
           <div
-            className={`text-xs px-2.5 py-1 rounded-full border font-medium flex items-center gap-1.5 transition ${
+            className={`text-xs px-2.5 py-1 rounded-full border font-mono flex items-center gap-1.5 transition ${
               syncStatus.isError
                 ? 'bg-rose-950/40 border-rose-500/30 text-rose-300'
-                : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
+                : 'bg-[#C6FF20]/10 border-[#C6FF20]/30 text-[#C6FF20]'
             }`}
           >
             {syncStatus.isError ? (
               <AlertCircle className="w-3 h-3 text-rose-400" />
             ) : (
-              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <CheckCircle2 className="w-3 h-3 text-[#C6FF20]" />
             )}
-            <span className="text-[11px]">{syncStatus.message}</span>
+            <span className="text-[10px]">{syncStatus.message}</span>
           </div>
         )}
 
-        {/* Sync Action Pill */}
+        {/* Sync Trigger */}
         <button
           onClick={handleSync}
           disabled={isSyncing}
-          className="glass-pill-btn !py-1.5 !px-3 text-xs"
+          className="btn-outline-white !py-1.5 !px-3 text-xs"
+          title="Sync with GitHub"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-cyan-400' : 'text-indigo-300'}`} />
-          <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync'}</span>
+          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#C6FF20]' : 'text-zinc-300'}`} />
+          <span className="hidden sm:inline font-mono text-[11px]">{isSyncing ? 'Syncing' : 'Sync'}</span>
         </button>
 
-        {/* Notification Bell */}
-        <button className="relative w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] flex items-center justify-center text-[#94a3b8] hover:text-white transition">
-          <Bell className="w-3.5 h-3.5" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 glow-emerald" />
-        </button>
-
-        {/* User Avatar */}
-        <div className="relative">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/20 border border-white/20 flex items-center justify-center text-xs font-semibold text-white shadow-inner">
-            {userEmail ? userEmail.charAt(0).toUpperCase() : 'R'}
+        {/* User Monogram or Launch CTA */}
+        {pathname !== '/dashboard' ? (
+          <Link
+            href="/dashboard"
+            className="btn-lime !py-1.5 !px-3.5 text-xs font-bold flex items-center gap-1.5"
+          >
+            <span>Launch</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        ) : (
+          <div className="relative">
+            <div className="w-8 h-8 rounded-full bg-zinc-900 border border-white/20 flex items-center justify-center text-xs font-bold text-white shadow-inner">
+              {userEmail ? userEmail.charAt(0).toUpperCase() : 'R'}
+            </div>
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime border border-black" />
           </div>
-          <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 glow-emerald border border-[#080a10]" />
-        </div>
+        )}
       </div>
     </header>
   );
 }
-
