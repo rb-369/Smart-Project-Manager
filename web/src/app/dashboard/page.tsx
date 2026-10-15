@@ -65,8 +65,9 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex flex-col bg-grid-pattern selection:bg-[#C6FF20] selection:text-black">
       {/* Gridster Ambient Lighting */}
-      <div className="ambient-glow-violet -top-40 left-1/4" />
+      <div className="ambient-glow-blue -top-40 left-1/4" />
       <div className="ambient-glow-lime top-60 -right-40" />
+      <div className="ambient-glow-violet bottom-32 left-1/3" />
 
       {/* Floating Island Navigation */}
       <Navbar onSyncSuccess={fetchProjects} onSearchChange={setSearchQuery} />
@@ -77,19 +78,19 @@ export default function DashboardPage() {
         {/* Top Executive Bento Row */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           
-          {/* Bento Card 1: Repository Health Telemetry with Illuminated Lime Wave (5 cols) */}
-          <div className="lg:col-span-5 gridster-panel gridster-panel-lime">
+          {/* Bento Card 1: Repository Health Telemetry with Illuminated Wave (5 cols) */}
+          <div className="lg:col-span-5 gridster-panel gridster-panel-blue">
             <div className="p-6 h-full flex flex-col justify-between bg-zinc-950/80">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
+                    <div className="w-2 h-2 rounded-full bg-[#0A5CFF] pulse-blue" />
                     <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-semibold">
                       Telemetry Waveform
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono text-[#C6FF20] bg-[#C6FF20]/10 px-2 py-0.5 rounded-full border border-[#C6FF20]/20">
-                    LIVE STREAM
+                  <span className="text-[10px] font-mono text-[#0A5CFF] bg-[#0A5CFF]/15 px-2 py-0.5 rounded-full border border-[#0A5CFF]/30 font-bold">
+                    SPECTRUM LIVE
                   </span>
                 </div>
 
@@ -111,18 +112,19 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Glowing SVG Wave Line Chart (Acid Lime on Dark Grid) */}
+              {/* Glowing SVG Wave Line Chart (Blue to Lime to Violet) */}
               <div className="relative pt-2">
                 <svg viewBox="0 0 400 90" className="w-full h-20 overflow-visible">
                   <defs>
                     <linearGradient id="limeWaveStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#7020DD" />
-                      <stop offset="60%" stopColor="#C6FF20" />
-                      <stop offset="100%" stopColor="#C6FF20" />
+                      <stop offset="0%" stopColor="#0A5CFF" />
+                      <stop offset="50%" stopColor="#C6FF20" />
+                      <stop offset="100%" stopColor="#7020DD" />
                     </linearGradient>
                     <linearGradient id="limeWaveFill" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#C6FF20" stopOpacity="0.22" />
-                      <stop offset="100%" stopColor="#C6FF20" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#0A5CFF" stopOpacity="0.25" />
+                      <stop offset="60%" stopColor="#C6FF20" stopOpacity="0.1" />
+                      <stop offset="100%" stopColor="#7020DD" stopOpacity="0" />
                     </linearGradient>
                     <filter id="limeGlow" x="-20%" y="-20%" width="140%" height="140%">
                       <feGaussianBlur stdDeviation="3.5" result="blur" />

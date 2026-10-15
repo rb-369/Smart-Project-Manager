@@ -60,25 +60,25 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
       {/* Brand & Monogram Badge (Inspired by Gridster K-mark) */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-black border border-white/20 flex items-center justify-center font-mono text-xs font-black text-white group-hover:border-[#C6FF20] transition-colors shadow-sm">
-            <span className="text-white group-hover:text-[#C6FF20] transition-colors">DC</span>
+          <div className="w-8 h-8 rounded-lg bg-black border border-white/20 flex items-center justify-center font-mono text-xs font-black text-white group-hover:border-[#0A5CFF] transition-colors shadow-sm">
+            <span className="text-white group-hover:text-[#0A5CFF] transition-colors">DC</span>
           </div>
           <div className="hidden sm:flex flex-col">
             <span className="font-bold text-sm tracking-tight text-white leading-none">
               Dev<span className="text-[#C6FF20]">Command</span>
             </span>
             <span className="text-[9px] font-mono text-zinc-500 tracking-wider uppercase">
-              GRIDSTER ARCHITECTURE
+              BLUE &bull; LIME &bull; WHITE &bull; VIOLET
             </span>
           </div>
         </Link>
 
         {/* Live Telemetry Node */}
         <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-mono text-zinc-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#C6FF20] pulse-lime" />
-          <span className="text-zinc-300 font-semibold">ONLINE</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#0A5CFF] pulse-blue" />
+          <span className="text-zinc-300 font-semibold">GRIDSTER V2.0</span>
           <span className="text-zinc-600">|</span>
-          <span className="text-zinc-400">2026.10</span>
+          <span className="text-[#C6FF20]">ONLINE</span>
         </div>
       </div>
 

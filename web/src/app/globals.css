@@ -7,14 +7,16 @@
   --surface-panel: #111115;
   --surface-elevated: #17171d;
   
-  /* Brand Spectrum from GridsterGP Spec */
-  --brand-black: #000000;
-  --brand-violet: #7020DD;
+  /* Brand Spectrum: Blue, Lime, White, Violet */
+  --brand-blue: #0A5CFF;
   --brand-lime: #C6FF20;
   --brand-white: #FFFFFF;
+  --brand-violet: #7020DD;
+  --brand-black: #000000;
 
   --border-hairline: rgba(255, 255, 255, 0.08);
   --border-focused: rgba(255, 255, 255, 0.18);
+  --border-blue: rgba(10, 92, 255, 0.4);
   --border-lime: rgba(198, 255, 32, 0.35);
   --border-violet: rgba(112, 32, 221, 0.4);
 }
@@ -32,13 +34,24 @@ body {
 }
 
 /* ==========================================================================
-   AMBIENT GRIDSTER ATMOSPHERE (PURE BLACK + ELECTRIC VIOLET + ACID LIME)
+   AMBIENT GRIDSTER ATMOSPHERE (BLUE + LIME + VIOLET)
    ========================================================================== */
+.ambient-glow-blue {
+  position: absolute;
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(circle, rgba(10, 92, 255, 0.22) 0%, rgba(10, 92, 255, 0.04) 50%, transparent 70%);
+  filter: blur(85px);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 9999px;
+}
+
 .ambient-glow-violet {
   position: absolute;
   width: 580px;
   height: 580px;
-  background: radial-gradient(circle, rgba(112, 32, 221, 0.22) 0%, rgba(112, 32, 221, 0.04) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(112, 32, 221, 0.2) 0%, rgba(112, 32, 221, 0.04) 50%, transparent 70%);
   filter: blur(85px);
   pointer-events: none;
   z-index: 0;
@@ -79,6 +92,15 @@ body {
 .gridster-panel:hover {
   border-color: rgba(255, 255, 255, 0.18);
   box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.85);
+}
+
+.gridster-panel-blue {
+  border-color: rgba(10, 92, 255, 0.3);
+}
+
+.gridster-panel-blue:hover {
+  border-color: rgba(10, 92, 255, 0.6);
+  box-shadow: 0 0 35px -5px rgba(10, 92, 255, 0.3);
 }
 
 .gridster-panel-violet {
@@ -164,7 +186,7 @@ body {
 }
 
 /* ==========================================================================
-   INTERACTIVE BUTTONS (GRIDSTER HIGH-CONTRAST)
+   INTERACTIVE BUTTONS
    ========================================================================== */
 /* Primary High-Voltage Acid Lime Button */
 .btn-lime {
@@ -192,6 +214,35 @@ body {
 }
 
 .btn-lime:active {
+  transform: scale(0.98);
+}
+
+/* Cyber Cobalt Blue Button */
+.btn-blue {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  background-color: #0A5CFF;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 4px 20px rgba(10, 92, 255, 0.35);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-blue:hover {
+  transform: translateY(-1px);
+  background-color: #1e6aff;
+  box-shadow: 0 6px 26px rgba(10, 92, 255, 0.55);
+}
+
+.btn-blue:active {
   transform: scale(0.98);
 }
 
@@ -273,6 +324,10 @@ body {
 /* ==========================================================================
    STATUS PULSES & TELEMETRY
    ========================================================================== */
+.pulse-blue {
+  box-shadow: 0 0 10px rgba(10, 92, 255, 0.85);
+}
+
 .pulse-lime {
   box-shadow: 0 0 10px rgba(198, 255, 32, 0.8);
 }
