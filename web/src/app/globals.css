@@ -77,6 +77,81 @@ body {
   background-size: 32px 32px;
 }
 
+/* Vibrant Electric Blue Grid (from user reference design) */
+.bg-blue-grid {
+  background-color: #0038FF;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+  background-size: 38px 38px;
+}
+
+/* Continuous Marquee Ticker */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 24s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Floating 3D Tilts */
+@keyframes float-tilt-1 {
+  0%, 100% { transform: translateY(0px) rotate(-6deg); }
+  50% { transform: translateY(-12px) rotate(-4deg); }
+}
+
+@keyframes float-tilt-2 {
+  0%, 100% { transform: translateY(0px) rotate(6deg); }
+  50% { transform: translateY(-10px) rotate(8deg); }
+}
+
+.animate-tilt-left {
+  animation: float-tilt-1 5s ease-in-out infinite;
+}
+
+.animate-tilt-right {
+  animation: float-tilt-2 5.5s ease-in-out 1s infinite;
+}
+
+/* Neon Acid Lime Sticker */
+.lime-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background-color: #C6FF20;
+  color: #000000;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(198, 255, 32, 0.45);
+}
+
+/* Electric Violet Pill Badge (for inline headline words like [SOLUTIONS]) */
+.violet-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.85rem;
+  border-radius: 9999px;
+  background-color: #7020DD;
+  color: #FFFFFF;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 4px 14px rgba(112, 32, 221, 0.3);
+}
+
 /* ==========================================================================
    PRECISION LIGHT PANELS & BENTO TILES
    ========================================================================== */
