@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { GitHubStatus } from '@/types';
 import { Navbar } from '@/components/Navbar';
-import { KeyRound, ShieldCheck, CheckCircle2, AlertCircle, GitBranch, Lock } from 'lucide-react';
+import { KeyRound, ShieldCheck, CheckCircle2, AlertCircle, GitBranch, Lock, ExternalLink } from 'lucide-react';
 
 export default function SettingsPage() {
   const [token, setToken] = useState('');
@@ -60,7 +60,7 @@ export default function SettingsPage() {
       <Navbar />
 
       {/* Main Content: Full Blue Page with Compact Functional Header */}
-      <main className="max-w-4xl mx-auto w-full px-4 sm:px-6 pt-24 pb-20 space-y-6 relative z-10 flex-1">
+      <main className="max-w-4xl mx-auto w-full px-4 sm:px-6 pt-32 pb-20 space-y-6 relative z-10 flex-1">
         
         {/* Compact Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
@@ -120,9 +120,31 @@ export default function SettingsPage() {
           {/* Token Form */}
           <form onSubmit={handleSaveToken} className="space-y-4">
             <div>
-              <label className="block text-xs font-black text-slate-900 uppercase mb-2">
-                GitHub Personal Access Token (PAT)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-black text-slate-900 uppercase">
+                  GitHub Personal Access Token (PAT)
+                </label>
+                <a
+                  href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevCommand+Autonomous+Engine"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0038FF] hover:underline"
+                >
+                  <span>Generate on GitHub</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              {/* Quick instructions box */}
+              <div className="mb-3 p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 text-xs text-slate-700 space-y-1.5">
+                <p className="font-bold text-slate-900">How to get your token in 3 steps:</p>
+                <ol className="list-decimal list-inside space-y-1 text-slate-600 pl-0.5">
+                  <li>Click <a href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevCommand+Autonomous+Engine" target="_blank" rel="noreferrer" className="font-bold text-[#0038FF] underline">Generate on GitHub ↗</a> to open GitHub token settings with pre-selected scopes.</li>
+                  <li>Verify that <code className="px-1 py-0.5 rounded bg-blue-100 text-[#0038FF] font-mono text-[11px] font-bold">repo</code> is checked, then scroll down and click <span className="font-bold text-slate-800">&quot;Generate token&quot;</span>.</li>
+                  <li>Copy your token (starts with <code className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-900 font-mono text-[11px] font-bold">ghp_...</code>) and paste it below.</li>
+                </ol>
+              </div>
+
               <div className="relative">
                 <KeyRound className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
                 <input

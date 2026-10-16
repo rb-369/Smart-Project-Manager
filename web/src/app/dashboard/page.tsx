@@ -72,7 +72,7 @@ export default function DashboardPage() {
       <Navbar onSyncSuccess={fetchProjects} onSearchChange={setSearchQuery} />
 
       {/* Main Content: Full Blue Page with Compact Functional Header */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-24 pb-20 space-y-6 relative z-10 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-32 pb-20 space-y-6 relative z-10 flex-1">
         
         {/* Compact Header Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">

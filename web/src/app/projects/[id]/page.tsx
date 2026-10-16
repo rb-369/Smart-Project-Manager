@@ -168,7 +168,7 @@ function ProjectDetailContent() {
       <Navbar />
 
       {/* Main Content: Full Blue Page with Compact Functional Header */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-24 pb-20 space-y-6 relative z-10 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-32 pb-20 space-y-6 relative z-10 flex-1">
         
         {/* Navigation Breadcrumb & Actions Bar */}
         <div className="flex items-center justify-between flex-wrap gap-4 pb-1">
