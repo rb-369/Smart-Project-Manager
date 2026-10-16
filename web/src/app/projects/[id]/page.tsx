@@ -132,7 +132,7 @@ function ProjectDetailContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center text-xs text-slate-500 font-mono animate-pulse">
+      <div className="min-h-screen bg-blue-grid flex items-center justify-center text-xs text-white font-mono animate-pulse">
         Hydrating project telemetry matrix...
       </div>
     );
@@ -140,7 +140,7 @@ function ProjectDetailContent() {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-white p-8 text-center text-rose-600 font-mono text-xs">
+      <div className="min-h-screen bg-blue-grid p-8 text-center text-rose-300 font-mono text-xs flex items-center justify-center">
         {error || 'Project not found.'}
       </div>
     );
@@ -158,122 +158,160 @@ function ProjectDetailContent() {
   const inProgressFeatures = project.features.filter((f) => f.status === 'IN_PROGRESS');
   const doneFeatures = project.features.filter((f) => f.status === 'DONE');
 
+  const tickerItems = [
+    `⚡ ${project.name.toUpperCase()} // LIVE REPOSITORY`,
+    `⚡ VELOCITY: ${project.progress_percentage}%`,
+    `⚡ ${project.completed_features}/${project.total_features} TASKS MERGED`,
+    `⚡ MULTI-TIER AI INFERENCE ACTIVE`,
+    `⚡ ZERO LAG MILESTONE DELIVERY`
+  ];
+
   return (
-    <div className="min-h-screen bg-white text-slate-900 bg-grid-pattern-light relative overflow-hidden flex flex-col font-sans selection:bg-[#ccff00] selection:text-black">
-      {/* Ambient Glows */}
-      <div className="ambient-glow-blue -top-40 left-1/4" />
-      <div className="ambient-glow-lime top-48 -right-40" />
-      <div className="ambient-glow-violet -bottom-20 left-1/3" />
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between relative overflow-hidden selection:bg-[#C6FF20] selection:text-black">
+      
+      {/* ====================================================================
+          1. TOP HERO: ELECTRIC BLUE BLUEPRINT GRID (Matching Landing Page)
+          ==================================================================== */}
+      <section className="bg-blue-grid text-white pt-6 pb-24 px-4 sm:px-6 relative overflow-hidden">
+        {/* Subtle Ambient Vignettes on Blue */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 left-10 w-96 h-96 bg-[#C6FF20]/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Floating Island Navigation */}
-      <Navbar />
+        {/* Floating Island Navigation Header */}
+        <Navbar />
 
-      <main className="relative z-10 flex-1 pt-24 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full space-y-7">
-        {/* Navigation Breadcrumb & Actions */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-900 transition-colors cursor-pointer font-medium"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Command Center
-          </button>
-
-          <div className="flex items-center gap-3">
-            {project.html_url && (
-              <a
-                href={project.html_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-medium border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-xs rounded-full transition"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>GitHub Repo</span>
-              </a>
-            )}
+        {/* Main Header Container */}
+        <div className="max-w-6xl mx-auto relative z-10 pt-20 pb-6 space-y-6">
+          
+          {/* Breadcrumb Navigation & Top Actions */}
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <button
-              onClick={handleFetchAiSuggestions}
-              className="inline-flex items-center gap-1.5 py-1.5 px-4 text-xs font-semibold border border-violet-200 bg-violet-50 hover:bg-violet-100 text-violet-700 rounded-full shadow-xs transition cursor-pointer"
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center gap-2 text-xs font-mono font-bold text-white/80 hover:text-white transition-colors cursor-pointer bg-white/10 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-md"
             >
-              <Sparkles className="w-3.5 h-3.5 text-violet-600" />
-              <span>AI Strategist</span>
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Command Center
             </button>
-          </div>
-        </div>
 
-        {/* AI Code Intelligence & Review Banner */}
-        <div className="gridster-panel p-6 bg-gradient-to-r from-blue-50/70 via-lime-50/30 to-violet-50/70 border border-slate-200/90 shadow-sm rounded-2xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                <span className="text-[11px] font-mono text-blue-700 uppercase tracking-widest font-semibold">
-                  AI Code Intelligence & Review Matrix
-                </span>
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                <span>{project.name}</span>
-                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 shadow-xs">
-                  {project.project_type}
-                </span>
-              </h1>
-              {project.goal && (
-                <p className="text-xs text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-                  <span className="text-blue-600 font-mono text-[11px] mr-1.5 font-semibold">Target:</span>
-                  {project.goal}
-                </p>
+            <div className="flex items-center gap-3">
+              {project.html_url && (
+                <a
+                  href={project.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-bold border border-white/25 bg-white/10 hover:bg-white/20 text-white rounded-full transition backdrop-blur-md"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>GitHub Repo</span>
+                </a>
               )}
+              <button
+                onClick={handleFetchAiSuggestions}
+                className="btn-lime !py-1.5 !px-4 text-xs font-black shadow-md cursor-pointer flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-black" />
+                <span>AI Strategist</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Project Identity & Telemetry Strip */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-white/10 border border-white/20 backdrop-blur-xl shadow-2xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
+                  <span className="text-[11px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
+                    AI CODE INTELLIGENCE &amp; REVIEW MATRIX
+                  </span>
+                </div>
+
+                <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight flex items-center gap-3 flex-wrap">
+                  <span>{project.name}</span>
+                  <span className="text-xs font-mono px-3 py-1 rounded-full bg-white/20 text-white border border-white/30 font-bold">
+                    {project.project_type}
+                  </span>
+                </h1>
+
+                {project.goal && (
+                  <p className="text-xs sm:text-sm text-white/90 mt-2 max-w-2xl leading-relaxed font-normal">
+                    <span className="text-[#C6FF20] font-mono text-xs mr-1.5 font-bold">Target:</span>
+                    {project.goal}
+                  </p>
+                )}
+              </div>
+
+              {/* Review Telemetry Badges */}
+              <div className="grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-white/20 pt-4 md:pt-0 md:pl-6">
+                <div>
+                  <div className="text-[10px] font-mono text-white/70 uppercase font-bold">Critical Issues</div>
+                  <div className="text-2xl font-black text-white num-tabular mt-0.5">0</div>
+                  <div className="text-[10px] text-[#C6FF20] font-mono font-bold flex items-center gap-1 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C6FF20]" />
+                    Clean
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-mono text-white/70 uppercase font-bold">Suggestions</div>
+                  <div className="text-2xl font-black text-white num-tabular mt-0.5">
+                    {aiSuggestions.length || 4}
+                  </div>
+                  <div className="text-[10px] text-white/70 font-mono mt-0.5">Optimizations</div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-mono text-white/70 uppercase font-bold">Velocity</div>
+                  <div className="text-2xl font-black text-[#C6FF20] num-tabular mt-0.5">
+                    {project.progress_percentage}%
+                  </div>
+                  <div className="text-[10px] text-white/70 font-mono mt-0.5">Weighted</div>
+                </div>
+              </div>
             </div>
 
-            {/* Review Telemetry Badges */}
-            <div className="grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-slate-200/80 pt-4 md:pt-0 md:pl-6">
-              <div>
-                <div className="text-[10px] font-mono text-slate-500 uppercase">Critical Issues</div>
-                <div className="text-2xl font-extrabold text-slate-900 num-tabular mt-0.5">0</div>
-                <div className="text-[10px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Clean
-                </div>
-              </div>
-
-              <div>
-                <div className="text-[10px] font-mono text-slate-500 uppercase">Suggestions</div>
-                <div className="text-2xl font-extrabold text-blue-600 num-tabular mt-0.5">
-                  {aiSuggestions.length || 4}
-                </div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Optimizations</div>
-              </div>
-
-              <div>
-                <div className="text-[10px] font-mono text-slate-500 uppercase">Velocity</div>
-                <div className="text-2xl font-extrabold text-violet-600 num-tabular mt-0.5">
+            {/* Velocity Progress Track */}
+            <div className="mt-6 pt-4 border-t border-white/15">
+              <div className="flex justify-between items-center text-xs mb-1.5 font-mono">
+                <span className="text-white/80 text-[11px]">
+                  Delivery Velocity ({project.completed_features}/{project.total_features} features completed)
+                </span>
+                <span className="font-bold text-xs text-[#C6FF20] num-tabular">
                   {project.progress_percentage}%
-                </div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Weighted</div>
+                </span>
+              </div>
+              <div className="w-full h-2.5 bg-black/25 rounded-full overflow-hidden p-0.5 border border-white/20">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#C6FF20] to-[#0038FF] transition-all duration-700 shadow-md"
+                  style={{ width: `${project.progress_percentage}%` }}
+                />
               </div>
             </div>
           </div>
 
-          {/* Velocity Progress Track */}
-          <div className="mt-5 pt-4 border-t border-slate-200/60">
-            <div className="flex justify-between items-center text-xs mb-1.5">
-              <span className="text-slate-500 text-[11px] font-mono">
-                Delivery Velocity ({project.completed_features}/{project.total_features} features completed)
-              </span>
-              <span className="font-mono font-bold text-xs text-slate-900 num-tabular">
-                {project.progress_percentage}%
-              </span>
-            </div>
-            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-600 via-lime-500 to-violet-600 transition-all duration-700"
-                style={{ width: `${project.progress_percentage}%` }}
-              />
-            </div>
-          </div>
         </div>
+      </section>
 
+      {/* ====================================================================
+          2. ACID LIME TICKER MARQUEE TAPE
+          ==================================================================== */}
+      <div className="w-full bg-[#C6FF20] text-black font-mono font-black text-xs sm:text-sm uppercase py-3 tracking-wider border-y-2 border-black/15 overflow-hidden select-none relative z-30 shadow-lg">
+        <div className="animate-marquee gap-8">
+          {[...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
+            <span key={i} className="flex items-center gap-6 whitespace-nowrap">
+              <span>{item}</span>
+              <span className="text-black/30 font-bold text-lg">&bull;</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ====================================================================
+          3. CLEAN BRIGHT WHITE CURVED SHEET (Kanban Workspace)
+          ==================================================================== */}
+      <main className="bg-white text-slate-900 rounded-t-[44px] sm:rounded-t-[60px] -mt-6 relative z-20 shadow-2xl pt-12 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full space-y-8 flex-1">
+        
         {/* Quick Add Feature Bar */}
-        <div className="gridster-panel p-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
+        <div className="gridster-panel p-4 bg-white border border-slate-200/90 shadow-md rounded-2xl">
           <form onSubmit={handleAddFeature}>
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -281,12 +319,12 @@ function ProjectDetailContent() {
                 placeholder="Register deliverable or task (e.g. Implement Webhook Dispatcher)..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="flex-1 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-full px-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none transition shadow-inner"
+                className="flex-1 bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-full px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none transition shadow-inner font-normal"
               />
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as FeaturePriority)}
-                className="bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-full px-4 py-2 text-xs text-slate-700 focus:outline-none cursor-pointer font-mono"
+                className="bg-slate-50 border border-slate-200 focus:border-[#0038FF] rounded-full px-4 py-2 text-xs text-slate-700 focus:outline-none cursor-pointer font-mono font-bold"
               >
                 <option value="P0" className="bg-white text-slate-900">P0 (Critical / 4x)</option>
                 <option value="P1" className="bg-white text-slate-900">P1 (High / 3x)</option>
@@ -296,9 +334,9 @@ function ProjectDetailContent() {
               <button
                 type="submit"
                 disabled={isAdding || !newTitle.trim()}
-                className="btn-blue py-2 px-5 text-xs font-semibold rounded-full flex items-center gap-1.5 shrink-0"
+                className="btn-lime !py-2.5 !px-6 text-xs font-black rounded-full flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
                 <span>Add Task</span>
               </button>
             </div>
@@ -312,32 +350,32 @@ function ProjectDetailContent() {
           <div className="space-y-3">
             <div className="flex items-center justify-between px-2 text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-600" />
-                <span className="font-semibold text-slate-900 uppercase tracking-wider">Backlog</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#0038FF]" />
+                <span className="font-black text-slate-950 uppercase tracking-wider">Backlog</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px]">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-black font-mono">
                 {backlogFeatures.length}
               </span>
             </div>
 
             <div className="space-y-3">
               {backlogFeatures.length === 0 ? (
-                <div className="gridster-panel p-8 text-center text-xs text-slate-400 font-mono bg-white border border-slate-200 rounded-xl">
+                <div className="gridster-panel p-8 text-center text-xs text-slate-400 font-mono bg-white border border-slate-200 rounded-2xl">
                   No tasks in backlog.
                 </div>
               ) : (
                 backlogFeatures.map((f) => {
                   const badge = priorityBadges[f.priority] || priorityBadges['P2'];
                   return (
-                    <div key={f.id} className="gridster-panel p-4 space-y-3 bg-white border border-slate-200 shadow-xs hover:shadow-md hover:border-slate-300 transition-all rounded-xl">
+                    <div key={f.id} className="gridster-panel p-4 space-y-3 bg-white border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 transition-all rounded-2xl">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-semibold text-slate-900 leading-snug">{f.title}</p>
+                        <p className="text-xs font-black text-slate-900 leading-snug">{f.title}</p>
                         <button
                           type="button"
                           onClick={() => handleDeleteFeature(f.id)}
                           className="text-slate-400 hover:text-rose-500 transition p-1 cursor-pointer"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
@@ -348,7 +386,7 @@ function ProjectDetailContent() {
                       )}
 
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${badge.bg}`}>
+                        <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${badge.bg}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                           {badge.label}
                         </span>
@@ -356,10 +394,10 @@ function ProjectDetailContent() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(f)}
-                          className="text-[11px] font-mono text-blue-600 hover:text-blue-800 cursor-pointer font-medium transition flex items-center gap-1"
+                          className="text-[11px] font-mono text-[#0038FF] hover:underline cursor-pointer font-bold transition flex items-center gap-1"
                         >
                           <span>Mark Done</span>
-                          <CheckCircle2 className="w-3 h-3" />
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
@@ -373,37 +411,37 @@ function ProjectDetailContent() {
           <div className="space-y-3">
             <div className="flex items-center justify-between px-2 text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-lime-500" />
-                <span className="font-semibold text-slate-900 uppercase tracking-wider">In Progress</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#C6FF20]" />
+                <span className="font-black text-slate-950 uppercase tracking-wider">In Progress</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px]">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-black font-mono">
                 {inProgressFeatures.length}
               </span>
             </div>
 
             <div className="space-y-3">
               {inProgressFeatures.length === 0 ? (
-                <div className="gridster-panel p-8 text-center text-xs text-slate-400 font-mono bg-white border border-slate-200 rounded-xl">
+                <div className="gridster-panel p-8 text-center text-xs text-slate-400 font-mono bg-white border border-slate-200 rounded-2xl">
                   Zero tasks active. Ready to pull from backlog.
                 </div>
               ) : (
                 inProgressFeatures.map((f) => {
                   const badge = priorityBadges[f.priority] || priorityBadges['P2'];
                   return (
-                    <div key={f.id} className="gridster-panel p-4 space-y-3 bg-white border border-slate-200 shadow-xs hover:shadow-md hover:border-slate-300 transition-all rounded-xl">
+                    <div key={f.id} className="gridster-panel p-4 space-y-3 bg-white border border-slate-200/90 shadow-sm hover:shadow-md hover:border-slate-300 transition-all rounded-2xl">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-semibold text-slate-900 leading-snug">{f.title}</p>
+                        <p className="text-xs font-black text-slate-900 leading-snug">{f.title}</p>
                         <button
                           type="button"
                           onClick={() => handleDeleteFeature(f.id)}
                           className="text-slate-400 hover:text-rose-500 transition p-1 cursor-pointer"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${badge.bg}`}>
+                        <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${badge.bg}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                           {badge.label}
                         </span>
@@ -411,10 +449,10 @@ function ProjectDetailContent() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(f)}
-                          className="text-[11px] font-mono text-blue-600 hover:text-blue-800 cursor-pointer font-medium transition flex items-center gap-1"
+                          className="text-[11px] font-mono text-[#0038FF] hover:underline cursor-pointer font-bold transition flex items-center gap-1"
                         >
                           <span>Mark Done</span>
-                          <CheckCircle2 className="w-3 h-3" />
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
@@ -428,42 +466,42 @@ function ProjectDetailContent() {
           <div className="space-y-3">
             <div className="flex items-center justify-between px-2 text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-violet-600" />
-                <span className="font-semibold text-slate-900 uppercase tracking-wider">Shipped / Merged</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#7020DD]" />
+                <span className="font-black text-slate-950 uppercase tracking-wider">Shipped / Merged</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[10px]">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-black font-mono">
                 {doneFeatures.length}
               </span>
             </div>
 
             <div className="space-y-3">
               {doneFeatures.length === 0 ? (
-                <div className="gridster-panel p-8 text-center text-xs text-slate-400 font-mono bg-white border border-slate-200 rounded-xl">
+                <div className="gridster-panel p-8 text-center text-xs text-slate-400 font-mono bg-white border border-slate-200 rounded-2xl">
                   Completed deliverables will appear here.
                 </div>
               ) : (
                 doneFeatures.map((f) => (
-                  <div key={f.id} className="gridster-panel p-4 space-y-2 bg-slate-50/70 border border-slate-200 rounded-xl opacity-80">
+                  <div key={f.id} className="gridster-panel p-4 space-y-2 bg-slate-50 border border-slate-200 rounded-2xl opacity-80">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <p className="text-xs font-medium text-slate-500 line-through">{f.title}</p>
+                        <p className="text-xs font-bold text-slate-500 line-through">{f.title}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleDeleteFeature(f.id)}
                         className="text-slate-400 hover:text-rose-500 transition p-1 cursor-pointer"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
-                      <span className="text-[10px] font-mono text-emerald-600 font-medium">Merged</span>
+                      <span className="text-[10px] font-mono text-emerald-600 font-black">MERGED</span>
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(f)}
-                        className="text-[10px] font-mono text-slate-500 hover:text-slate-900 transition cursor-pointer"
+                        className="text-[10px] font-mono text-slate-500 hover:text-slate-900 transition cursor-pointer font-bold"
                       >
                         Reopen
                       </button>
@@ -479,13 +517,13 @@ function ProjectDetailContent() {
 
       {/* AI Feature Suggestions Holographic Modal */}
       {showAiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-hidden">
             <div className="p-6 max-h-[85vh] overflow-y-auto space-y-4">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-violet-600" />
-                  <h3 className="font-bold text-sm text-slate-900">AI Roadmap Feature Strategist</h3>
+                  <Sparkles className="w-4 h-4 text-[#0038FF]" />
+                  <h3 className="font-black text-sm text-slate-900 uppercase">AI Roadmap Feature Strategist</h3>
                 </div>
                 <button
                   onClick={() => setShowAiModal(false)}
@@ -497,36 +535,36 @@ function ProjectDetailContent() {
 
               {aiLoading ? (
                 <div className="py-14 flex flex-col items-center justify-center text-center">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 mb-2" />
+                  <Loader2 className="w-6 h-6 animate-spin text-[#0038FF] mb-2" />
                   <p className="text-xs text-slate-500 font-mono">Synthesizing project goals and codebase trajectory...</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {aiProvider && (
-                    <p className="text-[11px] font-mono text-slate-500">
-                      Inference Cascade: <span className="text-blue-600 uppercase font-semibold">{aiProvider}</span>
+                    <p className="text-[11px] font-mono text-slate-500 font-bold">
+                      Inference Cascade: <span className="text-[#0038FF] uppercase">{aiProvider}</span>
                     </p>
                   )}
                   {aiSuggestions.map((f, i) => (
                     <div
                       key={i}
-                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-start justify-between gap-3 hover:border-blue-200 transition-all"
+                      className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-start justify-between gap-3 hover:border-[#0038FF] transition-all"
                     >
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full border bg-blue-50 border-blue-200 text-blue-700">
+                          <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-full border bg-blue-50 border-blue-200 text-[#0038FF]">
                             {f.priority}
                           </span>
-                          <p className="text-xs font-semibold text-slate-900">{f.title}</p>
+                          <p className="text-xs font-black text-slate-900">{f.title}</p>
                         </div>
-                        <p className="text-[11px] text-slate-600 leading-relaxed">{f.description}</p>
+                        <p className="text-[11px] text-slate-600 leading-relaxed font-normal">{f.description}</p>
                         {f.rationale && (
-                          <p className="text-[11px] text-violet-600 font-mono italic">&bull; {f.rationale}</p>
+                          <p className="text-[11px] text-purple-700 font-mono italic">&bull; {f.rationale}</p>
                         )}
                       </div>
                       <button
                         onClick={() => handleAddAiFeature(f)}
-                        className="btn-blue py-1 px-3 text-xs shrink-0 flex items-center gap-1 cursor-pointer"
+                        className="btn-lime !py-1 !px-3 text-xs shrink-0 flex items-center gap-1 cursor-pointer shadow-xs"
                       >
                         <Plus className="w-3 h-3" /> Add
                       </button>
@@ -546,7 +584,7 @@ export default function ProjectDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-white flex items-center justify-center text-xs text-slate-500 font-mono animate-pulse">
+        <div className="min-h-screen bg-blue-grid flex items-center justify-center text-xs text-white font-mono animate-pulse">
           Hydrating project...
         </div>
       }

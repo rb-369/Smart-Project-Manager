@@ -179,9 +179,9 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
                 type="button"
                 onClick={handleConfirm}
                 disabled={submitting}
-                className="btn-blue !py-1.5 !px-5 text-xs font-bold flex items-center gap-1.5"
+                className="btn-lime !py-2 !px-5 text-xs font-black flex items-center gap-1.5 shadow-md cursor-pointer"
               >
-                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : <Check className="w-3.5 h-3.5" />}
                 <span>Confirm & Import Features</span>
               </button>
             </div>
