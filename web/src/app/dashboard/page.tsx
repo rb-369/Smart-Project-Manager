@@ -24,14 +24,17 @@ export default function DashboardPage() {
   const [filterType, setFilterType] = useState<ProjectType | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTriageProject, setActiveTriageProject] = useState<ProjectSummary | null>(null);
+  const [backendOffline, setBackendOffline] = useState(false);
 
   const fetchProjects = async () => {
     try {
       setLoading(true);
+      setBackendOffline(false);
       const res: any = await api.get('/projects');
       setProjects(res || []);
-    } catch (err) {
-      console.error('Failed to load projects', err);
+    } catch (err: any) {
+      console.warn('Unable to load projects from backend:', err?.message || err);
+      setBackendOffline(true);
     } finally {
       setLoading(false);
     }
@@ -90,6 +93,12 @@ export default function DashboardPage() {
 
           {/* Quick Metrics Pills */}
           <div className="flex items-center gap-2.5 flex-wrap font-mono text-xs">
+            {backendOffline && (
+              <div className="px-3.5 py-1.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-200 font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span>Backend Offline</span>
+              </div>
+            )}
             <div className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white font-bold flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
               <span>{projects.length} Repos</span>

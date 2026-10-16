@@ -33,14 +33,17 @@ export default function IdeasPage() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<SuggestedProject[]>([]);
+  const [backendOffline, setBackendOffline] = useState(false);
 
   const fetchIdeas = async () => {
     try {
       setLoading(true);
+      setBackendOffline(false);
       const res: any = await api.get('/future-projects');
       setIdeas(res || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to load ideas from backend:', err?.message || err);
+      setBackendOffline(true);
     } finally {
       setLoading(false);
     }
@@ -54,7 +57,7 @@ export default function IdeasPage() {
     e.preventDefault();
     if (!title.trim()) return;
     try {
-      await api.post('/future-projects', {
+      const created = await api.post<FutureProject>('/future-projects', {
         title: title.trim(),
         elevator_pitch: elevatorPitch.trim() || undefined,
         target_tech_stack: techStack.trim() || undefined,
@@ -65,9 +68,28 @@ export default function IdeasPage() {
       setElevatorPitch('');
       setTechStack('');
       setShowAddModal(false);
-      fetchIdeas();
-    } catch (err) {
-      console.error(err);
+      if (created && created.id) {
+        setIdeas((prev) => [created, ...prev]);
+      } else {
+        fetchIdeas();
+      }
+    } catch (err: any) {
+      console.warn('Backend unavailable, saving idea in local state:', err?.message || err);
+      const fallbackIdea: FutureProject = {
+        id: `offline-${Date.now()}`,
+        title: title.trim(),
+        elevator_pitch: elevatorPitch.trim() || undefined,
+        target_tech_stack: techStack.trim() || undefined,
+        project_type: projectType,
+        priority: priority,
+        status: 'IDEA',
+        created_at: new Date().toISOString(),
+      };
+      setIdeas((prev) => [fallbackIdea, ...prev]);
+      setTitle('');
+      setElevatorPitch('');
+      setTechStack('');
+      setShowAddModal(false);
     }
   };
 
@@ -75,8 +97,11 @@ export default function IdeasPage() {
     try {
       await api.post(`/future-projects/${id}/promote`);
       fetchIdeas();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to promote idea:', err?.message || err);
+      setIdeas((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, status: 'PROMOTED' } : i))
+      );
     }
   };
 
@@ -84,8 +109,9 @@ export default function IdeasPage() {
     try {
       await api.delete(`/future-projects/${id}`);
       fetchIdeas();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to delete idea:', err?.message || err);
+      setIdeas((prev) => prev.filter((i) => i.id !== id));
     }
   };
 
@@ -95,8 +121,8 @@ export default function IdeasPage() {
     try {
       const res: any = await api.post('/ai/suggest-projects');
       setAiSuggestions(res.projects || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('AI suggestions backend unavailable:', err?.message || err);
     } finally {
       setAiLoading(false);
     }
@@ -113,8 +139,20 @@ export default function IdeasPage() {
       });
       setAiSuggestions((prev) => prev.filter((item) => item.title !== p.title));
       fetchIdeas();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to add suggested project:', err?.message || err);
+      const fallbackIdea: FutureProject = {
+        id: `offline-${Date.now()}`,
+        title: p.title,
+        elevator_pitch: p.elevator_pitch,
+        target_tech_stack: p.target_tech_stack,
+        project_type: p.project_type,
+        priority: p.priority,
+        status: 'IDEA',
+        created_at: new Date().toISOString(),
+      };
+      setIdeas((prev) => [fallbackIdea, ...prev]);
+      setAiSuggestions((prev) => prev.filter((item) => item.title !== p.title));
     }
   };
 

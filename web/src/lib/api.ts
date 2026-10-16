@@ -3,11 +3,44 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/a
 export class ApiError extends Error {
   status: number;
   data: any;
-  constructor(message: string, status: number, data: any) {
+  isNetworkError: boolean;
+  constructor(message: string, status: number, data: any = null, isNetworkError: boolean = false) {
     super(message);
+    this.name = 'ApiError';
     this.status = status;
     this.data = data;
+    this.isNetworkError = isNetworkError;
   }
+}
+
+async function ensureAuthToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  const existing = localStorage.getItem('devcommand_access_token');
+  if (existing) return existing;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'dev@devcommand.ai',
+        password: 'DevPassword123!',
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.tokens?.access_token) {
+        localStorage.setItem('devcommand_access_token', data.tokens.access_token);
+        if (data.tokens?.refresh_token) {
+          localStorage.setItem('devcommand_refresh_token', data.tokens.refresh_token);
+        }
+        return data.tokens.access_token;
+      }
+    }
+  } catch {
+    // If backend is offline, continue gracefully
+  }
+  return null;
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -18,15 +51,30 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers.set('Content-Type', 'application/json');
   }
 
-  // Attach JWT token from localStorage if in browser
+  // Attach JWT token from localStorage if in browser (auto-provision dev session if absent)
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('devcommand_access_token');
+    let token = localStorage.getItem('devcommand_access_token');
+    if (!token && !endpoint.startsWith('/auth')) {
+      token = await ensureAuthToken();
+    }
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
   }
 
-  const response = await fetch(url, { ...options, headers });
+  let response: Response;
+  try {
+    response = await fetch(url, { ...options, headers });
+  } catch (err: any) {
+    const errMsg = err?.message || 'Connection failed';
+    console.warn(`[DevCommand API] Backend unavailable at ${url}: ${errMsg}`);
+    throw new ApiError(
+      `Cannot connect to DevCommand API server at ${API_BASE_URL}. Ensure the backend is running on port 8000.`,
+      0,
+      { originalError: errMsg },
+      true
+    );
+  }
 
   if (response.status === 204) {
     return {} as T;

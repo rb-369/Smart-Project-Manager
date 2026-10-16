@@ -17,8 +17,14 @@ export default function SettingsPage() {
     try {
       const res: any = await api.get('/github/status');
       setStatus(res);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to load github status from backend:', err?.message || err);
+      setStatus({
+        is_connected: false,
+        github_username: undefined,
+        total_projects_synced: 0,
+        needs_review_count: 0,
+      });
     }
   };
 

@@ -75,8 +75,8 @@ function ProjectDetailContent() {
       setNewTitle('');
       setNewDescription('');
       fetchProject();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to add feature:', err?.message || err);
     } finally {
       setIsAdding(false);
     }
@@ -87,8 +87,8 @@ function ProjectDetailContent() {
     try {
       await api.patch(`/features/${feature.id}`, { status: nextStatus });
       fetchProject();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to toggle feature status:', err?.message || err);
     }
   };
 
@@ -96,8 +96,8 @@ function ProjectDetailContent() {
     try {
       await api.delete(`/features/${featureId}`);
       fetchProject();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to delete feature:', err?.message || err);
     }
   };
 
@@ -108,8 +108,8 @@ function ProjectDetailContent() {
       const res: any = await api.post(`/ai/suggest-features/${projectId}`);
       setAiSuggestions(res.features || []);
       setAiProvider(res.provider_used || 'ai');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to fetch AI suggestions:', err?.message || err);
     } finally {
       setAiLoading(false);
     }
@@ -125,8 +125,8 @@ function ProjectDetailContent() {
       });
       setAiSuggestions((prev) => prev.filter((item) => item.title !== s.title));
       fetchProject();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.warn('Unable to add AI feature:', err?.message || err);
     }
   };
 
