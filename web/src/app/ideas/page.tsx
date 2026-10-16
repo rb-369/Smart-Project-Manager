@@ -124,105 +124,53 @@ export default function IdeasPage() {
     P2: { badge: 'border-blue-200 bg-blue-50 text-[#0038FF]', dot: 'bg-[#0038FF]', label: 'P2 Backlog' },
   };
 
-  const tickerItems = [
-    '⚡ RAPID ARCHITECTURE EXPERIMENTS',
-    '⚡ AUTOMATED SPEC EXTRACTION',
-    '⚡ MULTI-TIER PROMOTION PIPELINE',
-    '⚡ P0 IMMEDIATE BUILDS',
-    '⚡ ZERO DEAD BACKLOGS',
-    '⚡ AI SYNTHESIS CASCADE'
-  ];
-
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between relative overflow-hidden selection:bg-[#C6FF20] selection:text-black">
-      
-      {/* ====================================================================
-          1. TOP HERO: ELECTRIC BLUE BLUEPRINT GRID (Matching Landing Page)
-          ==================================================================== */}
-      <section className="bg-blue-grid text-white pt-6 pb-24 px-4 sm:px-6 relative overflow-hidden">
-        {/* Subtle Ambient Vignettes on Blue */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 left-10 w-96 h-96 bg-[#C6FF20]/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
+      {/* Subtle Ambient Vignettes on Blue */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Floating Island Navigation Header */}
-        <Navbar />
+      {/* Floating Island Navigation Header */}
+      <Navbar />
 
-        {/* Hero Content Block */}
-        <div className="max-w-6xl mx-auto text-center relative z-10 pt-20 pb-8">
-          
-          {/* Top Neon Badge Pill */}
-          <div className="flex justify-center mb-5">
-            <span className="lime-sticker text-xs font-black shadow-[0_4px_16px_rgba(198,255,32,0.4)]">
-              ⚡ AUTONOMOUS CONCEPT INCUBATOR
-            </span>
-          </div>
-
-          {/* Massive Stacked White Headline */}
-          <div className="relative inline-block max-w-5xl mx-auto px-4">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white uppercase leading-[0.95]">
-              <div className="tracking-tight mb-2">FUTURE PROJECT</div>
-              <div className="flex items-center justify-center flex-wrap gap-3 mt-1 sm:mt-2">
-                <span className="tracking-tight">RADAR &amp;</span>
-                <span className="inline-block bg-[#C6FF20] text-black px-4 py-1 sm:py-2 rounded-2xl sm:rounded-3xl text-2xl sm:text-4xl font-black shadow-[0_8px_30px_rgba(198,255,32,0.6)] -rotate-1 hover:rotate-0 transition-transform">
-                  CONCEPT ENGINE
-                </span>
-              </div>
-            </h1>
-
-            {/* Hand-Drawn SVG Neon Lime Arrow */}
-            <div className="hidden md:block absolute -top-6 -right-10 text-[#C6FF20]">
-              <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="rotate-12">
-                <path d="M20 70 C 35 30, 65 30, 75 40" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" />
-                <path d="M60 28 L 78 40 L 70 58" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+      {/* Main Content: Full Blue Page with Compact Functional Header */}
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-24 pb-20 space-y-6 relative z-10 flex-1">
+        
+        {/* Compact Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
+              <span className="text-[11px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
+                CONCEPT INCUBATOR
+              </span>
             </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+              <span>Future Project Radar</span>
+            </h1>
+            <p className="text-xs text-white/80 mt-1 leading-relaxed">
+              Queue and prioritize upcoming software concepts before initial repository commit.
+            </p>
           </div>
 
-          {/* Subtext */}
-          <p className="text-white/85 text-sm sm:text-base max-w-2xl mx-auto mt-5 leading-relaxed font-normal">
-            Queue and prioritize upcoming software concepts before repository creation, then promote them directly into high-velocity production roadmaps.
-          </p>
-
-          {/* Action CTAs on Electric Blue Canvas */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+          <div className="flex items-center gap-3 self-start sm:self-auto">
             <button
               onClick={handleFetchAiProjects}
-              className="btn-lime !py-3 !px-7 text-xs font-black shadow-lg hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
+              className="btn-lime !py-2 !px-4 text-xs font-black shadow-md flex items-center gap-1.5 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-black" />
-              <span>AI CONCEPT ENGINE</span>
+              <Sparkles className="w-3.5 h-3.5 text-black" />
+              <span>AI Concept Engine</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="py-3 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-2 backdrop-blur-md cursor-pointer"
+              className="py-2 px-4 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 backdrop-blur-md cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-[#C6FF20]" />
-              <span>ADD NEW CONCEPT</span>
+              <Plus className="w-3.5 h-3.5 text-[#C6FF20]" />
+              <span>Add Concept</span>
             </button>
           </div>
-
         </div>
-      </section>
 
-      {/* ====================================================================
-          2. ACID LIME TICKER MARQUEE TAPE
-          ==================================================================== */}
-      <div className="w-full bg-[#C6FF20] text-black font-mono font-black text-xs sm:text-sm uppercase py-3 tracking-wider border-y-2 border-black/15 overflow-hidden select-none relative z-30 shadow-lg">
-        <div className="animate-marquee gap-8">
-          {[...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
-            <span key={i} className="flex items-center gap-6 whitespace-nowrap">
-              <span>{item}</span>
-              <span className="text-black/30 font-bold text-lg">&bull;</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ====================================================================
-          3. CLEAN BRIGHT WHITE CURVED SHEET (Incubator Tracks)
-          ==================================================================== */}
-      <main className="bg-white text-slate-900 rounded-t-[44px] sm:rounded-t-[60px] -mt-6 relative z-20 shadow-2xl pt-14 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full space-y-8 flex-1">
-        
         {/* Ideas Kanban Columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {(['P0', 'P1', 'P2'] as const).map((prio) => {
@@ -238,25 +186,25 @@ export default function IdeasPage() {
                 <div className="flex items-center justify-between px-2 text-xs font-mono">
                   <div className="flex items-center gap-2">
                     <span className={`w-2.5 h-2.5 rounded-full ${
-                      prio === 'P0' ? 'bg-[#0038FF]' : prio === 'P1' ? 'bg-[#C6FF20]' : 'bg-[#7020DD]'
+                      prio === 'P0' ? 'bg-[#C6FF20] pulse-lime' : prio === 'P1' ? 'bg-[#C6FF20]' : 'bg-purple-300'
                     }`} />
-                    <span className="text-slate-950 font-black uppercase tracking-wider">{columnTitles[prio]}</span>
+                    <span className="text-white font-black uppercase tracking-wider">{columnTitles[prio]}</span>
                   </div>
-                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                  <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-white/10 text-white border border-white/20">
                     {columnIdeas.length}
                   </span>
                 </div>
 
                 <div className="space-y-4">
                   {columnIdeas.length === 0 ? (
-                    <div className="gridster-panel bg-white border border-slate-200 p-8 text-center text-xs text-slate-400 font-mono rounded-2xl">
+                    <div className="bg-white/10 border border-white/15 p-8 text-center text-xs text-white/60 font-mono rounded-2xl backdrop-blur-md">
                       No concepts currently in this track.
                     </div>
                   ) : (
                     columnIdeas.map((idea) => {
                       const pConfig = priorityStyles[prio];
                       return (
-                        <div key={idea.id} className="gridster-panel bg-white border border-slate-200/90 shadow-md p-5 space-y-3.5 hover:translate-y-[-2px] transition-all rounded-3xl flex flex-col justify-between">
+                        <div key={idea.id} className="bg-white text-slate-900 border border-white/20 shadow-2xl p-5 space-y-3.5 hover:translate-y-[-2px] transition-all rounded-3xl flex flex-col justify-between">
                           <div>
                             {/* Electric Blue Header Box for Idea */}
                             <div className="bg-[#0038FF] text-white rounded-2xl p-4 shadow-inner mb-3 flex items-start justify-between gap-2">
@@ -264,7 +212,7 @@ export default function IdeasPage() {
                                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/20">
                                   {idea.project_type}
                                 </span>
-                                <h4 className="font-black text-base text-white leading-snug mt-2">{idea.title}</h4>
+                                <h2 className="font-black text-base text-white leading-snug mt-2">{idea.title}</h2>
                               </div>
                               <button
                                 onClick={() => handleDelete(idea.id)}
@@ -290,7 +238,7 @@ export default function IdeasPage() {
                           )}
 
                           <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <span className={`text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${pConfig.badge}`}>
+                            <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${pConfig.badge}`}>
                               <span className={`w-1.5 h-1.5 rounded-full ${pConfig.dot}`} />
                               {pConfig.label}
                             </span>
@@ -316,10 +264,10 @@ export default function IdeasPage() {
 
       {/* Add Concept Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-md p-4">
           <div className="bg-white border border-slate-200 w-full max-w-lg shadow-2xl p-6 space-y-4 rounded-3xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-black text-sm text-slate-950 uppercase">Add New Concept</h3>
+              <h2 className="font-black text-sm text-slate-950 uppercase">Add New Concept</h2>
               <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-800 p-1 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -410,12 +358,12 @@ export default function IdeasPage() {
 
       {/* AI Concept Engine Modal */}
       {showAiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-md p-4">
           <div className="bg-white border border-slate-200 w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl p-6 rounded-3xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#0038FF]" />
-                <h3 className="font-black text-sm text-slate-950 uppercase">AI Concept Engine</h3>
+                <h2 className="font-black text-sm text-slate-950 uppercase">AI Concept Engine</h2>
               </div>
               <button onClick={() => setShowAiModal(false)} className="text-slate-400 hover:text-slate-800 p-1 cursor-pointer">
                 <X className="w-4 h-4" />
@@ -439,7 +387,7 @@ export default function IdeasPage() {
                         <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-full border bg-blue-50 border-blue-200 text-[#0038FF]">
                           {p.project_type}
                         </span>
-                        <h4 className="font-black text-xs text-slate-900">{p.title}</h4>
+                        <h3 className="font-black text-xs text-slate-900">{p.title}</h3>
                       </div>
                       <p className="text-xs text-slate-600 leading-relaxed font-normal">{p.elevator_pitch}</p>
                       {p.target_tech_stack && (

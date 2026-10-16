@@ -59,115 +59,61 @@ export default function DashboardPage() {
     return matchesType && matchesSearch;
   });
 
-  const tickerItems = [
-    '⚡ 100% REPO VISIBILITY',
-    '⚡ MATHEMATICAL VELOCITY PHYSICS',
-    '⚡ CONTINUOUS GITHUB SYNC',
-    '⚡ ZERO STALE BACKLOGS',
-    '⚡ MULTI-TIER AI INFERENCE',
-    '⚡ AUTONOMOUS CODE REVIEW'
-  ];
-
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between relative overflow-hidden selection:bg-[#C6FF20] selection:text-black">
-      
-      {/* ====================================================================
-          1. TOP HERO: ELECTRIC BLUE BLUEPRINT GRID (Matching Landing Page)
-          ==================================================================== */}
-      <section className="bg-blue-grid text-white pt-6 pb-24 px-4 sm:px-6 relative overflow-hidden">
-        {/* Subtle Ambient Vignettes on Blue */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 left-10 w-96 h-96 bg-[#C6FF20]/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
+      {/* Subtle Ambient Vignettes on Blue */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Floating Island Navigation Header */}
-        <Navbar onSyncSuccess={fetchProjects} onSearchChange={setSearchQuery} />
+      {/* Floating Island Navigation Header */}
+      <Navbar onSyncSuccess={fetchProjects} onSearchChange={setSearchQuery} />
 
-        {/* Hero Content Block */}
-        <div className="max-w-6xl mx-auto text-center relative z-10 pt-20 pb-8">
-          
-          {/* Top Neon Badge Pill */}
-          <div className="flex justify-center mb-5">
-            <span className="lime-sticker text-xs font-black shadow-[0_4px_16px_rgba(198,255,32,0.4)]">
-              ⚡ AUTONOMOUS REPO COMMAND CENTER
-            </span>
-          </div>
-
-          {/* Massive Stacked White Headline */}
-          <div className="relative inline-block max-w-5xl mx-auto px-4">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white uppercase leading-[0.95]">
-              <div className="tracking-tight mb-2">WORKSPACE</div>
-              <div className="flex items-center justify-center flex-wrap gap-3 mt-1 sm:mt-2">
-                <span className="tracking-tight">TELEMETRY</span>
-                <span className="inline-block bg-[#C6FF20] text-black px-4 py-1 sm:py-2 rounded-2xl sm:rounded-3xl text-2xl sm:text-4xl font-black shadow-[0_8px_30px_rgba(198,255,32,0.6)] -rotate-1 hover:rotate-0 transition-transform">
-                  LIVE RADAR
-                </span>
-              </div>
-            </h1>
-
-            {/* Hand-Drawn SVG Neon Lime Arrow */}
-            <div className="hidden md:block absolute -top-6 -right-10 text-[#C6FF20]">
-              <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="rotate-12">
-                <path d="M20 70 C 35 30, 65 30, 75 40" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" />
-                <path d="M60 28 L 78 40 L 70 58" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Subtext */}
-          <p className="text-white/85 text-sm sm:text-base max-w-2xl mx-auto mt-5 leading-relaxed font-normal">
-            Continuous GitHub branch telemetry, multi-tier AI AST decomposition, and mathematical velocity tracking for active codebases.
-          </p>
-
-          {/* Live Quick Counters Pills on Electric Blue */}
-          <div className="mt-8 flex items-center justify-center gap-3 sm:gap-6 flex-wrap">
-            <div className="px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-mono font-bold flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
-              <span>{projects.length} Total Repos</span>
-            </div>
-
-            <div className="px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-mono font-bold flex items-center gap-2">
-              <span className="text-[#C6FF20]">⚡</span>
-              <span>{avgProgress}% Avg Velocity</span>
-            </div>
-
-            <div className="px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-mono font-bold flex items-center gap-2">
-              <span className="text-purple-300">AI</span>
-              <span>{needsReviewProjects.length} Needs Triage</span>
-            </div>
-
-            <div className="px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-mono font-bold flex items-center gap-2">
-              <span className="text-sky-300">✓</span>
-              <span>{completedFeatures}/{totalFeatures} Tasks Shipped</span>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ====================================================================
-          2. ACID LIME TICKER MARQUEE TAPE
-          ==================================================================== */}
-      <div className="w-full bg-[#C6FF20] text-black font-mono font-black text-xs sm:text-sm uppercase py-3 tracking-wider border-y-2 border-black/15 overflow-hidden select-none relative z-30 shadow-lg">
-        <div className="animate-marquee gap-8">
-          {[...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
-            <span key={i} className="flex items-center gap-6 whitespace-nowrap">
-              <span>{item}</span>
-              <span className="text-black/30 font-bold text-lg">&bull;</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ====================================================================
-          3. CLEAN BRIGHT WHITE CURVED SHEET (Interactive Hub)
-          ==================================================================== */}
-      <main className="bg-white text-slate-900 rounded-t-[44px] sm:rounded-t-[60px] -mt-6 relative z-20 shadow-2xl pt-14 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full space-y-8 flex-1">
+      {/* Main Content: Full Blue Page with Compact Functional Header */}
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-24 pb-20 space-y-6 relative z-10 flex-1">
         
+        {/* Compact Header Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
+              <span className="text-[11px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
+                WORKSPACE TELEMETRY
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+              <span>Command Center</span>
+            </h1>
+            <p className="text-xs text-white/80 mt-1 leading-relaxed">
+              Continuous GitHub repository telemetry, AST decomposition, and velocity physics.
+            </p>
+          </div>
+
+          {/* Quick Metrics Pills */}
+          <div className="flex items-center gap-2.5 flex-wrap font-mono text-xs">
+            <div className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white font-bold flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
+              <span>{projects.length} Repos</span>
+            </div>
+            <div className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white font-bold flex items-center gap-1.5">
+              <span className="text-[#C6FF20]">⚡</span>
+              <span>{avgProgress}% Velocity</span>
+            </div>
+            <div className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white font-bold flex items-center gap-1.5">
+              <span className="text-purple-300">AI</span>
+              <span>{needsReviewProjects.length} Triage</span>
+            </div>
+            <div className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white font-bold flex items-center gap-1.5">
+              <span className="text-sky-300">✓</span>
+              <span>{completedFeatures}/{totalFeatures} Tasks</span>
+            </div>
+          </div>
+        </div>
+
         {/* Top Executive Bento Row */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           
           {/* Bento Card 1: Repository Health Telemetry with Illuminated Wave (5 cols) */}
-          <div className="lg:col-span-5 gridster-panel p-6 bg-white border border-slate-200/90 shadow-md rounded-3xl flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-white text-slate-900 border border-white/20 shadow-2xl p-6 rounded-3xl flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -199,7 +145,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Glowing SVG Wave Line Chart (Blue to Lime to Violet on light container) */}
+            {/* Glowing SVG Wave Line Chart */}
             <div className="relative pt-2 bg-slate-50/80 p-3 rounded-2xl border border-slate-100">
               <svg viewBox="0 0 400 90" className="w-full h-20 overflow-visible">
                 <defs>
@@ -215,12 +161,10 @@ export default function DashboardPage() {
                   </linearGradient>
                 </defs>
                 
-                {/* Wave Fill Area */}
                 <path
                   d="M 0,70 Q 50,25 100,55 T 200,30 T 300,45 T 400,15 L 400,90 L 0,90 Z"
                   fill="url(#lightWaveFill)"
                 />
-                {/* Wave Stroke Line */}
                 <path
                   d="M 0,70 Q 50,25 100,55 T 200,30 T 300,45 T 400,15"
                   fill="none"
@@ -238,7 +182,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Bento Card 2: Dual Circular Gauges (4 cols) */}
-          <div className="lg:col-span-4 gridster-panel p-6 bg-white border border-slate-200/90 shadow-md rounded-3xl flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-white text-slate-900 border border-white/20 shadow-2xl p-6 rounded-3xl flex flex-col justify-between">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-mono text-purple-700 uppercase tracking-wider flex items-center gap-1.5 font-black">
                 <Activity className="w-3.5 h-3.5 text-purple-600" />
@@ -249,7 +193,6 @@ export default function DashboardPage() {
 
             {/* Dual Concentric Circular Gauges */}
             <div className="grid grid-cols-2 gap-4 my-auto py-2">
-              {/* Sprint Velocity Gauge */}
               <div className="flex flex-col items-center text-center">
                 <div className="relative w-24 h-24">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -286,7 +229,6 @@ export default function DashboardPage() {
                 <span className="text-[10px] font-mono text-slate-500 font-bold">Weighted (4x/3x/2x/1x)</span>
               </div>
 
-              {/* Code Coverage Gauge */}
               <div className="flex flex-col items-center text-center">
                 <div className="relative w-24 h-24">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
@@ -329,7 +271,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Bento Card 3: Cascading AI Models Status & Quick Actions (3 cols) */}
-          <div className="lg:col-span-3 gridster-panel p-6 bg-white border border-slate-200/90 shadow-md rounded-3xl flex flex-col justify-between">
+          <div className="lg:col-span-3 bg-white text-slate-900 border border-white/20 shadow-2xl p-6 rounded-3xl flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono text-slate-800 uppercase tracking-wider flex items-center gap-1.5 font-black">
@@ -341,7 +283,6 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              {/* Engine Matrix list */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
                   <span className="text-slate-900 font-mono text-[11px] font-bold">Gemini 2.5 Pro</span>
@@ -368,7 +309,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="space-y-2 pt-2">
               {needsReviewProjects.length > 0 ? (
                 <button
@@ -392,9 +332,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Category Filter Pills & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
-          {/* Segmented Filter Pills (Reference Style) */}
-          <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 border border-slate-200 rounded-full shadow-xs overflow-x-auto max-w-full">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+          {/* Segmented Filter Pills */}
+          <div className="flex items-center gap-1.5 p-1.5 bg-black/25 border border-white/20 rounded-full shadow-md overflow-x-auto max-w-full backdrop-blur-md">
             {(['ALL', 'RESUME', 'COLLEGE', 'PRODUCTION'] as const).map((tab) => {
               const isSelected = filterType === tab;
               const count =
@@ -409,12 +349,12 @@ export default function DashboardPage() {
                   className={`px-4 py-1.5 rounded-full text-xs font-mono transition-all cursor-pointer ${
                     isSelected 
                       ? 'bg-[#C6FF20] text-black font-black shadow-sm' 
-                      : 'text-slate-600 hover:text-slate-950 hover:bg-white/80 font-bold'
+                      : 'text-white/80 hover:text-white hover:bg-white/10 font-bold'
                   }`}
                 >
                   <span>{label}</span>
                   <span className={`text-[10px] font-mono ml-1.5 px-1.5 py-0.2 rounded-full ${
-                    isSelected ? 'bg-black/15 text-black font-black' : 'bg-slate-200 text-slate-600 font-bold'
+                    isSelected ? 'bg-black/15 text-black font-black' : 'bg-white/20 text-white font-bold'
                   }`}>
                     {count}
                   </span>
@@ -423,20 +363,20 @@ export default function DashboardPage() {
             })}
           </div>
 
-          <div className="text-xs font-mono text-slate-500 font-bold">
-            Showing <span className="text-[#0038FF] font-black">{filteredProjects.length}</span> of {projects.length} repos
+          <div className="text-xs font-mono text-white/80 font-bold">
+            Showing <span className="text-[#C6FF20] font-black">{filteredProjects.length}</span> of {projects.length} repos
           </div>
         </div>
 
         {/* Project Grid */}
         {loading ? (
-          <div className="py-28 text-center text-xs text-slate-500 font-mono animate-pulse">
+          <div className="py-28 text-center text-xs text-white font-mono animate-pulse">
             Hydrating repository intelligence matrix...
           </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="gridster-panel p-16 text-center space-y-3 bg-white border border-slate-200 rounded-3xl shadow-sm">
+          <div className="bg-white text-slate-900 border border-white/20 p-16 text-center space-y-3 rounded-3xl shadow-2xl">
             <GitBranch className="w-10 h-10 text-slate-400 mx-auto" />
-            <p className="text-base font-black text-slate-900">No repositories found</p>
+            <h3 className="text-base font-black text-slate-900">No repositories found</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-mono">
               {searchQuery
                 ? 'No results matched your search term. Try adjusting filters.'
