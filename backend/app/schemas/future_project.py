@@ -44,3 +44,19 @@ class FutureProjectResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ParseConceptRequest(BaseModel):
+    raw_text: str = Field(min_length=3, max_length=15000, description="Raw informal text, WhatsApp message, or quick notes")
+
+
+class ParsedConceptResponse(BaseModel):
+    title: str
+    elevator_pitch: str
+    target_tech_stack: str
+    project_type: ProjectType = ProjectType.RESUME
+    priority: FutureProjectPriority = FutureProjectPriority.P1
+    notes: Optional[str] = None
+    starter_features: list[str] = []
+    provider_used: Optional[str] = None
+

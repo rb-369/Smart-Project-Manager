@@ -223,3 +223,42 @@ def test_project_star_hide_live_url_and_reorder(client: TestClient, auth_headers
     reordered = reorder_resp.json()
     p3_updated = next(p for p in reordered if p["id"] == p3["id"])
     assert p3_updated["order_index"] == 0
+
+
+def test_parse_raw_concept_endpoint(client: TestClient, auth_headers: dict):
+    """Test AI extraction of messy WhatsApp message into structured concept and saving it."""
+    raw_whatsapp_text = "yo bro what if we make a bot that automatically tweets git commits using python and fastapi. urgent asap"
+
+    resp = client.post(
+        f"{settings.API_V1_STR}/future-projects/parse-concept",
+        json={"raw_text": raw_whatsapp_text},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "title" in data and len(data["title"]) > 0
+    assert "elevator_pitch" in data and len(data["elevator_pitch"]) > 0
+    assert "target_tech_stack" in data and len(data["target_tech_stack"]) > 0
+    assert data["priority"] in ["P0", "P1", "P2"]
+    assert data["project_type"] in ["RESUME", "COLLEGE", "PRODUCTION"]
+    assert isinstance(data["starter_features"], list)
+    assert len(data["starter_features"]) >= 1
+
+    # Save the parsed concept as a future project
+    create_resp = client.post(
+        f"{settings.API_V1_STR}/future-projects",
+        json={
+            "title": data["title"],
+            "elevator_pitch": data["elevator_pitch"],
+            "target_tech_stack": data["target_tech_stack"],
+            "project_type": data["project_type"],
+            "priority": data["priority"],
+            "notes": data["notes"],
+        },
+        headers=auth_headers,
+    )
+    assert create_resp.status_code == 201
+    created = create_resp.json()
+    assert created["title"] == data["title"]
+    assert created["status"] == "IDEA"
+

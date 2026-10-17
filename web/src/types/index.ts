@@ -106,6 +106,18 @@ export interface SuggestedProject {
   why_this_project: string;
 }
 
+export interface ParsedConcept {
+  title: string;
+  elevator_pitch: string;
+  target_tech_stack: string;
+  project_type: ProjectType;
+  priority: FutureProjectPriority;
+  notes?: string;
+  starter_features: string[];
+  provider_used?: string;
+}
+
+
 export interface SubAgentResearcher {
   content: string;
 }

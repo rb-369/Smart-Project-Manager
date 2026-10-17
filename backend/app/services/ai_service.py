@@ -9,6 +9,7 @@ from app.services.ai_prompts import (
     TRIAGE_SYSTEM_PROMPT,
     SUGGEST_FEATURES_SYSTEM_PROMPT,
     SUGGEST_PROJECTS_SYSTEM_PROMPT,
+    PARSE_CONCEPT_SYSTEM_PROMPT,
 )
 
 
@@ -278,3 +279,81 @@ Currently In Backlog: {pending_features or 'None'}
             return {"projects": projects}
 
         return await cls.execute_cascade(SUGGEST_PROJECTS_SYSTEM_PROMPT, user_prompt, heuristic_fallback)
+
+    @classmethod
+    async def parse_raw_concept(cls, raw_text: str) -> Tuple[Dict[str, Any], str]:
+        """Parse raw conversational text (e.g. WhatsApp messages, quick voice notes) into structured concept."""
+        user_prompt = f"""Raw Idea Text / WhatsApp Message:
+\"\"\"{raw_text.strip()}\"\"\"
+
+Analyze this text and extract:
+1. title (punchy, clean, professional)
+2. elevator_pitch (1-2 sentences on what it does and why it matters)
+3. target_tech_stack (recommended modern tech stack, e.g. 'Python, FastAPI, Redis, React')
+4. project_type ('RESUME', 'COLLEGE', or 'PRODUCTION')
+5. priority ('P0', 'P1', or 'P2')
+6. starter_features (array of 3 to 4 concrete MVP bullet features)
+7. notes (clean formatted summary with original highlights and starter checklist)
+"""
+
+        def heuristic_fallback() -> Dict[str, Any]:
+            clean = raw_text.strip()
+            # Clean unwanted quotes or conversational prefixes
+            clean_first = clean.split("\n")[0][:80]
+            words = [w for w in re.findall(r"\b[A-Za-z0-9+#.-]+\b", clean_first) if len(w) > 2]
+            title = " ".join(words[:4]).title() if words else "Smart Idea Concept"
+
+            # Detect tech keywords in raw text
+            detected_tech = []
+            tech_keywords = [
+                "python", "fastapi", "flask", "django", "react", "next.js", "nextjs", 
+                "vue", "svelte", "node", "express", "typescript", "docker", "kubernetes",
+                "postgres", "postgresql", "mongodb", "sqlite", "redis", "tailwind",
+                "flutter", "go", "golang", "rust", "c++", "aws", "vercel", "gemini",
+                "openai", "llm", "telegram", "whatsapp", "supabase", "firebase"
+            ]
+            lower_clean = clean.lower()
+            for kw in tech_keywords:
+                if kw in lower_clean:
+                    name = kw.title() if len(kw) > 3 else kw.upper()
+                    if name not in detected_tech:
+                        detected_tech.append(name)
+
+            tech_stack = ", ".join(detected_tech) if detected_tech else "Python, FastAPI, React, SQLite"
+
+            # Detect priority keywords
+            priority = "P1"
+            if any(k in lower_clean for k in ["urgent", "p0", "asap", "immediate", "top priority", "high priority", "critical"]):
+                priority = "P0"
+            elif any(k in lower_clean for k in ["later", "p2", "backlog", "future", "someday", "low priority", "research"]):
+                priority = "P2"
+
+            # Detect project type
+            p_type = "RESUME"
+            if any(k in lower_clean for k in ["saas", "production", "client", "business", "stripe", "billing", "revenue"]):
+                p_type = "PRODUCTION"
+            elif any(k in lower_clean for k in ["college", "assignment", "lab", "thesis", "research", "exam", "university"]):
+                p_type = "COLLEGE"
+
+            # Clean elevator pitch
+            pitch = clean[:250].replace("\n", " ").strip()
+            if len(clean) > 250:
+                pitch += "..."
+
+            return {
+                "title": title,
+                "elevator_pitch": pitch,
+                "target_tech_stack": tech_stack,
+                "project_type": p_type,
+                "priority": priority,
+                "starter_features": [
+                    "Core Data Schema & Architecture Setup",
+                    "Primary User Flow & Interactive UI",
+                    "API Integration & Business Logic",
+                    "Automated Testing & Deployment Configuration",
+                ],
+                "notes": f"Raw WhatsApp Notes:\n{clean}",
+            }
+
+        return await cls.execute_cascade(PARSE_CONCEPT_SYSTEM_PROMPT, user_prompt, heuristic_fallback)
+

@@ -14,12 +14,56 @@ from app.schemas.future_project import (
     UpdateFutureProjectRequest,
     PromoteFutureProjectRequest,
     FutureProjectResponse,
+    ParseConceptRequest,
+    ParsedConceptResponse,
 )
 from app.schemas.project import ProjectSummaryResponse
 from app.api.v1.projects import _to_project_summary
 from app.api.deps import get_current_user
+from app.services.ai_service import AIService
 
 router = APIRouter(prefix="/future-projects", tags=["Future Projects Incubator"])
+
+
+@router.post("/parse-concept", response_model=ParsedConceptResponse)
+async def parse_concept_text(
+    request: ParseConceptRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Smartly parse informal WhatsApp messages or raw notes into a structured future project concept."""
+    if not request.raw_text.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Raw text cannot be empty")
+
+    data, provider = await AIService.parse_raw_concept(request.raw_text)
+
+    # Format starter features into notes if notes doesn't already have them
+    starter_features = data.get("starter_features", [])
+    notes = data.get("notes") or ""
+    if starter_features and "starter" not in notes.lower() and "checklist" not in notes.lower():
+        features_md = "\n".join([f"- [ ] {f}" for f in starter_features])
+        notes = f"{notes}\n\n### Starter MVP Features Checklist:\n{features_md}".strip()
+
+    # Determine ProjectType enum safely
+    p_type = data.get("project_type", "RESUME")
+    if p_type not in ["RESUME", "COLLEGE", "PRODUCTION"]:
+        p_type = "RESUME"
+
+    # Determine Priority enum safely
+    prio = data.get("priority", "P1")
+    if prio not in ["P0", "P1", "P2"]:
+        prio = "P1"
+
+    return ParsedConceptResponse(
+        title=str(data.get("title", "New Project Idea")).strip(),
+        elevator_pitch=str(data.get("elevator_pitch", "")).strip(),
+        target_tech_stack=str(data.get("target_tech_stack", "")).strip(),
+        project_type=p_type,
+        priority=prio,
+        notes=notes,
+        starter_features=starter_features,
+        provider_used=provider,
+    )
+
 
 
 @router.get("", response_model=List[FutureProjectResponse])
