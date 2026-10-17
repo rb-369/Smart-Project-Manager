@@ -32,13 +32,13 @@ class ChatCitation(BaseModel):
 
 
 class JudgeVerdict(BaseModel):
-    score: int
-    verdict_signal: str  # 'BUILD_NOW' | 'PROCEED_WITH_CAUTION' | 'DO_NOT_BUILD'
-    verdict_title: str
-    brutal_critique: str
+    score: int = 50
+    verdict_signal: str = "PROCEED_WITH_CAUTION"  # 'BUILD_NOW' | 'PROCEED_WITH_CAUTION' | 'DO_NOT_BUILD'
+    verdict_title: str = "The Judge's Verdict"
+    brutal_critique: str = ""
     failure_modes: List[str] = []
-    what_to_build_instead: str
-    summary_verdict: str
+    what_to_build_instead: str = ""
+    summary_verdict: str = ""
 
 
 class SuggestedFeaturePayload(BaseModel):
@@ -54,6 +54,7 @@ class ChatResponse(BaseModel):
     citations: List[ChatCitation] = []
     judge_data: Optional[JudgeVerdict] = None
     suggested_features: List[SuggestedFeaturePayload] = []
+    subagent_data: Optional[Dict[str, Any]] = None
     tier_used: str
 
 
@@ -64,11 +65,12 @@ async def send_chat_message(
     db: Session = Depends(get_db),
 ):
     """
-    Submits a query to DevCommand AI Copilot in planner, researcher, or judge mode.
-    Retrieves grounded context from Qdrant Cloud RAG with user isolation.
+    Submits a query to the unified DevCommand AI Copilot.
+    Automatically orchestrates Market Researcher, The Judge, and Feature Planner sub-agents
+    for feature pitches, or responds conversationally for general queries.
+    Grounds context from Qdrant Cloud RAG with user isolation and saves to MongoDB Atlas history.
     """
     if payload.project_id:
-        # Validate that the project belongs to current_user
         project = db.exec(
             select(Project).where(
                 Project.id == payload.project_id,
@@ -90,6 +92,32 @@ async def send_chat_message(
     )
 
     return result
+
+
+@router.get("/history")
+def get_chat_history_endpoint(
+    project_id: Optional[UUID] = None,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieves user's persistent chat conversation history and sub-agent cards from MongoDB Atlas.
+    """
+    from app.services.mongodb_sync import MongoDBSyncService
+    history = MongoDBSyncService.get_chat_history(user_id=current_user.id, project_id=project_id, limit=50)
+    return {"status": "success", "history": history}
+
+
+@router.delete("/history")
+def clear_chat_history_endpoint(
+    project_id: Optional[UUID] = None,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Clears user's chat conversation history from MongoDB Atlas.
+    """
+    from app.services.mongodb_sync import MongoDBSyncService
+    success = MongoDBSyncService.clear_chat_history(user_id=current_user.id, project_id=project_id)
+    return {"status": "success", "cleared": success, "message": "Chat history cleared successfully."}
 
 
 @router.get("/qdrant-status")

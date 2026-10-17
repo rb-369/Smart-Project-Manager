@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import {
-  CopilotMode,
   ChatMessage,
   QdrantStatus,
 } from '@/types';
@@ -19,9 +18,12 @@ import {
   X,
   Maximize2,
   Database,
-  ThumbsUp,
   AlertTriangle,
   Zap,
+  Check,
+  Plus,
+  Trash2,
+  Target,
 } from 'lucide-react';
 
 function ChatLauncherContent() {
@@ -30,35 +32,56 @@ function ChatLauncherContent() {
   const { isAuthenticated } = useAuth();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<CopilotMode>('judge');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeStep, setActiveStep] = useState<number>(0);
   const [qdrantStatus, setQdrantStatus] = useState<QdrantStatus | null>(null);
+  const [activeTabPerMessage, setActiveTabPerMessage] = useState<{ [msgId: string]: 'judge' | 'researcher' | 'planner' }>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // If already on /chat, we don't need to pop up another overlay, but still allow expanding
   const isOnChatPage = pathname === '/chat';
 
+  // Load telemetry & MongoDB history on open
   useEffect(() => {
-    if (isOpen && isAuthenticated && !qdrantStatus) {
-      api.getQdrantStatus().then(setQdrantStatus).catch(() => {});
+    if (isOpen && isAuthenticated) {
+      if (!qdrantStatus) {
+        api.getQdrantStatus().then(setQdrantStatus).catch(() => {});
+      }
+      api.getChatHistory().then((res) => {
+        if (res && res.history) setMessages(res.history);
+      }).catch(() => {});
     }
   }, [isOpen, isAuthenticated, qdrantStatus]);
+
+  // Sub-agent stepper animation while submitting
+  useEffect(() => {
+    if (!isSubmitting) {
+      setActiveStep(0);
+      return;
+    }
+    setActiveStep(1);
+    const t1 = setTimeout(() => setActiveStep(2), 1200);
+    const t2 = setTimeout(() => setActiveStep(3), 2500);
+    const t3 = setTimeout(() => setActiveStep(4), 3800);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [isSubmitting]);
 
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen, isSubmitting]);
+  }, [messages, isOpen, isSubmitting, activeStep]);
 
-  // Don't render for unauthenticated users or on login/register pages
   if (!isAuthenticated || pathname === '/login' || pathname === '/register') {
     return null;
   }
 
-  // If on /chat page, we can hide the launcher or show a small badge
   if (isOnChatPage) {
     return null;
   }
@@ -71,7 +94,6 @@ function ChatLauncherContent() {
       id: `user-${Date.now()}`,
       role: 'user',
       content: query,
-      mode: mode,
       created_at: new Date().toISOString(),
     };
 
@@ -87,20 +109,19 @@ function ChatLauncherContent() {
 
       const res = await api.sendChatMessage({
         message: query,
-        mode: mode,
+        mode: 'auto',
         history,
       });
 
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         role: 'assistant',
-        content: res.reply,
+        content: res.response,
         mode: res.mode,
-        created_at: new Date().toISOString(),
+        subagent_data: res.subagent_data,
         citations: res.citations,
-        judge_verdict: res.judge_verdict,
-        suggested_features: res.suggested_features,
-        suggested_projects: res.suggested_projects,
+        tier_used: res.tier_used,
+        created_at: new Date().toISOString(),
       };
 
       setMessages((prev) => [...prev, aiMsg]);
@@ -111,7 +132,6 @@ function ChatLauncherContent() {
           id: `ai-err-${Date.now()}`,
           role: 'assistant',
           content: `Error: ${err?.message || 'Failed to reach AI Copilot.'}`,
-          mode: mode,
           created_at: new Date().toISOString(),
         },
       ]);
@@ -127,6 +147,16 @@ function ChatLauncherContent() {
     }
   };
 
+  const handleClearHistory = async () => {
+    if (!confirm('Clear chat history from MongoDB Atlas?')) return;
+    try {
+      await api.clearChatHistory();
+      setMessages([]);
+    } catch (err: any) {
+      alert(`Clear failed: ${err?.message || 'Error'}`);
+    }
+  };
+
   return (
     <>
       {/* Floating Trigger Button in Bottom-Right */}
@@ -139,7 +169,7 @@ function ChatLauncherContent() {
             <div className="w-6 h-6 rounded-lg bg-black/30 border border-white/20 flex items-center justify-center p-0.5">
               <Sparkles className="w-3.5 h-3.5 text-[#C6FF20]" />
             </div>
-            <span className="tracking-wide">AI Copilot & Judge</span>
+            <span className="tracking-wide">AI Copilot & Sub-Agents</span>
             <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
           </button>
         )}
@@ -147,7 +177,7 @@ function ChatLauncherContent() {
 
       {/* Floating Flyout Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[92vw] sm:w-[440px] h-[580px] max-h-[85vh] rounded-3xl bg-[#090b11]/95 text-white border border-white/20 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 w-[94vw] sm:w-[480px] h-[620px] max-h-[85vh] rounded-3xl bg-[#090b11]/95 text-white border border-white/20 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
           
           {/* Header */}
           <div className="px-4 py-3 bg-white/[0.04] border-b border-white/10 flex items-center justify-between">
@@ -157,16 +187,25 @@ function ChatLauncherContent() {
               </div>
               <div>
                 <h3 className="font-bold text-xs tracking-tight flex items-center gap-1.5">
-                  <span>DevCommand AI Copilot</span>
+                  <span>DevCommand Copilot</span>
                 </h3>
                 <div className="flex items-center gap-1.5 text-[10px] font-mono text-white/60">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#C6FF20]" />
-                  <span>Qdrant Cloud RAG</span>
+                  <span>3 Sub-Agents Active • Qdrant RAG</span>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <button
+                  onClick={handleClearHistory}
+                  className="p-1.5 rounded-lg text-white/50 hover:text-rose-400 hover:bg-white/10 transition-colors"
+                  title="Clear Chat History"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
               <button
                 onClick={() => {
                   setIsOpen(false);
@@ -187,173 +226,220 @@ function ChatLauncherContent() {
             </div>
           </div>
 
-          {/* Mode Switcher Pills */}
-          <div className="px-3 py-2 bg-white/[0.02] border-b border-white/10 grid grid-cols-3 gap-1.5">
-            <button
-              onClick={() => setMode('planner')}
-              className={`py-1.5 px-2 rounded-xl text-[11px] font-bold font-mono flex items-center justify-center gap-1 transition-all ${
-                mode === 'planner'
-                  ? 'bg-blue-600 text-white shadow'
-                  : 'bg-white/5 hover:bg-white/10 text-white/70'
-              }`}
-            >
-              <Layers className="w-3 h-3" />
-              <span>Planner</span>
-            </button>
-            <button
-              onClick={() => setMode('researcher')}
-              className={`py-1.5 px-2 rounded-xl text-[11px] font-bold font-mono flex items-center justify-center gap-1 transition-all ${
-                mode === 'researcher'
-                  ? 'bg-sky-600 text-white shadow'
-                  : 'bg-white/5 hover:bg-white/10 text-white/70'
-              }`}
-            >
-              <Search className="w-3 h-3" />
-              <span>Researcher</span>
-            </button>
-            <button
-              onClick={() => setMode('judge')}
-              className={`py-1.5 px-2 rounded-xl text-[11px] font-bold font-mono flex items-center justify-center gap-1 transition-all ${
-                mode === 'judge'
-                  ? 'bg-rose-600 text-white shadow'
-                  : 'bg-white/5 hover:bg-white/10 text-white/70'
-              }`}
-            >
-              <Scale className="w-3 h-3" />
-              <span>The Judge</span>
-            </button>
-          </div>
-
-          {/* Messages Stream */}
-          <div className="flex-1 p-3 overflow-y-auto space-y-3 text-xs">
+          {/* Messages Scroll Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-4 space-y-3">
-                <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-white/60 space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
                   <Sparkles className="w-6 h-6 text-[#C6FF20]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-white mb-1">
-                    {mode === 'judge'
-                      ? 'The Judge is Ready'
-                      : mode === 'researcher'
-                      ? 'Research & Feasibility'
-                      : 'Feature Planner'}
-                  </h4>
-                  <p className="text-[11px] text-white/60 leading-relaxed max-w-xs">
-                    {mode === 'judge'
-                      ? 'Get a brutal 0-100 score and clear signal on whether to build or drop a feature.'
-                      : mode === 'researcher'
-                      ? 'Find competitors and evaluate architectural feasibility.'
-                      : 'Generate complete technical blueprints and breakdown.'}
+                  <h4 className="font-bold text-sm text-white">Ask Anything or Pitch an Idea</h4>
+                  <p className="text-[11px] text-white/60 mt-1 max-w-xs">
+                    Our 3 sub-agents automatically research competitors, judge viability, and draft blueprints.
                   </p>
                 </div>
                 <div className="w-full space-y-1.5 pt-2">
                   <button
-                    onClick={() =>
-                      handleSendMessage(
-                        mode === 'judge'
-                          ? 'Judge adding real-time collaborative editing to our project'
-                          : mode === 'researcher'
-                          ? 'Analyze competitors and feasibility of automated roadmap generators'
-                          : 'Plan a user analytics and telemetry tracking subsystem'
-                      )
-                    }
-                    className="w-full p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-white/80 hover:text-white text-left transition-colors"
+                    onClick={() => handleSendMessage('Should we add biometric authentication to our application?')}
+                    className="w-full text-left p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-white/80 transition-colors"
                   >
-                    ⚡{' '}
-                    {mode === 'judge'
-                      ? 'Judge adding real-time collaborative editing'
-                      : mode === 'researcher'
-                      ? 'Analyze roadmap generator competitors'
-                      : 'Plan telemetry tracking subsystem'}
+                    💡 Should we add biometric authentication?
+                  </button>
+                  <button
+                    onClick={() => handleSendMessage('Evaluate building an automated subscription billing system')}
+                    className="w-full text-left p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-white/80 transition-colors"
+                  >
+                    💳 Evaluate automated subscription billing
                   </button>
                 </div>
               </div>
             ) : (
-              messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} space-y-1`}
-                >
+              messages.map((msg) => {
+                const sub = msg.subagent_data;
+                const isPipeline = sub && sub.is_pipeline && sub.judge;
+                const tab = activeTabPerMessage[msg.id] || 'judge';
+
+                return (
                   <div
-                    className={`max-w-[88%] rounded-2xl p-3 leading-relaxed ${
-                      m.role === 'user'
-                        ? 'bg-blue-600 text-white shadow'
-                        : 'bg-white/10 border border-white/15 text-white shadow-lg'
-                    }`}
+                    key={msg.id}
+                    className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-1`}
                   >
-                    {/* Judge score card in launcher */}
-                    {m.judge_verdict && (
-                      <div className="mb-2 p-2.5 rounded-xl bg-black/60 border border-white/15 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono text-white/60">VERDICT</span>
-                          <span className="text-xl font-black font-mono">
-                            {m.judge_verdict.score}/100
-                          </span>
-                        </div>
-                        <div
-                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase text-center ${
-                            m.judge_verdict.verdict_signal === 'GREEN'
-                              ? 'bg-emerald-500 text-black'
-                              : m.judge_verdict.verdict_signal === 'YELLOW'
-                              ? 'bg-amber-400 text-black'
-                              : 'bg-rose-500 text-white'
-                          }`}
-                        >
-                          {m.judge_verdict.verdict}
-                        </div>
-                      </div>
-                    )}
+                    <div className="text-[10px] font-mono text-white/40 px-1">
+                      {msg.role === 'user' ? 'You' : 'DevCommand AI'}
+                    </div>
 
-                    <div className="whitespace-pre-wrap">{m.content}</div>
+                    <div
+                      className={`rounded-2xl p-3.5 max-w-[92%] leading-relaxed ${
+                        msg.role === 'user'
+                          ? 'bg-blue-600 text-white border border-blue-400/40'
+                          : 'bg-white text-slate-900 border border-white/30 shadow-xl'
+                      }`}
+                    >
+                      {msg.role === 'user' ? (
+                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                      ) : (
+                        <div className="space-y-3">
+                          {/* If Sub-Agents executed */}
+                          {isPipeline && sub.judge && (
+                            <div className="space-y-2.5">
+                              {/* Executive Score Header */}
+                              <div className="p-3 rounded-xl bg-slate-950 text-white border border-slate-800 space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-[10px] text-slate-400 uppercase font-bold">
+                                    THE JUDGE
+                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-mono font-black text-sm text-white">
+                                      {sub.judge.score}/100
+                                    </span>
+                                    <span
+                                      className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+                                        sub.judge.verdict_signal === 'BUILD_NOW'
+                                          ? 'bg-emerald-500 text-black'
+                                          : sub.judge.verdict_signal === 'PROCEED_WITH_CAUTION'
+                                          ? 'bg-amber-400 text-black'
+                                          : 'bg-rose-500 text-white'
+                                      }`}
+                                    >
+                                      {sub.judge.verdict_signal.replace(/_/g, ' ')}
+                                    </span>
+                                  </div>
+                                </div>
+                                <p className="text-[11px] text-slate-300 leading-normal">
+                                  {sub.judge.summary_verdict}
+                                </p>
+                              </div>
 
-                    {/* Citations pill */}
-                    {m.citations && m.citations.length > 0 && (
-                      <div className="mt-2 pt-1.5 border-t border-white/10 text-[9px] font-mono text-white/50 flex items-center gap-1 flex-wrap">
-                        <Database className="w-2.5 h-2.5 text-[#C6FF20]" />
-                        <span>RAG:</span>
-                        {m.citations.map((c, i) => (
-                          <span key={i} className="text-white/80 font-bold">
-                            [{c.title}]
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                              {/* Sub-Agent Tabs */}
+                              <div className="flex items-center gap-1 border-b border-slate-200 pb-1.5 text-[11px] font-mono">
+                                <button
+                                  onClick={() => setActiveTabPerMessage((p) => ({ ...p, [msg.id]: 'judge' }))}
+                                  className={`px-2 py-1 rounded-lg font-bold ${
+                                    tab === 'judge' ? 'bg-rose-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  Judge
+                                </button>
+                                <button
+                                  onClick={() => setActiveTabPerMessage((p) => ({ ...p, [msg.id]: 'researcher' }))}
+                                  className={`px-2 py-1 rounded-lg font-bold ${
+                                    tab === 'researcher' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  Researcher
+                                </button>
+                                <button
+                                  onClick={() => setActiveTabPerMessage((p) => ({ ...p, [msg.id]: 'planner' }))}
+                                  className={`px-2 py-1 rounded-lg font-bold ${
+                                    tab === 'planner' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  Planner
+                                </button>
+                              </div>
+
+                              {/* Tab Content */}
+                              {tab === 'judge' && (
+                                <div className="space-y-2 text-[11px] text-slate-700">
+                                  <p className="leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                    {sub.judge.brutal_critique}
+                                  </p>
+                                  {sub.judge.what_to_build_instead && (
+                                    <div className="p-2.5 rounded-lg bg-purple-50 border border-purple-200 text-purple-900 space-y-0.5">
+                                      <div className="font-bold font-mono text-[10px] text-purple-700">ALTERNATIVE:</div>
+                                      <div>{sub.judge.what_to_build_instead}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {tab === 'researcher' && sub.researcher && (
+                                <div className="text-[11px] text-slate-700 bg-sky-50/50 p-2.5 rounded-lg border border-sky-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto">
+                                  {sub.researcher.content}
+                                </div>
+                              )}
+
+                              {tab === 'planner' && sub.planner && (
+                                <div className="text-[11px] text-slate-700 space-y-2">
+                                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto">
+                                    {sub.pivot_plan ? sub.pivot_plan.content : sub.planner.content}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Conversational content if no subagent pipeline */}
+                          {(!isPipeline || !sub?.judge) && (
+                            <div className="whitespace-pre-wrap text-slate-900 leading-relaxed text-xs">
+                              {msg.content}
+                            </div>
+                          )}
+
+                          {/* Citations */}
+                          {msg.citations && msg.citations.length > 0 && (
+                            <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap text-[10px] font-mono text-slate-500">
+                              <span className="font-bold text-slate-700">Qdrant Context:</span>
+                              {msg.citations.slice(0, 2).map((c, idx) => (
+                                <span key={idx} className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">
+                                  {c.title}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
 
+            {/* Submitting Stepper */}
             {isSubmitting && (
-              <div className="flex items-center gap-2 p-3 rounded-2xl bg-white/5 border border-white/10 text-white/60">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                <span className="text-[11px] font-mono">Thinking & searching vectors...</span>
+              <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white space-y-2 text-xs font-mono">
+                <div className="flex items-center gap-2 text-[#C6FF20]">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span className="font-bold">Coordinating 3 Sub-Agents...</span>
+                </div>
+                <div className="grid grid-cols-3 gap-1 text-[10px]">
+                  <div className={`p-1.5 rounded-lg border ${activeStep >= 2 ? 'bg-sky-950/60 border-sky-400 text-sky-200' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                    1. Researcher
+                  </div>
+                  <div className={`p-1.5 rounded-lg border ${activeStep >= 3 ? 'bg-rose-950/60 border-rose-400 text-rose-200' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                    2. Judge
+                  </div>
+                  <div className={`p-1.5 rounded-lg border ${activeStep >= 4 ? 'bg-blue-950/60 border-blue-400 text-blue-200' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                    3. Planner
+                  </div>
+                </div>
               </div>
             )}
 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Box */}
-          <div className="p-3 bg-white/[0.03] border-t border-white/10">
+          {/* Footer Input */}
+          <div className="p-3 bg-white/[0.03] border-t border-white/10 space-y-2">
             <div className="flex items-end gap-2">
               <textarea
-                rows={1}
+                rows={2}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={`Ask ${mode === 'judge' ? 'The Judge' : mode}...`}
-                className="flex-1 bg-black/40 border border-white/20 text-white placeholder-white/40 text-xs rounded-xl p-2.5 outline-none focus:border-[#C6FF20] transition-colors resize-none leading-relaxed"
+                placeholder="Pitch a feature idea or ask a codebase question..."
+                className="flex-1 bg-black/40 border border-white/20 text-white placeholder-white/40 text-xs rounded-xl p-2.5 outline-none focus:border-[#C6FF20] resize-none"
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={isSubmitting || !inputValue.trim()}
-                className="w-9 h-9 rounded-xl bg-[#C6FF20] text-black font-bold flex items-center justify-center shrink-0 hover:bg-[#b5ee10] transition-all disabled:opacity-40"
+                className="w-10 h-10 rounded-xl bg-[#C6FF20] hover:bg-[#b2ee13] text-black font-bold flex items-center justify-center shrink-0 disabled:opacity-40 transition-all cursor-pointer"
               >
                 {isSubmitting ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4" />
                 )}
               </button>
             </div>

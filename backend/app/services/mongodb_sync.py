@@ -349,3 +349,84 @@ class MongoDBSyncService:
             db.ai_logs.update_one({"_id": str(ai_log.id)}, {"$set": doc}, upsert=True)
         except Exception as e:
             logger.warning(f"Error syncing ai log {ai_log.id} to MongoDB Atlas: {e}")
+
+    @staticmethod
+    def save_chat_message(
+        user_id: Any,
+        role: str,
+        content: str,
+        project_id: Optional[Any] = None,
+        is_feature_pitch: bool = False,
+        subagent_data: Optional[Dict[str, Any]] = None,
+        citations: Optional[List[Dict[str, Any]]] = None,
+        tier_used: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Save a chat message with sub-agent outputs to MongoDB Atlas."""
+        import uuid
+        from datetime import datetime, timezone
+        
+        msg_id = str(uuid.uuid4())
+        doc = {
+            "_id": msg_id,
+            "id": msg_id,
+            "user_id": str(user_id),
+            "project_id": str(project_id) if project_id else None,
+            "role": role,
+            "content": content,
+            "is_feature_pitch": is_feature_pitch,
+            "subagent_data": subagent_data or {},
+            "citations": citations or [],
+            "tier_used": tier_used or "Local Intelligent Heuristic",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+        if is_mongodb_configured():
+            db = get_mongodb_database()
+            if db is not None:
+                try:
+                    db.chat_messages.insert_one(doc)
+                except Exception as e:
+                    logger.warning(f"Error saving chat message to MongoDB: {e}")
+
+        return doc
+
+    @staticmethod
+    def get_chat_history(user_id: Any, project_id: Optional[Any] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        """Retrieve user's chat history from MongoDB Atlas."""
+        if not is_mongodb_configured():
+            return []
+        db = get_mongodb_database()
+        if db is None:
+            return []
+        try:
+            query: Dict[str, Any] = {"user_id": str(user_id)}
+            if project_id:
+                query["project_id"] = str(project_id)
+            cursor = db.chat_messages.find(query).sort("created_at", 1).limit(limit)
+            results = []
+            for doc in cursor:
+                doc["id"] = str(doc.get("_id", doc.get("id")))
+                doc.pop("_id", None)
+                results.append(doc)
+            return results
+        except Exception as e:
+            logger.warning(f"Error loading chat history from MongoDB: {e}")
+            return []
+
+    @staticmethod
+    def clear_chat_history(user_id: Any, project_id: Optional[Any] = None) -> bool:
+        """Clear user's chat history in MongoDB Atlas."""
+        if not is_mongodb_configured():
+            return False
+        db = get_mongodb_database()
+        if db is None:
+            return False
+        try:
+            query: Dict[str, Any] = {"user_id": str(user_id)}
+            if project_id:
+                query["project_id"] = str(project_id)
+            db.chat_messages.delete_many(query)
+            return True
+        except Exception as e:
+            logger.warning(f"Error clearing chat history from MongoDB: {e}")
+            return False

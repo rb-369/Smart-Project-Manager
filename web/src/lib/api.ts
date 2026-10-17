@@ -172,6 +172,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  getChatHistory: (projectId?: string) =>
+    request<{ status: string; history: import('../types').ChatMessage[] }>(
+      `/chat/history${projectId ? `?project_id=${projectId}` : ''}`,
+      { method: 'GET' }
+    ),
+  clearChatHistory: (projectId?: string) =>
+    request<{ status: string; cleared: boolean; message: string }>(
+      `/chat/history${projectId ? `?project_id=${projectId}` : ''}`,
+      { method: 'DELETE' }
+    ),
   getQdrantStatus: () => request<import('../types').QdrantStatus>('/chat/qdrant-status', { method: 'GET' }),
   syncKnowledgeBase: () =>
     request<{ message: string; points_indexed: number }>('/chat/sync-knowledge', { method: 'POST' }),

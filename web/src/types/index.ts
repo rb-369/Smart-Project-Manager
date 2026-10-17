@@ -97,21 +97,53 @@ export interface SuggestedProject {
   why_this_project: string;
 }
 
-export type CopilotMode = 'planner' | 'researcher' | 'judge';
+export interface SubAgentResearcher {
+  content: string;
+}
 
-export interface JudgeVerdict {
+export interface SubAgentJudge {
   score: number;
-  verdict: 'BUILD THIS NOW' | 'PROCEED WITH CAUTION' | 'DO NOT BUILD / REJECT';
-  strengths: string[];
-  fatal_flaws: string[];
-  pivot_advice?: string;
-  verdict_signal: 'GREEN' | 'YELLOW' | 'RED';
+  verdict_signal: 'BUILD_NOW' | 'PROCEED_WITH_CAUTION' | 'DO_NOT_BUILD';
+  verdict_title: string;
+  brutal_critique: string;
+  failure_modes: string[];
+  what_to_build_instead: string;
+  summary_verdict: string;
+}
+
+export interface SubAgentPlanner {
+  content: string;
+  suggested_features: {
+    title: string;
+    priority: string;
+    description: string;
+  }[];
+}
+
+export interface SubAgentPivotPlan {
+  alternative_title: string;
+  content: string;
+  suggested_features: {
+    title: string;
+    priority: string;
+    description: string;
+  }[];
+}
+
+export interface SubAgentData {
+  is_pipeline?: boolean;
+  executive_summary?: string;
+  researcher?: SubAgentResearcher;
+  judge?: SubAgentJudge;
+  planner?: SubAgentPlanner;
+  pivot_plan?: SubAgentPivotPlan;
 }
 
 export interface RagCitation {
-  id: string;
-  type: string;
+  id?: string;
   title: string;
+  entity_type?: string;
+  project_name?: string;
   score: number;
 }
 
@@ -119,12 +151,12 @@ export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  mode: CopilotMode;
-  created_at: string;
+  mode?: string;
+  is_feature_pitch?: boolean;
+  subagent_data?: SubAgentData;
   citations?: RagCitation[];
-  judge_verdict?: JudgeVerdict;
-  suggested_features?: SuggestedFeature[];
-  suggested_projects?: SuggestedProject[];
+  tier_used?: string;
+  created_at: string;
 }
 
 export interface QdrantStatus {
@@ -138,17 +170,23 @@ export interface QdrantStatus {
 }
 
 export interface ChatResponse {
-  reply: string;
-  mode: CopilotMode;
+  mode: string;
+  response: string;
+  raw_content: string;
   citations: RagCitation[];
-  judge_verdict?: JudgeVerdict;
-  suggested_features?: SuggestedFeature[];
-  suggested_projects?: SuggestedProject[];
+  judge_data?: SubAgentJudge;
+  suggested_features?: {
+    title: string;
+    priority: string;
+    description: string;
+  }[];
+  subagent_data?: SubAgentData;
+  tier_used: string;
 }
 
 export interface ChatRequest {
   message: string;
-  mode: CopilotMode;
+  mode?: string;
   project_id?: string;
   history?: { role: 'user' | 'assistant'; content: string }[];
 }

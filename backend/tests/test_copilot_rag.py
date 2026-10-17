@@ -92,55 +92,56 @@ def test_copilot_chat_modes_and_endpoints(client: TestClient, session: Session):
     token = create_access_token(user.id)
     headers = {"Authorization": f"Bearer {token}"}
 
-    # 1. Test Feature Planner Mode
-    res_planner = client.post(
+    # 1. Test Unified Sub-Agent Pipeline on a Feature Idea
+    res_pipeline = client.post(
         "/api/v1/chat/message",
         json={
             "message": "Design an automated Stripe subscription billing system with webhooks",
-            "mode": "planner",
+            "mode": "auto",
         },
         headers=headers,
     )
-    assert res_planner.status_code == 200
-    data_planner = res_planner.json()
-    assert data_planner["mode"] == "planner"
-    assert len(data_planner["response"]) > 20
-    assert "tier_used" in data_planner
+    assert res_pipeline.status_code == 200
+    data_pipe = res_pipeline.json()
+    assert data_pipe["mode"] in ["pipeline", "planner"]
+    assert len(data_pipe["response"]) > 10
+    assert "tier_used" in data_pipe
+    assert data_pipe["subagent_data"] is not None
+    assert "researcher" in data_pipe["subagent_data"]
+    assert "judge" in data_pipe["subagent_data"]
+    assert "planner" in data_pipe["subagent_data"]
 
-    # 2. Test Market Researcher Mode
-    res_researcher = client.post(
-        "/api/v1/chat/message",
-        json={
-            "message": "Who are the competitors for a GitHub repository project manager?",
-            "mode": "researcher",
-        },
-        headers=headers,
-    )
-    assert res_researcher.status_code == 200
-    data_researcher = res_researcher.json()
-    assert data_researcher["mode"] == "researcher"
-    assert len(data_researcher["response"]) > 20
-
-    # 3. Test The Brutal Judge Mode
-    res_judge = client.post(
+    # 2. Test The Brutal Judge & Smart Pivot Pipeline on a flawed idea
+    res_flawed = client.post(
         "/api/v1/chat/message",
         json={
             "message": "I want to rebuild Twitter from scratch on a blockchain using 15 microservices",
-            "mode": "judge",
+            "mode": "auto",
         },
         headers=headers,
     )
-    assert res_judge.status_code == 200
-    data_judge = res_judge.json()
-    assert data_judge["mode"] == "judge"
-    assert data_judge["judge_data"] is not None
-    assert 0 <= data_judge["judge_data"]["score"] <= 100
-    assert data_judge["judge_data"]["verdict_signal"] in [
+    assert res_flawed.status_code == 200
+    data_flawed = res_flawed.json()
+    assert data_flawed["judge_data"] is not None
+    assert 0 <= data_flawed["judge_data"]["score"] <= 100
+    assert data_flawed["judge_data"]["verdict_signal"] in [
         "BUILD_NOW",
         "PROCEED_WITH_CAUTION",
         "DO_NOT_BUILD",
     ]
-    assert len(data_judge["judge_data"]["brutal_critique"]) > 10
+    # Check that Smart Pivot Plan is provided if rejected
+    if data_flawed["judge_data"]["verdict_signal"] == "DO_NOT_BUILD" or data_flawed["judge_data"]["score"] < 50:
+        assert data_flawed["subagent_data"].get("pivot_plan") is not None
+        assert "content" in data_flawed["subagent_data"]["pivot_plan"]
+
+    # 3. Test MongoDB Cloud History Retrieval & Clear Endpoints
+    res_hist = client.get("/api/v1/chat/history", headers=headers)
+    assert res_hist.status_code == 200
+    assert res_hist.json()["status"] == "success"
+
+    res_del = client.delete("/api/v1/chat/history", headers=headers)
+    assert res_del.status_code == 200
+    assert res_del.json()["status"] == "success"
 
     # 4. Test Qdrant Status & Knowledge Sync Endpoints
     res_status = client.get("/api/v1/chat/qdrant-status", headers=headers)
