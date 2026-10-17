@@ -1,11 +1,11 @@
 import uuid
 import httpx
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlmodel import Session, select
 
 from app.core.config import settings
-from app.core.database import get_session
+from app.core.database import get_session, engine
 from app.core.security import (
     hash_password,
     verify_password,
@@ -222,9 +222,23 @@ def get_github_oauth_url():
     )
 
 
+async def _background_sync_repos(user_id: uuid.UUID):
+    """Asynchronously sync repositories in the background without blocking the login response."""
+    try:
+        from app.services.github_service import GitHubService
+        with Session(engine) as bg_session:
+            user = bg_session.get(User, user_id)
+            if user:
+                await GitHubService.sync_repositories(user, bg_session)
+    except Exception as e:
+        import logging
+        logging.getLogger("devcommand.auth").warning(f"Background repo sync failed for user {user_id}: {e}")
+
+
 @router.post("/github/callback", response_model=AuthResponse)
 async def github_oauth_callback(
     request: GitHubOAuthCallbackRequest,
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session)
 ):
     """Exchange GitHub OAuth authorization code for tokens and login/register."""
@@ -363,6 +377,9 @@ async def github_oauth_callback(
     except Exception:
         pass
 
+    # Schedule background repository sync
+    background_tasks.add_task(_background_sync_repos, user.id)
+
     tokens = _generate_token_response(user.id)
     return AuthResponse(tokens=tokens, user=_to_user_response(user))
 
@@ -370,6 +387,7 @@ async def github_oauth_callback(
 @router.post("/github/token-login", response_model=AuthResponse)
 async def github_token_login(
     request: GitHubTokenLoginRequest,
+    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session)
 ):
     """Authenticate or register user using a GitHub Personal Access Token."""
@@ -488,13 +506,9 @@ async def github_token_login(
     except Exception:
         pass
 
-    # Optional initial auto-sync of repos
+    # Optional initial auto-sync of repos in background so login returns immediately
     if request.sync_repos:
-        try:
-            from app.services.github_service import GitHubService
-            await GitHubService.sync_repositories(user, session)
-        except Exception:
-            pass
+        background_tasks.add_task(_background_sync_repos, user.id)
 
     tokens = _generate_token_response(user.id)
     return AuthResponse(tokens=tokens, user=_to_user_response(user))

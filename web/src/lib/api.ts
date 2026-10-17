@@ -77,7 +77,7 @@ async function executeFetch(
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const currentBase = activeApiUrl;
   const isLocal = currentBase.includes('localhost') || currentBase.includes('127.0.0.1');
-  const timeout = isLocal ? 6000 : 35000;
+  const timeout = isLocal ? 10000 : 90000;
 
   let response: Response | null = null;
   let connectionError: any = null;
@@ -88,11 +88,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     connectionError = err;
   }
 
-  // Automatic Fallback: If local backend failed to connect, seamlessly try the live cloud backend
+  // Automatic Fallback: If local backend failed to connect, seamlessly try the live Cloud backend
   if ((!response || connectionError) && isLocal && currentBase !== CLOUD_API_URL) {
     console.info(`[DevCommand API] Local backend unreachable at ${currentBase}. Auto-falling back to live Cloud API: ${CLOUD_API_URL}`);
     try {
-      response = await executeFetch(CLOUD_API_URL, endpoint, options, 35000);
+      response = await executeFetch(CLOUD_API_URL, endpoint, options, 90000);
       setApiBaseUrl(CLOUD_API_URL);
       connectionError = null;
     } catch (fallbackErr: any) {
