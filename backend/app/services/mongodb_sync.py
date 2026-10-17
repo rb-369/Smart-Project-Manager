@@ -1,5 +1,6 @@
+from __future__ import annotations
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional, List
 from app.core.mongodb import get_mongodb_database, is_mongodb_configured
 from app.models.user import User
 from app.models.project import Project
