@@ -79,6 +79,7 @@ export interface FutureProject {
   priority: FutureProjectPriority;
   status: FutureProjectStatus;
   notes?: string;
+  raw_message?: string;
   promoted_project_id?: string;
   created_at: string;
 }
@@ -113,6 +114,7 @@ export interface ParsedConcept {
   project_type: ProjectType;
   priority: FutureProjectPriority;
   notes?: string;
+  raw_message?: string;
   starter_features: string[];
   provider_used?: string;
 }

@@ -22,6 +22,7 @@ class FutureProject(SQLModel, table=True):
     priority: FutureProjectPriority = Field(default=FutureProjectPriority.P1, index=True)
     status: FutureProjectStatus = Field(default=FutureProjectStatus.IDEA, index=True)
     notes: Optional[str] = Field(default=None)
+    raw_message: Optional[str] = Field(default=None)
     
     promoted_project_id: Optional[uuid.UUID] = Field(default=None, foreign_key="projects.id")
 

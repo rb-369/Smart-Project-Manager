@@ -13,6 +13,7 @@ class CreateFutureProjectRequest(BaseModel):
     project_type: ProjectType = ProjectType.RESUME
     priority: FutureProjectPriority = FutureProjectPriority.P1
     notes: Optional[str] = None
+    raw_message: Optional[str] = None
 
 
 class UpdateFutureProjectRequest(BaseModel):
@@ -23,6 +24,7 @@ class UpdateFutureProjectRequest(BaseModel):
     priority: Optional[FutureProjectPriority] = None
     status: Optional[FutureProjectStatus] = None
     notes: Optional[str] = None
+    raw_message: Optional[str] = None
 
 
 class PromoteFutureProjectRequest(BaseModel):
@@ -39,6 +41,7 @@ class FutureProjectResponse(BaseModel):
     priority: FutureProjectPriority
     status: FutureProjectStatus
     notes: Optional[str] = None
+    raw_message: Optional[str] = None
     promoted_project_id: Optional[uuid.UUID] = None
     created_at: datetime
     updated_at: datetime
@@ -57,6 +60,8 @@ class ParsedConceptResponse(BaseModel):
     project_type: ProjectType = ProjectType.RESUME
     priority: FutureProjectPriority = FutureProjectPriority.P1
     notes: Optional[str] = None
+    raw_message: Optional[str] = None
     starter_features: list[str] = []
     provider_used: Optional[str] = None
+
 

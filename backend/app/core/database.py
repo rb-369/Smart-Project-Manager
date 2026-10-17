@@ -47,6 +47,15 @@ def init_db() -> None:
         except Exception:
             pass
 
+    # Safely migrate future_projects columns for SQLite if not present
+    try:
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE future_projects ADD COLUMN raw_message TEXT;"))
+    except Exception:
+        pass
+
+
 
 def get_session() -> Generator[Session, None, None]:
     """Dependency for providing a database session per request."""

@@ -243,8 +243,9 @@ def test_parse_raw_concept_endpoint(client: TestClient, auth_headers: dict):
     assert data["project_type"] in ["RESUME", "COLLEGE", "PRODUCTION"]
     assert isinstance(data["starter_features"], list)
     assert len(data["starter_features"]) >= 1
+    assert data["raw_message"] == raw_whatsapp_text
 
-    # Save the parsed concept as a future project
+    # Save the parsed concept as a future project with raw_message
     create_resp = client.post(
         f"{settings.API_V1_STR}/future-projects",
         json={
@@ -254,6 +255,7 @@ def test_parse_raw_concept_endpoint(client: TestClient, auth_headers: dict):
             "project_type": data["project_type"],
             "priority": data["priority"],
             "notes": data["notes"],
+            "raw_message": data["raw_message"],
         },
         headers=auth_headers,
     )
@@ -261,4 +263,6 @@ def test_parse_raw_concept_endpoint(client: TestClient, auth_headers: dict):
     created = create_resp.json()
     assert created["title"] == data["title"]
     assert created["status"] == "IDEA"
+    assert created["raw_message"] == raw_whatsapp_text
+
 

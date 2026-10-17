@@ -36,12 +36,16 @@ async def parse_concept_text(
 
     data, provider = await AIService.parse_raw_concept(request.raw_text)
 
-    # Format starter features into notes if notes doesn't already have them
+    # Format starter features and original message into notes if not already there
     starter_features = data.get("starter_features", [])
     notes = data.get("notes") or ""
     if starter_features and "starter" not in notes.lower() and "checklist" not in notes.lower():
         features_md = "\n".join([f"- [ ] {f}" for f in starter_features])
         notes = f"{notes}\n\n### Starter MVP Features Checklist:\n{features_md}".strip()
+
+    raw_clean = request.raw_text.strip()
+    if raw_clean and "original message" not in notes.lower() and raw_clean not in notes:
+        notes = f"{notes}\n\n### 💬 Original Message:\n> {raw_clean}".strip()
 
     # Determine ProjectType enum safely
     p_type = data.get("project_type", "RESUME")
@@ -60,6 +64,7 @@ async def parse_concept_text(
         project_type=p_type,
         priority=prio,
         notes=notes,
+        raw_message=raw_clean,
         starter_features=starter_features,
         provider_used=provider,
     )
@@ -101,6 +106,7 @@ def create_future_project(
         project_type=request.project_type,
         priority=request.priority,
         notes=request.notes,
+        raw_message=request.raw_message,
         status=FutureProjectStatus.IDEA,
     )
     session.add(idea)
@@ -143,6 +149,9 @@ def update_future_project(
         idea.status = request.status
     if request.notes is not None:
         idea.notes = request.notes
+    if request.raw_message is not None:
+        idea.raw_message = request.raw_message
+
 
     idea.updated_at = datetime.now(timezone.utc)
     session.add(idea)

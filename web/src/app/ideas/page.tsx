@@ -180,6 +180,7 @@ export default function IdeasPage() {
         project_type: parsedPreview.project_type,
         priority: parsedPreview.priority,
         notes: parsedPreview.notes?.trim() || undefined,
+        raw_message: parsedPreview.raw_message || rawText.trim() || undefined,
       });
       showNotification(`Concept "${parsedPreview.title.trim()}" imported successfully!`);
       setShowImportModal(false);
@@ -200,6 +201,7 @@ export default function IdeasPage() {
         project_type: parsedPreview.project_type,
         priority: parsedPreview.priority,
         notes: parsedPreview.notes?.trim() || undefined,
+        raw_message: parsedPreview.raw_message || rawText.trim() || undefined,
         status: 'IDEA',
         created_at: new Date().toISOString(),
       };
@@ -419,6 +421,18 @@ export default function IdeasPage() {
                                 {idea.notes}
                               </div>
                             )}
+
+                            {idea.raw_message && (
+                              <details className="mt-2 text-xs group">
+                                <summary className="cursor-pointer font-mono text-[10px] text-slate-500 hover:text-slate-800 flex items-center gap-1 select-none font-bold">
+                                  <MessageSquareText className="w-3 h-3 text-emerald-600" />
+                                  <span>View Original Message</span>
+                                </summary>
+                                <div className="mt-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/70 text-[11px] font-mono text-slate-800 whitespace-pre-wrap leading-relaxed max-h-28 overflow-y-auto">
+                                  {idea.raw_message}
+                                </div>
+                              </details>
+                            )}
                           </div>
 
                           {idea.target_tech_stack && (
@@ -626,6 +640,17 @@ export default function IdeasPage() {
                       className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none font-mono text-[11px]"
                     />
                   </div>
+
+                  {parsedPreview.raw_message && (
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <span className="text-[10px] font-mono font-bold text-slate-500 block mb-1">
+                        💬 Original Message (Saved):
+                      </span>
+                      <p className="text-[11px] font-mono text-slate-700 italic bg-white p-2 rounded-lg border border-slate-200 max-h-20 overflow-y-auto">
+                        &ldquo;{parsedPreview.raw_message}&rdquo;
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-3 flex items-center justify-between border-t border-slate-100">

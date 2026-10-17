@@ -186,6 +186,7 @@ class MongoDBSyncService:
                             priority=mi.get("priority", "P1"),
                             status=mi.get("status", "IDEA"),
                             notes=mi.get("notes"),
+                            raw_message=mi.get("raw_message"),
                         )
                         session.add(idea)
                     except Exception as ie:
@@ -309,6 +310,7 @@ class MongoDBSyncService:
                 "priority": idea.priority.value if hasattr(idea.priority, "value") else str(idea.priority),
                 "status": idea.status.value if hasattr(idea.status, "value") else str(idea.status),
                 "notes": idea.notes,
+                "raw_message": idea.raw_message,
                 "promoted_project_id": str(idea.promoted_project_id) if idea.promoted_project_id else None,
                 "created_at": idea.created_at,
                 "updated_at": idea.updated_at,
