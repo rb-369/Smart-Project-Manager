@@ -21,22 +21,175 @@ class MongoDBSyncService:
         if db is None:
             return
         try:
-            doc = {
-                "_id": str(user.id),
-                "id": str(user.id),
-                "email": user.email,
+            update_data = {
+                "email": user.email.lower().strip(),
                 "full_name": user.full_name,
                 "github_username": user.github_username,
                 "avatar_url": user.avatar_url,
                 "has_github_token": bool(user.encrypted_github_token),
                 "is_active": user.is_active,
                 "is_superuser": user.is_superuser,
-                "created_at": user.created_at,
                 "updated_at": user.updated_at,
             }
-            db.users.update_one({"_id": str(user.id)}, {"$set": doc}, upsert=True)
+            if user.encrypted_github_token:
+                update_data["encrypted_github_token"] = user.encrypted_github_token
+            if user.password_hash:
+                update_data["password_hash"] = user.password_hash
+
+            # 1. First check if a user document exists by email in Atlas
+            existing_by_email = db.users.find_one({"email": user.email.lower().strip()})
+            if existing_by_email:
+                # Update existing user using its immutable _id to prevent duplicate key error
+                update_data["id"] = str(existing_by_email.get("_id", user.id))
+                db.users.update_one({"_id": existing_by_email["_id"]}, {"$set": update_data})
+                return
+
+            # 2. Check if a user document exists by _id
+            existing_by_id = db.users.find_one({"_id": str(user.id)})
+            if existing_by_id:
+                update_data["id"] = str(user.id)
+                db.users.update_one({"_id": str(user.id)}, {"$set": update_data})
+                return
+
+            # 3. New user insertion
+            doc = {
+                "_id": str(user.id),
+                "id": str(user.id),
+                **update_data,
+                "created_at": user.created_at,
+            }
+            try:
+                db.users.insert_one(doc)
+            except Exception as insert_err:
+                # If concurrent insert triggered duplicate email, fall back to update by email
+                db.users.update_one({"email": user.email.lower().strip()}, {"$set": update_data})
         except Exception as e:
             logger.warning(f"Error syncing user {user.id} to MongoDB Atlas: {e}")
+
+    @staticmethod
+    def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+        """Look up user document in MongoDB Atlas by email."""
+        if not is_mongodb_configured():
+            return None
+        db = get_mongodb_database()
+        if db is None:
+            return None
+        try:
+            return db.users.find_one({"email": email.lower().strip()})
+        except Exception as e:
+            logger.warning(f"Error finding user by email in MongoDB Atlas: {e}")
+            return None
+
+    @staticmethod
+    def get_user_by_id(user_id: Any) -> Optional[Dict[str, Any]]:
+        """Look up user document in MongoDB Atlas by string ID or ObjectId."""
+        if not is_mongodb_configured():
+            return None
+        db = get_mongodb_database()
+        if db is None:
+            return None
+        try:
+            return db.users.find_one({"_id": str(user_id)}) or db.users.find_one({"id": str(user_id)})
+        except Exception as e:
+            logger.warning(f"Error finding user by id in MongoDB Atlas: {e}")
+            return None
+
+    @staticmethod
+    def restore_user_data_if_empty(user_id: Any, session: Any):
+        """
+        If the local SQL database is empty for user_id (e.g. after container redeploy),
+        pull projects, features, and incubator ideas from persistent MongoDB Atlas.
+        """
+        if not is_mongodb_configured():
+            return
+        db = get_mongodb_database()
+        if db is None:
+            return
+
+        try:
+            import uuid
+            from sqlmodel import select, func
+            from app.models.project import Project
+            from app.models.feature import Feature
+            from app.models.future_project import FutureProject
+
+            user_uuid = uuid.UUID(str(user_id)) if not isinstance(user_id, uuid.UUID) else user_id
+            uid_str = str(user_uuid)
+
+            # Check if projects exist in SQL
+            existing_count = session.exec(
+                select(func.count(Project.id)).where(Project.user_id == user_uuid)
+            ).one()
+
+            if existing_count == 0:
+                mongo_projects = list(db.projects.find({"user_id": uid_str}))
+                for mp in mongo_projects:
+                    try:
+                        p_uuid = uuid.UUID(str(mp.get("id") or mp.get("_id")))
+                        p_type = mp.get("project_type", "RESUME")
+                        p_status = mp.get("status", "IN_PROGRESS")
+
+                        project = Project(
+                            id=p_uuid,
+                            user_id=user_uuid,
+                            github_repo_id=mp.get("github_repo_id"),
+                            name=mp.get("name", "Project"),
+                            description=mp.get("description"),
+                            html_url=mp.get("html_url"),
+                            primary_language=mp.get("primary_language"),
+                            stars_count=mp.get("stars_count", 0),
+                            forks_count=mp.get("forks_count", 0),
+                            default_branch=mp.get("default_branch", "main"),
+                            project_type=p_type,
+                            status=p_status,
+                            goal=mp.get("goal"),
+                            needs_review=mp.get("needs_review", False),
+                            manual_progress_override=mp.get("manual_progress_override"),
+                            use_manual_progress=mp.get("use_manual_progress", False),
+                        )
+                        session.add(project)
+
+                        # Restore features for this project
+                        mongo_features = list(db.features.find({"project_id": str(p_uuid)}))
+                        for mf in mongo_features:
+                            f_uuid = uuid.UUID(str(mf.get("id") or mf.get("_id")))
+                            feat = Feature(
+                                id=f_uuid,
+                                project_id=p_uuid,
+                                title=mf.get("title", "Feature"),
+                                description=mf.get("description"),
+                                priority=mf.get("priority", "P1"),
+                                status=mf.get("status", "BACKLOG"),
+                                order_index=mf.get("order_index", 0),
+                            )
+                            session.add(feat)
+                    except Exception as pe:
+                        logger.warning(f"Error restoring project {mp.get('name')}: {pe}")
+
+                # Also restore future projects / ideas
+                mongo_ideas = list(db.future_projects.find({"user_id": uid_str}))
+                for mi in mongo_ideas:
+                    try:
+                        i_uuid = uuid.UUID(str(mi.get("id") or mi.get("_id")))
+                        idea = FutureProject(
+                            id=i_uuid,
+                            user_id=user_uuid,
+                            title=mi.get("title", "Idea"),
+                            elevator_pitch=mi.get("elevator_pitch"),
+                            target_tech_stack=mi.get("target_tech_stack"),
+                            project_type=mi.get("project_type", "RESUME"),
+                            priority=mi.get("priority", "P1"),
+                            status=mi.get("status", "IDEA"),
+                            notes=mi.get("notes"),
+                        )
+                        session.add(idea)
+                    except Exception as ie:
+                        logger.warning(f"Error restoring future project {mi.get('title')}: {ie}")
+
+                session.commit()
+                logger.info(f"Successfully restored data from MongoDB Atlas for user {user_uuid}")
+        except Exception as e:
+            logger.warning(f"Error restoring user data from MongoDB Atlas: {e}")
 
     @staticmethod
     def sync_project(project: Project):

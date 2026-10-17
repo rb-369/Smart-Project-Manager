@@ -51,10 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const profile = await api.get<User>('/auth/me');
       setUser(profile);
-    } catch (err) {
-      console.warn('[DevCommand Auth] Failed to restore session:', err);
-      api.clearTokens();
-      setUser(null);
+    } catch (err: any) {
+      console.warn('[DevCommand Auth] Session restoration issue:', err);
+      // Only clear tokens if the server explicitly confirmed 401 Unauthorized and it was not a network/cold-start error
+      if (!err?.isNetworkError && err?.status === 401) {
+        api.clearTokens();
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
