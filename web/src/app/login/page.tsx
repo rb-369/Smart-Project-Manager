@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { api } from '@/lib/api';
 import { GithubIcon } from '@/components/GithubIcon';
 import {
   KeyRound,
@@ -158,9 +159,24 @@ function LoginContent() {
 
           {/* Error & Info Alerts */}
           {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-              <span>{error}</span>
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex flex-col gap-2">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                <span className="flex-1">{error}</span>
+              </div>
+              {error.includes('localhost') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    api.setBaseUrl('https://smart-project-manager-em2i.onrender.com/api/v1');
+                    setError(null);
+                  }}
+                  className="mt-1 py-1.5 px-3 rounded-xl bg-[#0038FF] text-white text-[11px] font-mono font-bold hover:bg-[#002AD4] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs self-start"
+                >
+                  <Database className="w-3.5 h-3.5 text-[#C6FF20]" />
+                  <span>Switch to Live Cloud API (Render + Atlas)</span>
+                </button>
+              )}
             </div>
           )}
 

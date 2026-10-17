@@ -1,4 +1,25 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://smart-project-manager-em2i.onrender.com/api/v1';
+export const CLOUD_API_URL = 'https://smart-project-manager-em2i.onrender.com/api/v1';
+
+function getInitialBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const override = localStorage.getItem('devcommand_api_url');
+    if (override) return override;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || CLOUD_API_URL;
+}
+
+let activeApiUrl = getInitialBaseUrl();
+
+export function getApiBaseUrl(): string {
+  return activeApiUrl;
+}
+
+export function setApiBaseUrl(url: string) {
+  activeApiUrl = url.trim().replace(/\/+$/, '');
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('devcommand_api_url', activeApiUrl);
+  }
+}
 
 export class ApiError extends Error {
   status: number;
@@ -18,15 +39,19 @@ function getStoredToken(): string | null {
   return localStorage.getItem('devcommand_access_token');
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+async function executeFetch(
+  baseUrl: string,
+  endpoint: string,
+  options: RequestInit,
+  timeoutMs: number
+): Promise<Response> {
+  const url = `${baseUrl}${endpoint}`;
   const headers = new Headers(options.headers || {});
 
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
 
-  // Attach JWT token from localStorage if present
   if (typeof window !== 'undefined') {
     const token = getStoredToken();
     if (token) {
@@ -34,14 +59,57 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     }
   }
 
-  let response: Response;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
-    response = await fetch(url, { ...options, headers });
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    return res;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const currentBase = activeApiUrl;
+  const isLocal = currentBase.includes('localhost') || currentBase.includes('127.0.0.1');
+  const timeout = isLocal ? 6000 : 35000;
+
+  let response: Response | null = null;
+  let connectionError: any = null;
+
+  try {
+    response = await executeFetch(currentBase, endpoint, options, timeout);
   } catch (err: any) {
-    const errMsg = err?.message || 'Connection failed';
-    console.warn(`[DevCommand API] Backend unavailable at ${url}: ${errMsg}`);
+    connectionError = err;
+  }
+
+  // Automatic Fallback: If local backend failed to connect, seamlessly try the live cloud backend
+  if ((!response || connectionError) && isLocal && currentBase !== CLOUD_API_URL) {
+    console.info(`[DevCommand API] Local backend unreachable at ${currentBase}. Auto-falling back to live Cloud API: ${CLOUD_API_URL}`);
+    try {
+      response = await executeFetch(CLOUD_API_URL, endpoint, options, 35000);
+      setApiBaseUrl(CLOUD_API_URL);
+      connectionError = null;
+    } catch (fallbackErr: any) {
+      connectionError = fallbackErr;
+    }
+  }
+
+  if (!response || connectionError) {
+    const errMsg = connectionError?.name === 'AbortError' ? 'Request timed out' : (connectionError?.message || 'Connection failed');
+    console.warn(`[DevCommand API] Backend unavailable: ${errMsg}`);
+    
+    const helpfulMessage = activeApiUrl.includes('localhost')
+      ? `Cannot connect to local backend at ${activeApiUrl}. Start it with 'uvicorn app.main:app --port 8000', or use the live cloud API.`
+      : `Cannot connect to DevCommand API server at ${activeApiUrl}. If the Render backend is waking up, please wait ~20s and try again.`;
+
     throw new ApiError(
-      `Cannot connect to DevCommand API server at ${API_BASE_URL}. Ensure the backend is running on port 8000.`,
+      helpfulMessage,
       0,
       { originalError: errMsg },
       true
@@ -56,7 +124,6 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   if (!response.ok) {
     if (response.status === 401 && typeof window !== 'undefined') {
-      // Clear expired credentials and notify listeners
       localStorage.removeItem('devcommand_access_token');
       localStorage.removeItem('devcommand_refresh_token');
       window.dispatchEvent(new CustomEvent('devcommand:unauthorized'));
@@ -96,4 +163,6 @@ export const api = {
     }
     return false;
   },
+  getBaseUrl: () => getApiBaseUrl(),
+  setBaseUrl: (url: string) => setApiBaseUrl(url),
 };
