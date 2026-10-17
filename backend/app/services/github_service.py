@@ -92,8 +92,12 @@ class GitHubService:
             forks = r.get("forks_count", 0)
             default_branch = r.get("default_branch", "main")
 
+            homepage = r.get("homepage")
+            if homepage and not str(homepage).startswith("http"):
+                homepage = f"https://{homepage}" if homepage.strip() else None
+
             if repo_id in existing_by_repo_id:
-                # Update existing repo stats
+                # Update existing repo stats (preserving is_hidden, is_starred, order_index)
                 existing_p = existing_by_repo_id[repo_id]
                 existing_p.stars_count = stars
                 existing_p.forks_count = forks
@@ -103,6 +107,8 @@ class GitHubService:
                     existing_p.html_url = html_url
                 if lang and not existing_p.primary_language:
                     existing_p.primary_language = lang
+                if homepage and not existing_p.live_url:
+                    existing_p.live_url = homepage
                 session.add(existing_p)
                 updated_count += 1
             else:
@@ -115,14 +121,18 @@ class GitHubService:
                     name=repo_name,
                     description=desc,
                     html_url=html_url,
+                    live_url=homepage,
                     primary_language=lang,
                     stars_count=stars,
                     forks_count=forks,
                     default_branch=default_branch,
                     readme_content=readme,
-                    project_type=ProjectType.RESUME,  # Default, to be reviewed
+                    project_type=ProjectType.PRODUCTION if (homepage and any(k in str(homepage).lower() for k in ["vercel.app", "render.com", "netlify.app"])) else ProjectType.RESUME,
                     status=ProjectStatus.IN_PROGRESS,
                     needs_review=True,  # Put in Needs Review Tray
+                    is_starred=False,
+                    is_hidden=False,
+                    order_index=0,
                 )
                 session.add(new_project)
                 new_count += 1

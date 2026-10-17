@@ -13,6 +13,7 @@ from app.schemas.project import (
     CreateProjectRequest,
     UpdateProjectRequest,
     ConfirmTriageRequest,
+    BatchReorderRequest,
     ProjectSummaryResponse,
     ProjectDetailResponse,
 )
@@ -57,12 +58,16 @@ def _to_project_summary(project: Project, features: List[Feature]) -> ProjectSum
         name=project.name,
         description=project.description,
         html_url=project.html_url,
+        live_url=project.live_url,
         primary_language=project.primary_language,
         github_repo_id=project.github_repo_id,
         project_type=project.project_type,
         status=project.status,
         goal=project.goal,
         needs_review=project.needs_review,
+        is_starred=bool(project.is_starred),
+        is_hidden=bool(project.is_hidden),
+        order_index=int(project.order_index or 0),
         progress_percentage=progress,
         total_features=len(features),
         completed_features=done_count,
@@ -77,6 +82,9 @@ def list_projects(
     status_filter: Optional[ProjectStatus] = Query(None, alias="status"),
     type_filter: Optional[ProjectType] = Query(None, alias="project_type"),
     needs_review: Optional[bool] = Query(None),
+    is_starred: Optional[bool] = Query(None),
+    is_hidden: Optional[bool] = Query(None, description="Filter hidden projects (None = all non-hidden)"),
+    has_live_url: Optional[bool] = Query(None),
     search: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -90,10 +98,20 @@ def list_projects(
         query = query.where(Project.project_type == type_filter)
     if needs_review is not None:
         query = query.where(Project.needs_review == needs_review)
+    if is_starred is not None:
+        query = query.where(Project.is_starred == is_starred)
+    if is_hidden is not None:
+        query = query.where(Project.is_hidden == is_hidden)
+    if has_live_url is True:
+        query = query.where(Project.live_url.is_not(None))
     if search:
         query = query.where(Project.name.ilike(f"%{search.strip()}%"))
 
-    query = query.order_by(Project.updated_at.desc())
+    query = query.order_by(
+        Project.is_starred.desc(),
+        Project.order_index.asc(),
+        Project.updated_at.desc(),
+    )
     projects = session.exec(query).all()
 
     # Pre-fetch features for efficient calculation
@@ -104,6 +122,44 @@ def list_projects(
         ).all()
         results.append(_to_project_summary(p, features))
 
+    return results
+
+
+@router.patch("/reorder", response_model=List[ProjectSummaryResponse])
+def reorder_projects(
+    request: BatchReorderRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Batch updates custom order_index for projects (drag-and-drop or manual reordering)."""
+    updated_projects = []
+    for item in request.items:
+        p = session.exec(
+            select(Project).where(Project.id == item.id, Project.user_id == current_user.id)
+        ).first()
+        if p:
+            p.order_index = item.order_index
+            session.add(p)
+            updated_projects.append(p)
+    session.commit()
+
+    for p in updated_projects:
+        try:
+            from app.services.mongodb_sync import MongoDBSyncService
+            MongoDBSyncService.sync_project(p)
+        except Exception:
+            pass
+
+    query = (
+        select(Project)
+        .where(Project.user_id == current_user.id)
+        .order_by(Project.is_starred.desc(), Project.order_index.asc(), Project.updated_at.desc())
+    )
+    all_p = session.exec(query).all()
+    results: List[ProjectSummaryResponse] = []
+    for p in all_p:
+        features = session.exec(select(Feature).where(Feature.project_id == p.id)).all()
+        results.append(_to_project_summary(p, features))
     return results
 
 
@@ -123,6 +179,10 @@ def create_project(
         goal=request.goal,
         primary_language=request.primary_language,
         html_url=request.html_url,
+        live_url=request.live_url,
+        is_starred=request.is_starred,
+        is_hidden=request.is_hidden,
+        order_index=request.order_index,
         needs_review=False,
     )
     session.add(project)
@@ -194,11 +254,75 @@ def update_project(
         project.primary_language = request.primary_language
     if request.html_url is not None:
         project.html_url = request.html_url
+    if request.live_url is not None:
+        project.live_url = request.live_url.strip() if request.live_url.strip() else None
+    if request.is_starred is not None:
+        project.is_starred = request.is_starred
+    if request.is_hidden is not None:
+        project.is_hidden = request.is_hidden
+    if request.order_index is not None:
+        project.order_index = request.order_index
     if request.use_manual_progress is not None:
         project.use_manual_progress = request.use_manual_progress
     if request.manual_progress_override is not None:
         project.manual_progress_override = request.manual_progress_override
 
+    project.updated_at = datetime.now(timezone.utc)
+    session.add(project)
+    session.commit()
+    session.refresh(project)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_project(project)
+    except Exception:
+        pass
+
+    features = session.exec(select(Feature).where(Feature.project_id == project.id)).all()
+    return _to_project_summary(project, features)
+
+
+@router.patch("/{project_id}/star", response_model=ProjectSummaryResponse)
+def toggle_star_project(
+    project_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Toggle starred / main status for a project."""
+    stmt = select(Project).where(Project.id == project_id, Project.user_id == current_user.id)
+    project = session.exec(stmt).first()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    project.is_starred = not project.is_starred
+    project.updated_at = datetime.now(timezone.utc)
+    session.add(project)
+    session.commit()
+    session.refresh(project)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_project(project)
+    except Exception:
+        pass
+
+    features = session.exec(select(Feature).where(Feature.project_id == project.id)).all()
+    return _to_project_summary(project, features)
+
+
+@router.patch("/{project_id}/hide", response_model=ProjectSummaryResponse)
+def toggle_hide_project(
+    project_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Toggle hidden / soft-deleted status for a project."""
+    stmt = select(Project).where(Project.id == project_id, Project.user_id == current_user.id)
+    project = session.exec(stmt).first()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    project.is_hidden = not project.is_hidden
     project.updated_at = datetime.now(timezone.utc)
     session.add(project)
     session.commit()

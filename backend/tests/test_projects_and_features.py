@@ -149,3 +149,77 @@ def test_future_projects_incubator_and_promotion(client: TestClient, auth_header
     updated_ideas = client.get(f"{settings.API_V1_STR}/future-projects", headers=auth_headers).json()
     assert updated_ideas[0]["status"] == "PROMOTED"
     assert updated_ideas[0]["promoted_project_id"] == new_proj["id"]
+
+
+def test_project_star_hide_live_url_and_reorder(client: TestClient, auth_headers: dict):
+    """Test starring (pinned on top), soft-hiding, live URL support, and batch reordering."""
+    # 1. Create three projects: P1, P2, P3
+    p1 = client.post(
+        f"{settings.API_V1_STR}/projects",
+        json={"name": "alpha-tool", "order_index": 0},
+        headers=auth_headers,
+    ).json()
+    p2 = client.post(
+        f"{settings.API_V1_STR}/projects",
+        json={"name": "beta-system", "order_index": 1},
+        headers=auth_headers,
+    ).json()
+    p3 = client.post(
+        f"{settings.API_V1_STR}/projects",
+        json={"name": "gamma-prod", "order_index": 2, "live_url": "https://gamma.vercel.app"},
+        headers=auth_headers,
+    ).json()
+
+    # 2. Toggle star on P2 -> P2 should be starred
+    star_resp = client.patch(f"{settings.API_V1_STR}/projects/{p2['id']}/star", headers=auth_headers)
+    assert star_resp.status_code == 200
+    assert star_resp.json()["is_starred"] is True
+
+    # Check that P2 sorts to the very top in list
+    list_all = client.get(f"{settings.API_V1_STR}/projects", headers=auth_headers).json()
+    # P2 should be first because it is starred
+    assert list_all[0]["id"] == p2["id"]
+
+    # 3. Soft-hide P1
+    hide_resp = client.patch(f"{settings.API_V1_STR}/projects/{p1['id']}/hide", headers=auth_headers)
+    assert hide_resp.status_code == 200
+    assert hide_resp.json()["is_hidden"] is True
+
+    # Listing projects with is_hidden=False should NOT include P1
+    active_list = client.get(f"{settings.API_V1_STR}/projects?is_hidden=false", headers=auth_headers).json()
+    assert not any(p["id"] == p1["id"] for p in active_list)
+
+    # Listing projects with is_hidden=True should include P1
+    hidden_list = client.get(f"{settings.API_V1_STR}/projects?is_hidden=true", headers=auth_headers).json()
+    assert any(p["id"] == p1["id"] for p in hidden_list)
+
+    # Unhide P1
+    unhide_resp = client.patch(f"{settings.API_V1_STR}/projects/{p1['id']}/hide", headers=auth_headers)
+    assert unhide_resp.status_code == 200
+    assert unhide_resp.json()["is_hidden"] is False
+
+    # 4. Live URL update
+    update_live = client.patch(
+        f"{settings.API_V1_STR}/projects/{p1['id']}",
+        json={"live_url": "https://alpha.render.com"},
+        headers=auth_headers,
+    )
+    assert update_live.status_code == 200
+    assert update_live.json()["live_url"] == "https://alpha.render.com"
+
+    # Query has_live_url=true -> should return P1 and P3
+    prod_deployed = client.get(f"{settings.API_V1_STR}/projects?has_live_url=true", headers=auth_headers).json()
+    live_ids = [p["id"] for p in prod_deployed]
+    assert p1["id"] in live_ids
+    assert p3["id"] in live_ids
+
+    # 5. Batch Reorder
+    reorder_resp = client.patch(
+        f"{settings.API_V1_STR}/projects/reorder",
+        json={"items": [{"id": p3["id"], "order_index": 0}, {"id": p1["id"], "order_index": 5}]},
+        headers=auth_headers,
+    )
+    assert reorder_resp.status_code == 200
+    reordered = reorder_resp.json()
+    p3_updated = next(p for p in reordered if p["id"] == p3["id"])
+    assert p3_updated["order_index"] == 0

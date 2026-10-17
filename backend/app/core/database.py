@@ -33,6 +33,20 @@ def init_db() -> None:
     except Exception:
         pass
 
+    # Safely migrate projects columns for SQLite if not present
+    for col, col_type in [
+        ("is_starred", "BOOLEAN DEFAULT 0"),
+        ("is_hidden", "BOOLEAN DEFAULT 0"),
+        ("live_url", "VARCHAR"),
+        ("order_index", "INTEGER DEFAULT 0"),
+    ]:
+        try:
+            from sqlalchemy import text
+            with engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE projects ADD COLUMN {col} {col_type};"))
+        except Exception:
+            pass
+
 
 def get_session() -> Generator[Session, None, None]:
     """Dependency for providing a database session per request."""

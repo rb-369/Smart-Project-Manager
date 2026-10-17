@@ -34,6 +34,12 @@ class Project(SQLModel, table=True):
     goal: Optional[str] = Field(default=None)
     needs_review: bool = Field(default=False, index=True)
     
+    # Starred, Hidden, Live URL & Custom Ordering
+    is_starred: bool = Field(default=False, index=True)
+    is_hidden: bool = Field(default=False, index=True)
+    live_url: Optional[str] = Field(default=None)
+    order_index: int = Field(default=0, index=True)
+    
     # Progress Calculation
     manual_progress_override: Optional[int] = Field(default=None)
     use_manual_progress: bool = Field(default=False)

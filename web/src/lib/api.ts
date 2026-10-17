@@ -185,4 +185,20 @@ export const api = {
   getQdrantStatus: () => request<import('../types').QdrantStatus>('/chat/qdrant-status', { method: 'GET' }),
   syncKnowledgeBase: () =>
     request<{ message: string; points_indexed: number }>('/chat/sync-knowledge', { method: 'POST' }),
+
+  // Projects Management: Starring, Hiding, Live URLs, Reordering
+  toggleStarProject: (id: string) =>
+    request<import('../types').ProjectSummary>(`/projects/${id}/star`, { method: 'PATCH' }),
+  toggleHideProject: (id: string) =>
+    request<import('../types').ProjectSummary>(`/projects/${id}/hide`, { method: 'PATCH' }),
+  updateProjectLiveUrl: (id: string, live_url: string) =>
+    request<import('../types').ProjectSummary>(`/projects/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ live_url }),
+    }),
+  reorderProjects: (items: { id: string; order_index: number }[]) =>
+    request<import('../types').ProjectSummary[]>('/projects/reorder', {
+      method: 'PATCH',
+      body: JSON.stringify({ items }),
+    }),
 };

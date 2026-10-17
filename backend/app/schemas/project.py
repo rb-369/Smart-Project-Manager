@@ -15,6 +15,10 @@ class CreateProjectRequest(BaseModel):
     goal: Optional[str] = None
     primary_language: Optional[str] = None
     html_url: Optional[str] = None
+    live_url: Optional[str] = None
+    is_starred: bool = False
+    is_hidden: bool = False
+    order_index: int = 0
 
 
 class UpdateProjectRequest(BaseModel):
@@ -25,6 +29,10 @@ class UpdateProjectRequest(BaseModel):
     goal: Optional[str] = None
     primary_language: Optional[str] = None
     html_url: Optional[str] = None
+    live_url: Optional[str] = None
+    is_starred: Optional[bool] = None
+    is_hidden: Optional[bool] = None
+    order_index: Optional[int] = None
     use_manual_progress: Optional[bool] = None
     manual_progress_override: Optional[int] = Field(default=None, ge=0, le=100)
 
@@ -35,17 +43,30 @@ class ConfirmTriageRequest(BaseModel):
     initial_features: Optional[List[dict]] = None  # [{title, priority, description}]
 
 
+class BatchReorderItem(BaseModel):
+    id: uuid.UUID
+    order_index: int
+
+
+class BatchReorderRequest(BaseModel):
+    items: List[BatchReorderItem]
+
+
 class ProjectSummaryResponse(BaseModel):
     id: uuid.UUID
     name: str
     description: Optional[str] = None
     html_url: Optional[str] = None
+    live_url: Optional[str] = None
     primary_language: Optional[str] = None
     github_repo_id: Optional[int] = None
     project_type: ProjectType
     status: ProjectStatus
     goal: Optional[str] = None
     needs_review: bool
+    is_starred: bool = False
+    is_hidden: bool = False
+    order_index: int = 0
     progress_percentage: int
     total_features: int
     completed_features: int

@@ -40,18 +40,27 @@ export interface ProjectSummary {
   name: string;
   description?: string;
   html_url?: string;
+  live_url?: string;
   primary_language?: string;
   github_repo_id?: number;
   project_type: ProjectType;
   status: ProjectStatus;
   goal?: string;
   needs_review: boolean;
+  is_starred?: boolean;
+  is_hidden?: boolean;
+  order_index?: number;
   progress_percentage: number;
   total_features: number;
   completed_features: number;
   stars_count: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface BatchReorderItem {
+  id: string;
+  order_index: number;
 }
 
 export interface ProjectDetail extends ProjectSummary {
