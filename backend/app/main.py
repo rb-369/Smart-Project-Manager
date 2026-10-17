@@ -53,6 +53,33 @@ from app.api.v1.mongodb_status import router as mongodb_router
 from app.api.v1.chat import router as chat_router
 
 
+@app.get("/", tags=["Root"])
+def root():
+    """Friendly root endpoint."""
+    return {
+        "status": "online",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "api_v1": settings.API_V1_STR,
+        "docs": "/docs",
+        "health": f"{settings.API_V1_STR}/health",
+    }
+
+
+@app.get("/api", tags=["Root"])
+def api_root():
+    """Friendly API info endpoint."""
+    return {
+        "status": "online",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "api_v1": settings.API_V1_STR,
+        "docs": "/docs",
+        "health": f"{settings.API_V1_STR}/health",
+    }
+
+
+@app.get("/health", tags=["Health"])
 @app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
 def health_check():
     """Verify backend service and database operational status."""
