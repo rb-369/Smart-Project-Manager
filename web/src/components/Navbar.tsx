@@ -61,14 +61,17 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
       {/* Brand & Monogram Badge */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-full bg-white text-[#0038FF] flex items-center justify-center font-mono text-xs font-black shadow-md group-hover:scale-105 transition-transform">
-            <span>DC</span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative p-1 shrink-0">
+            <svg viewBox="0 0 512 512" fill="none" className="w-full h-full drop-shadow">
+              <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
+              <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
+            </svg>
           </div>
           <div className="hidden sm:flex flex-col">
             <span className="font-black text-sm tracking-tight text-white leading-none">
               DevCommand
             </span>
-            <span className="text-[9px] font-mono text-white/70 uppercase tracking-widest font-bold">
+            <span className="text-[9px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
               AUTONOMOUS ENGINE
             </span>
           </div>

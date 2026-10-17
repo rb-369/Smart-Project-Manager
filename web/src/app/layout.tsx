@@ -15,6 +15,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "DevCommand — Engineering Roadmap Intelligence",
   description: "Automated GitHub ingestion, multi-tier AI feature decomposition, and mathematical milestone velocity physics.",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: ['/icon.svg'],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

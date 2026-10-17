@@ -47,14 +47,17 @@ export default function Home() {
         <header className="max-w-6xl mx-auto w-full z-40 px-4 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-between shadow-xl mb-12 sm:mb-16">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-full bg-white text-[#0038FF] flex items-center justify-center font-mono text-xs font-black shadow-md group-hover:scale-105 transition-transform">
-                <span>DC</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative p-1 shrink-0">
+                <svg viewBox="0 0 512 512" fill="none" className="w-full h-full drop-shadow">
+                  <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
+                  <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
+                </svg>
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-sm tracking-tight text-white leading-none">
                   DevCommand
                 </span>
-                <span className="text-[9px] font-mono text-white/70 uppercase tracking-widest font-bold">
+                <span className="text-[9px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
                   AUTONOMOUS ENGINE
                 </span>
               </div>
@@ -586,8 +589,13 @@ export default function Home() {
       {/* Clean Footer */}
       <footer className="bg-slate-50 border-t border-slate-200 py-8 px-4 text-center text-xs font-mono text-slate-500">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#0038FF]" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-black/10 flex items-center justify-center p-0.5 shrink-0 shadow-sm">
+              <svg viewBox="0 0 512 512" fill="none" className="w-full h-full">
+                <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
+                <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
+              </svg>
+            </div>
             <span className="font-bold text-slate-800">DevCommand</span>
             <span>&bull; Autonomous Repository Intelligence</span>
           </div>

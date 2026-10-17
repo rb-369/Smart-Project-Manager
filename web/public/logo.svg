@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" fill="none">
+  <defs>
+    <!-- Background Gradient: Deep Electric Blue -->
+    <linearGradient id="logoBgGrad" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0051FF" />
+      <stop offset="100%" stop-color="#002AD4" />
+    </linearGradient>
+
+    <!-- Neon Lime Glow -->
+    <linearGradient id="logoLimeGrad" x1="22" y1="15" x2="36" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#D9FF43" />
+      <stop offset="50%" stop-color="#C6FF20" />
+      <stop offset="100%" stop-color="#A5E800" />
+    </linearGradient>
+
+    <!-- White Chevron Gloss -->
+    <linearGradient id="logoWhiteGrad" x1="36" y1="16" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+  </defs>
+
+  <!-- 1. ICON SQUIRCLE EMBLEM -->
+  <g>
+    <!-- Outer Contrast Border -->
+    <rect x="4" y="4" width="56" height="56" rx="16" fill="#030C2E" />
+    <!-- Electric Blue Container -->
+    <rect x="5.5" y="5.5" width="53" height="53" rx="14.5" fill="url(#logoBgGrad)" stroke="#3875FF" stroke-width="1.2" />
+    
+    <!-- Neon Lime Lightning Bolt -->
+    <path
+      d="M26 15 L36 15 L28.5 29 L36 29 L19 50 L23.5 34 L18 34 Z"
+      fill="url(#logoLimeGrad)"
+    />
+
+    <!-- White Command Chevron -->
+    <path
+      d="M38.5 17 L49.5 32 L38.5 47 L32 47 L42.5 33 L42.5 31 L32 17 Z"
+      fill="url(#logoWhiteGrad)"
+    />
+  </g>
+
+  <!-- 2. BRAND TYPOGRAPHY -->
+  <g transform="translate(72, 0)">
+    <!-- Wordmark: DevCommand -->
+    <text
+      x="0"
+      y="35"
+      font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', sans-serif"
+      font-size="24"
+      font-weight="900"
+      letter-spacing="-0.5"
+      fill="#FFFFFF"
+    >Dev<tspan fill="#FFFFFF">Command</tspan></text>
+
+    <!-- Subtitle: Autonomous Engine -->
+    <text
+      x="1"
+      y="49"
+      font-family="'SF Mono', 'Geist Mono', Consolas, monospace"
+      font-size="8.5"
+      font-weight="800"
+      letter-spacing="2"
+      fill="#C6FF20"
+      opacity="0.95"
+    >AUTONOMOUS ENGINE</text>
+  </g>
+</svg>
