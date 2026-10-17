@@ -62,6 +62,13 @@ def create_future_project(
     session.add(idea)
     session.commit()
     session.refresh(idea)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_future_project(idea)
+    except Exception:
+        pass
+
     return idea
 
 
@@ -97,6 +104,13 @@ def update_future_project(
     session.add(idea)
     session.commit()
     session.refresh(idea)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_future_project(idea)
+    except Exception:
+        pass
+
     return idea
 
 
@@ -136,6 +150,13 @@ def promote_future_project(
     session.add(idea)
     session.commit()
 
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_project(new_project)
+        MongoDBSyncService.sync_future_project(idea)
+    except Exception:
+        pass
+
     return _to_project_summary(new_project, [])
 
 
@@ -153,3 +174,9 @@ def delete_future_project(
 
     session.delete(idea)
     session.commit()
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.delete_future_project(idea_id)
+    except Exception:
+        pass

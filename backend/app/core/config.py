@@ -6,7 +6,7 @@ import json
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"
@@ -23,8 +23,10 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     FERNET_ENCRYPTION_KEY: str = "dGhpcy1pcy1hLWR1bW15LWtleS1mb3ItZGV2LWV4YW1wbGUtMTIzNDU="
 
-    # Database
+    # Database (SQL and MongoDB Atlas)
     DATABASE_URL: str = "sqlite:///./devcommand.db"
+    MONGODB_URL: str = ""
+    MONGODB_DB_NAME: str = "devcommand"
 
     # GitHub OAuth
     GITHUB_CLIENT_ID: str = ""

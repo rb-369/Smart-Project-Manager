@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { 
   RefreshCw, 
   Search, 
@@ -13,8 +14,14 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  LogOut,
+  Users,
+  Database,
+  ChevronDown,
+  ShieldCheck
 } from 'lucide-react';
+import { GithubIcon } from '@/components/GithubIcon';
 
 interface NavbarProps {
   onSyncSuccess?: () => void;
@@ -22,16 +29,38 @@ interface NavbarProps {
   onSearchChange?: (val: string) => void;
 }
 
-export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps) {
+export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
   const pathname = usePathname();
+  const { user, isAuthenticated, logout, switchDemoAccount } = useAuth();
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<{ message: string; isError?: boolean } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [mongoStatus, setMongoStatus] = useState<{ configured: boolean; connected: boolean } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Incubator', href: '/ideas', icon: Lightbulb },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch MongoDB connection status
+  useEffect(() => {
+    api.get<{ configured: boolean; connected: boolean }>('/mongodb/status')
+      .then(setMongoStatus)
+      .catch(() => setMongoStatus({ configured: false, connected: false }));
+  }, []);
 
   const handleSync = async () => {
     setIsSyncing(true);
@@ -77,12 +106,14 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
           </div>
         </Link>
 
-        {/* Live Telemetry Node */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 border border-white/10 text-[10px] font-mono text-white/90">
-          <span className="w-2 h-2 rounded-full bg-[#C6FF20] animate-pulse" />
-          <span className="text-[#C6FF20] font-black">ONLINE</span>
+        {/* Database Telemetry Indicator */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-black/25 border border-white/10 text-[10px] font-mono text-white/90">
+          <span className={`w-2 h-2 rounded-full ${mongoStatus?.connected ? 'bg-[#C6FF20] animate-pulse' : 'bg-amber-400'}`} />
+          <span className="text-[#C6FF20] font-black">
+            {mongoStatus?.connected ? 'ATLAS LIVE' : 'MONGODB READY'}
+          </span>
           <span className="opacity-40">|</span>
-          <span className="text-white/80 font-bold">GRIDSTER BLUE</span>
+          <span className="text-white/80 font-bold">ISOLATED TENANT</span>
         </div>
       </div>
 
@@ -108,10 +139,10 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
         })}
       </nav>
 
-      {/* Right Tools & Action Button */}
+      {/* Right Tools & User Profile */}
       <div className="flex items-center gap-2.5">
         {/* Search Input */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs text-white placeholder-white/50 focus-within:bg-white/20 focus-within:border-white/40 transition">
+        <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs text-white placeholder-white/50 focus-within:bg-white/20 focus-within:border-white/40 transition">
           <Search className="w-3.5 h-3.5 text-white/60" />
           <input
             type="text"
@@ -119,9 +150,6 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
             onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
             className="bg-transparent border-none outline-none text-xs text-white placeholder-white/60 w-20 focus:w-32 transition-all font-mono"
           />
-          <kbd className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-white/20 text-white border border-white/20">
-            ⌘K
-          </kbd>
         </div>
 
         {/* Sync Status Badge */}
@@ -142,35 +170,135 @@ export function Navbar({ onSyncSuccess, userEmail, onSearchChange }: NavbarProps
           </div>
         )}
 
-        {/* Sync Trigger */}
-        <button
-          onClick={handleSync}
-          disabled={isSyncing}
-          className="py-1.5 px-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
-          title="Sync with GitHub"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#C6FF20]' : 'text-white'}`} />
-          <span className="hidden sm:inline font-mono text-[11px] font-bold text-white">
-            {isSyncing ? 'Syncing' : 'Sync'}
-          </span>
-        </button>
+        {/* Sync Trigger (Only when authenticated) */}
+        {isAuthenticated && (
+          <button
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="py-1.5 px-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+            title="Sync with GitHub"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#C6FF20]' : 'text-white'}`} />
+            <span className="hidden sm:inline font-mono text-[11px] font-bold text-white">
+              {isSyncing ? 'Syncing' : 'Sync'}
+            </span>
+          </button>
+        )}
 
-        {/* User Monogram or Launch CTA */}
-        {pathname !== '/dashboard' ? (
+        {/* User Identity or Sign In CTA */}
+        {isAuthenticated && user ? (
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-md transition cursor-pointer text-left"
+            >
+              {user.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.avatar_url}
+                  alt={user.full_name || user.email}
+                  className="w-7 h-7 rounded-full object-cover border border-white/40"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-white text-[#0038FF] font-black text-xs flex items-center justify-center border border-white/40 shadow">
+                  {(user.full_name || user.email).charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className="hidden sm:inline text-xs font-bold font-mono text-white max-w-[90px] truncate">
+                {user.github_username ? `@${user.github_username}` : user.email.split('@')[0]}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-white/70 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {menuOpen && (
+              <div className="absolute right-0 mt-3 w-72 rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-2xl p-3 z-50 space-y-3 font-sans animate-in fade-in zoom-in-95 duration-100">
+                {/* User Header */}
+                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-slate-900 truncate">
+                      {user.full_name || 'Developer'}
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">
+                      ISOLATED
+                    </span>
+                  </div>
+                  <div className="text-[11px] font-mono text-slate-500 truncate">
+                    {user.email}
+                  </div>
+                  {user.github_username && (
+                    <div className="flex items-center gap-1 text-[11px] text-[#0038FF] font-mono pt-0.5">
+                      <GithubIcon className="w-3 h-3" />
+                      <span>github.com/{user.github_username}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Account Isolation Notice */}
+                <div className="px-3 py-2 rounded-xl bg-blue-50/70 border border-blue-100 text-[11px] text-blue-900 space-y-0.5">
+                  <div className="flex items-center gap-1 font-bold">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#0038FF]" />
+                    <span>Private Workspace</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500">
+                    All repos, roadmap metrics, and incubator ideas are isolated to your MongoDB Atlas tenant.
+                  </p>
+                </div>
+
+                {/* Multi-User Switcher Test Bar */}
+                <div className="space-y-1.5 pt-1 border-t border-slate-100">
+                  <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider px-1 flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    <span>Switch Test User</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
+                    <button
+                      onClick={() => { switchDemoAccount('alice'); setMenuOpen(false); }}
+                      className="p-1.5 rounded-lg border border-slate-200 hover:border-[#0038FF] hover:bg-slate-50 text-left transition"
+                    >
+                      <div className="font-bold text-[11px] text-slate-800">Alice Smith</div>
+                      <div className="text-[9px] text-slate-400">Frontend</div>
+                    </button>
+                    <button
+                      onClick={() => { switchDemoAccount('bob'); setMenuOpen(false); }}
+                      className="p-1.5 rounded-lg border border-slate-200 hover:border-[#0038FF] hover:bg-slate-50 text-left transition"
+                    >
+                      <div className="font-bold text-[11px] text-slate-800">Bob Chen</div>
+                      <div className="text-[9px] text-slate-400">Backend</div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Links */}
+                <div className="pt-1 border-t border-slate-100 space-y-1">
+                  <Link
+                    href="/settings"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 text-xs font-medium text-slate-700 transition"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Settings &amp; MongoDB Atlas</span>
+                  </Link>
+
+                  <button
+                    onClick={() => { logout(); setMenuOpen(false); }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-rose-50 text-xs font-bold text-rose-600 transition text-left cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
           <Link
-            href="/dashboard"
+            href="/login"
             className="btn-lime !py-1.5 !px-3.5 text-xs font-black flex items-center gap-1.5 shadow-md"
           >
-            <span>Hub</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <GithubIcon className="w-3.5 h-3.5" />
+            <span>Sign In</span>
           </Link>
-        ) : (
-          <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-white border border-white/40 flex items-center justify-center text-xs font-black text-[#0038FF] shadow-md">
-              {userEmail ? userEmail.charAt(0).toUpperCase() : 'R'}
-            </div>
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#C6FF20] border-2 border-[#0038FF]" />
-          </div>
         )}
       </div>
     </header>

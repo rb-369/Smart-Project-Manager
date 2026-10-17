@@ -32,11 +32,27 @@ class GitHubOAuthCallbackRequest(BaseModel):
     state: Optional[str] = None
 
 
+class GitHubTokenLoginRequest(BaseModel):
+    token: str = Field(..., min_length=10, description="GitHub Personal Access Token (classic or fine-grained)")
+    sync_repos: bool = Field(default=True, description="Automatically sync repositories on successful login")
+
+
+class DemoLoginRequest(BaseModel):
+    account: str = Field(default="alice", description="Account identifier: 'alice', 'bob', or 'demo'")
+
+
+class GitHubUrlResponse(BaseModel):
+    configured: bool
+    oauth_url: Optional[str] = None
+    client_id: Optional[str] = None
+
+
 class UserResponse(BaseModel):
     id: uuid.UUID
     email: str
     full_name: Optional[str] = None
     github_username: Optional[str] = None
+    avatar_url: Optional[str] = None
     has_github_token: bool = False
     is_active: bool
     created_at: datetime
@@ -47,3 +63,4 @@ class UserResponse(BaseModel):
 class AuthResponse(BaseModel):
     tokens: TokenResponse
     user: UserResponse
+

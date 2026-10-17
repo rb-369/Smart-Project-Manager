@@ -53,6 +53,12 @@ async def triage_project(
     session.add(ai_log)
     session.commit()
 
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_ai_log(ai_log)
+    except Exception:
+        pass
+
     features_list = [
         FeatureTriageItem(
             title=f["title"],
@@ -112,6 +118,12 @@ async def suggest_project_features(
     session.add(ai_log)
     session.commit()
 
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_ai_log(ai_log)
+    except Exception:
+        pass
+
     suggested_items = []
     for f in result.get("features", []):
         prio = f.get("priority", "P1")
@@ -157,6 +169,12 @@ async def suggest_next_projects(
     )
     session.add(ai_log)
     session.commit()
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_ai_log(ai_log)
+    except Exception:
+        pass
 
     suggested_projects = []
     for p in result.get("projects", []):

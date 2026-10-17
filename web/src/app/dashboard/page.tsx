@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { ProjectSummary, ProjectType } from '@/types';
 import { Navbar } from '@/components/Navbar';
 import { ProjectCard } from '@/components/ProjectCard';
@@ -15,10 +17,13 @@ import {
   ArrowRight,
   Zap,
   Terminal,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from 'lucide-react';
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<ProjectType | 'ALL'>('ALL');
@@ -26,7 +31,15 @@ export default function DashboardPage() {
   const [activeTriageProject, setActiveTriageProject] = useState<ProjectSummary | null>(null);
   const [backendOffline, setBackendOffline] = useState(false);
 
+  // Protect route
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login?next=/dashboard');
+    }
+  }, [authLoading, isAuthenticated, router]);
+
   const fetchProjects = async () => {
+    if (!api.isAuthenticated()) return;
     try {
       setLoading(true);
       setBackendOffline(false);
@@ -41,8 +54,10 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    if (isAuthenticated) {
+      fetchProjects();
+    }
+  }, [isAuthenticated, user]);
 
   const needsReviewProjects = projects.filter((p) => p.needs_review);
   const activeProjects = projects.filter((p) => p.status === 'IN_PROGRESS');

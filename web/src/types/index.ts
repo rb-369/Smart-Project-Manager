@@ -10,8 +10,17 @@ export interface User {
   email: string;
   full_name?: string;
   github_username?: string;
+  avatar_url?: string;
   has_github_token: boolean;
   created_at: string;
+}
+
+export interface MongoDBStatus {
+  configured: boolean;
+  connected: boolean;
+  message: string;
+  database: string;
+  host?: string;
 }
 
 export interface Feature {

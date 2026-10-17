@@ -129,4 +129,13 @@ class GitHubService:
                 newly_imported_names.append(repo_name)
 
         session.commit()
+
+        # Mirror projects to MongoDB Atlas
+        try:
+            from app.services.mongodb_sync import MongoDBSyncService
+            for p in session.exec(select(Project).where(Project.user_id == user.id)).all():
+                MongoDBSyncService.sync_project(p)
+        except Exception:
+            pass
+
         return new_count, updated_count, newly_imported_names

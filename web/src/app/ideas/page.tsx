@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { FutureProject, FutureProjectPriority, ProjectType, SuggestedProject } from '@/types';
 import { Navbar } from '@/components/Navbar';
 import {
@@ -18,6 +20,8 @@ import {
 } from 'lucide-react';
 
 export default function IdeasPage() {
+  const router = useRouter();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [ideas, setIdeas] = useState<FutureProject[]>([]);
   const [, setLoading] = useState(true);
 
@@ -35,7 +39,15 @@ export default function IdeasPage() {
   const [aiSuggestions, setAiSuggestions] = useState<SuggestedProject[]>([]);
   const [backendOffline, setBackendOffline] = useState(false);
 
+  // Protect route
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login?next=/ideas');
+    }
+  }, [authLoading, isAuthenticated, router]);
+
   const fetchIdeas = async () => {
+    if (!api.isAuthenticated()) return;
     try {
       setLoading(true);
       setBackendOffline(false);
@@ -50,8 +62,10 @@ export default function IdeasPage() {
   };
 
   useEffect(() => {
-    fetchIdeas();
-  }, []);
+    if (isAuthenticated) {
+      fetchIdeas();
+    }
+  }, [isAuthenticated, user]);
 
   const handleCreateIdea = async (e: React.FormEvent) => {
     e.preventDefault();

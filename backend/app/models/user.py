@@ -18,6 +18,7 @@ class User(SQLModel, table=True):
     full_name: Optional[str] = Field(default=None)
     github_username: Optional[str] = Field(default=None, index=True)
     encrypted_github_token: Optional[str] = Field(default=None)
+    avatar_url: Optional[str] = Field(default=None)
     
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)

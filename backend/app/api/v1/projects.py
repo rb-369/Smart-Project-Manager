@@ -128,6 +128,13 @@ def create_project(
     session.add(project)
     session.commit()
     session.refresh(project)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_project(project)
+    except Exception:
+        pass
+
     return _to_project_summary(project, [])
 
 
@@ -197,6 +204,12 @@ def update_project(
     session.commit()
     session.refresh(project)
 
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_project(project)
+    except Exception:
+        pass
+
     features = session.exec(select(Feature).where(Feature.project_id == project.id)).all()
     return _to_project_summary(project, features)
 
@@ -221,6 +234,7 @@ def confirm_triage(
     session.add(project)
 
     # Insert initial features if provided
+    created_features: List[Feature] = []
     if request.initial_features:
         for idx, f in enumerate(request.initial_features):
             prio = f.get("priority", "P1")
@@ -235,9 +249,19 @@ def confirm_triage(
                 order_index=idx,
             )
             session.add(feature)
+            created_features.append(feature)
 
     session.commit()
     session.refresh(project)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_project(project)
+        for cf in created_features:
+            session.refresh(cf)
+            MongoDBSyncService.sync_feature(cf)
+    except Exception:
+        pass
 
     features = session.exec(select(Feature).where(Feature.project_id == project.id)).all()
     return _to_project_summary(project, features)
@@ -257,3 +281,10 @@ def delete_project(
 
     session.delete(project)
     session.commit()
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.delete_project(project_id)
+    except Exception:
+        pass
+

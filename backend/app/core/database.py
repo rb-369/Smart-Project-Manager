@@ -25,6 +25,14 @@ def init_db() -> None:
 
     SQLModel.metadata.create_all(engine)
 
+    # Safely migrate avatar_url column for SQLite if not present
+    try:
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url VARCHAR;"))
+    except Exception:
+        pass
+
 
 def get_session() -> Generator[Session, None, None]:
     """Dependency for providing a database session per request."""

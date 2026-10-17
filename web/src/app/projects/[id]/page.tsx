@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { ProjectDetail, Feature, FeaturePriority, FeatureStatus, SuggestedFeature } from '@/types';
 import { Navbar } from '@/components/Navbar';
 import {
@@ -28,6 +29,7 @@ function ProjectDetailContent() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
 
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,15 @@ function ProjectDetailContent() {
   const [aiProvider, setAiProvider] = useState<string>('');
   const [showAiModal, setShowAiModal] = useState(false);
 
+  // Route protection
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push(`/login?next=/projects/${projectId}`);
+    }
+  }, [authLoading, isAuthenticated, projectId, router]);
+
   const fetchProject = async () => {
+    if (!api.isAuthenticated()) return;
     try {
       setLoading(true);
       const res: any = await api.get(`/projects/${projectId}`);
@@ -58,8 +68,8 @@ function ProjectDetailContent() {
   };
 
   useEffect(() => {
-    if (projectId) fetchProject();
-  }, [projectId]);
+    if (projectId && isAuthenticated) fetchProject();
+  }, [projectId, isAuthenticated, user]);
 
   const handleAddFeature = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -67,6 +67,13 @@ def create_feature(
     session.add(feature)
     session.commit()
     session.refresh(feature)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_feature(feature)
+    except Exception:
+        pass
+
     return feature
 
 
@@ -108,6 +115,13 @@ def update_feature(
     session.add(feature)
     session.commit()
     session.refresh(feature)
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.sync_feature(feature)
+    except Exception:
+        pass
+
     return feature
 
 
@@ -129,6 +143,12 @@ def delete_feature(
     feature, _ = result
     session.delete(feature)
     session.commit()
+
+    try:
+        from app.services.mongodb_sync import MongoDBSyncService
+        MongoDBSyncService.delete_feature(feature_id)
+    except Exception:
+        pass
 
 
 @router.post("/projects/{project_id}/features/reorder", response_model=List[FeatureResponse])

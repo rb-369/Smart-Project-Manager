@@ -77,12 +77,24 @@ Project-manager/
 
 ## 4. Detailed Feature Specifications
 
-### Feature 1: Authentication & User Accounts
+### Feature 1: GitHub-First Authentication, User Accounts & Strict Multi-Tenancy
 - **Capabilities:**
-  - Standard Email + Password registration and login with bcrypt hashing.
-  - GitHub OAuth 2.0 Login / Linking (`/api/auth/github/login` & `/api/auth/github/callback`).
-  - JWT Access Token (short-lived, 60 mins) + Refresh Token (long-lived, 30 days) stored securely in `flutter_secure_storage` on mobile and `httpOnly` secure cookies on web.
-  - Complete user isolation: All projects, GitHub tokens, and feature lists are strictly keyed by `user_id`.
+  - **GitHub-First OAuth 2.0 Flow:** Seamless one-click login and registration via GitHub (`/api/v1/auth/github/url` & `/api/v1/auth/github/callback`).
+  - **GitHub Personal Access Token (PAT) Fallback:** Instant login via PAT with automatic repo discovery and avatar sync (`/api/v1/auth/github/token-login`).
+  - **Instant Account Switcher:** Built-in test profiles (`Alice Smith` and `Bob Chen`) enabling instant verification of multi-tenant isolation with pre-seeded datasets.
+  - **Standard Email + Password Fallback:** Secure registration and login with bcrypt hashing.
+  - **JWT Tokens:** Short-lived access token (60 min) + long-lived refresh token (30 days) with automated 401 interception.
+  - **Multi-Tenant User Separation:** Strict tenant segregation across all endpoints; all database queries enforce `user_id == current_user.id` so User A never accesses User B's repositories, roadmaps, incubator ideas, or AI logs.
+
+### Database Architecture & MongoDB Atlas Integration
+- **Persistent Cloud Cluster:** Native **MongoDB Atlas** integration (`MONGODB_URL` with SRV connection strings) mirroring all state into dedicated collections:
+  - `users`: User profiles, encrypted tokens, and avatars
+  - `projects`: Ingested GitHub repositories and metadata
+  - `features`: Prioritized roadmaps and task checklists
+  - `future_projects`: Incubator ideas and priority scores
+  - `ai_logs`: Multi-tier AI inference telemetry and triage history
+- **Cluster Status & Telemetry:** `/api/v1/mongodb/status` endpoint reporting cluster connectivity, ping latency, and collection statistics, surfaced in real-time in the web navigation bar and settings dashboard.
+- **SQL / Local Fallback:** Transparent SQLite/PostgreSQL fallback ensuring offline and local development continues uninterrupted if cloud credentials are being configured.
 
 ### Feature 2: GitHub Repository Ingestion & Synchronization Engine
 - **Capabilities:**

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 import { 
   ArrowRight, 
   GitBranch, 
@@ -15,18 +16,22 @@ import {
   ShieldCheck,
   Zap,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
+  Database
 } from 'lucide-react';
+import { GithubIcon } from '@/components/GithubIcon';
 
 export default function Home() {
+  const { user, isAuthenticated } = useAuth();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'velocity' | 'triaged'>('all');
 
   const tickerItems = [
     '⚡ AUTONOMOUS REPO INGESTION',
+    '⚡ GITHUB OAUTH & SEPARATE TENANTS',
+    '⚡ MONGODB ATLAS CLUSTER PERSISTENCE',
     '⚡ AI ROADMAP DECOMPOSITION',
     '⚡ MATHEMATICAL VELOCITY PHYSICS',
     '⚡ MULTI-TIER AI INFERENCE',
-    '⚡ ZERO DEAD BACKLOGS',
     '⚡ AES-256 VAULT SECURITY',
     '⚡ HIGH-VELOCITY DEPLOYS'
   ];
@@ -82,13 +87,23 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="btn-lime !py-1.5 !px-4 text-xs font-black flex items-center gap-1.5 shadow-md"
-            >
-              <span>Connect Hub</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                className="btn-lime !py-1.5 !px-4 text-xs font-black flex items-center gap-1.5 shadow-md"
+              >
+                <span>Command Center</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="btn-lime !py-1.5 !px-4 text-xs font-black flex items-center gap-1.5 shadow-md"
+              >
+                <GithubIcon className="w-3.5 h-3.5" />
+                <span>Sign In with GitHub</span>
+              </Link>
+            )}
           </div>
         </header>
 
@@ -137,21 +152,44 @@ export default function Home() {
 
           {/* Action CTAs & Neon Stamp */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-            <Link
-              href="/dashboard"
-              className="btn-lime !py-3.5 !px-8 text-sm font-black flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(198,255,32,0.5)] hover:scale-105 transition-all"
-            >
-              <span>GET STARTED FREE</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            
-            <Link
-              href="/settings"
-              className="py-3.5 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-2 backdrop-blur-md"
-            >
-              <Terminal className="w-4 h-4 text-[#C6FF20]" />
-              <span>CONFIGURE GITHUB PAT</span>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="btn-lime !py-3.5 !px-8 text-sm font-black flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(198,255,32,0.5)] hover:scale-105 transition-all"
+                >
+                  <span>OPEN COMMAND CENTER</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                
+                <Link
+                  href="/ideas"
+                  className="py-3.5 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-2 backdrop-blur-md"
+                >
+                  <Sparkles className="w-4 h-4 text-[#C6FF20]" />
+                  <span>INCUBATOR IDEAS</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="btn-lime !py-3.5 !px-8 text-sm font-black flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(198,255,32,0.5)] hover:scale-105 transition-all"
+                >
+                  <GithubIcon className="w-4 h-4" />
+                  <span>CONTINUE WITH GITHUB</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                
+                <Link
+                  href="/login"
+                  className="py-3.5 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-2 backdrop-blur-md"
+                >
+                  <Terminal className="w-4 h-4 text-[#C6FF20]" />
+                  <span>SIGN IN / DEMO ACCOUNTS</span>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Floating 3D Repository Cards & Circular Stamp (Reference 2 style) */}
