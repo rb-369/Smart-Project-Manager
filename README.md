@@ -5,6 +5,14 @@ DevCommand is a developer command center designed for tracking, prioritizing, an
 
 ---
 
+## 🌐 Live Production Deployments
+
+- **Live Web Application (Vercel):** [https://smart-project-manager1.vercel.app](https://smart-project-manager1.vercel.app/)
+- **Live Backend API (Render):** [https://smart-project-manager-em2i.onrender.com](https://smart-project-manager-em2i.onrender.com)
+- **Interactive Swagger Docs:** [https://smart-project-manager-em2i.onrender.com/docs](https://smart-project-manager-em2i.onrender.com/docs)
+
+---
+
 ## 🌟 Key Features
 
 1. **Automatic GitHub Ingestion**: Syncs repositories via Personal Access Token (PAT) with automatic deduplication.

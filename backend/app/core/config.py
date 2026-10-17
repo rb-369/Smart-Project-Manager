@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # GitHub OAuth
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
-    GITHUB_REDIRECT_URI: str = "http://localhost:3000/auth/github/callback"
+    GITHUB_REDIRECT_URI: str = "https://smart-project-manager1.vercel.app/auth/github/callback"
 
     # AI Cascade Provider Keys
     OPENROUTER_API_KEY: str = ""
@@ -44,6 +44,8 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://10.0.2.2:8000",
+        "https://smart-project-manager1.vercel.app",
+        "https://smart-project-manager-em2i.onrender.com",
     ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")

@@ -17,27 +17,32 @@ docker compose up --build
 
 ---
 
-## 2. Cloud Deployment (24/7 Mobile Access)
+## 2. Cloud Deployment (24/7 Mobile & Web Access)
 
-### Backend (Render / Railway / Fly.io)
-1. **Connect Repository:** Link your GitHub repo to Render or Railway.
+### Live Production Instances:
+- **Web App (Vercel):** [https://smart-project-manager1.vercel.app](https://smart-project-manager1.vercel.app/)
+- **Backend API (Render):** [https://smart-project-manager-em2i.onrender.com](https://smart-project-manager-em2i.onrender.com)
+- **API Interactive Swagger:** [https://smart-project-manager-em2i.onrender.com/docs](https://smart-project-manager-em2i.onrender.com/docs)
+
+### Backend (Render)
+1. **Connect Repository:** Link `rb-369/Smart-Project-Manager` on Render.
 2. **Build Settings:**
    - **Root Directory:** `backend`
-   - **Environment:** Python 3.11+ or Docker
+   - **Environment:** Python 3.11+
    - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-3. **Environment Variables:**
-   - `DATABASE_URL`: Your managed PostgreSQL connection URL (or leave blank to use persistent SQLite disk).
-   - `SECRET_KEY`: Generate a random 64-char string.
-   - `FERNET_ENCRYPTION_KEY`: Generate using `from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())`.
-   - `OPENROUTER_API_KEY`: Your OpenRouter key (Tier 1 AI).
-   - `GEMINI_API_KEY`: Your Google Gemini key (Tier 2 AI fallback).
-   - `NVIDIA_API_KEY`: Your NVIDIA NIM key (Tier 3 AI fallback).
+3. **Environment Variables on Render:**
+   - `BACKEND_CORS_ORIGINS`: `["https://smart-project-manager1.vercel.app"]`
+   - `GITHUB_REDIRECT_URI`: `https://smart-project-manager1.vercel.app/auth/github/callback`
+   - `SECRET_KEY`: Set your JWT secret key.
+   - `FERNET_ENCRYPTION_KEY`: Set your AES-256 token encryption key.
+   - `MONGODB_URL`: Your MongoDB Atlas cluster connection string.
+   - `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `NVIDIA_API_KEY`: Multi-tier AI keys.
 
 ### Web Frontend (Vercel)
 1. Import repository on [Vercel](https://vercel.com).
 2. Set **Root Directory** to `web`.
 3. Add environment variable:
-   - `NEXT_PUBLIC_API_URL`: `https://your-backend-domain.com/api/v1`
+   - `NEXT_PUBLIC_API_URL`: `https://smart-project-manager-em2i.onrender.com/api/v1`
 4. Deploy! Automatic CI/CD will trigger on every git push.
 
 ### Mobile App (Android APK)

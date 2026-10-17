@@ -3,8 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'storage.dart';
 
 class ApiClient {
-  // 10.0.2.2 points to host localhost in Android Emulator; 127.0.0.1 on web/desktop
-  static String baseUrl = kIsWeb ? 'http://localhost:8000/api/v1' : 'http://10.0.2.2:8000/api/v1';
+  // Production Render backend as default, or configure via --dart-define=API_URL=...
+  static String baseUrl = const String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://smart-project-manager-em2i.onrender.com/api/v1',
+  );
 
   static Dio createDio() {
     final dio = Dio(

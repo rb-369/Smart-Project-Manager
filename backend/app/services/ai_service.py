@@ -31,7 +31,7 @@ class AIService:
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
             "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
-            "HTTP-Referer": "http://localhost:8000",
+            "HTTP-Referer": "https://smart-project-manager-em2i.onrender.com",
             "X-Title": "DevCommand",
             "Content-Type": "application/json",
         }
