@@ -9,6 +9,7 @@ export function Sidebar() {
 
   const navItems = [
     { label: 'Command Center', href: '/dashboard', icon: LayoutDashboard },
+    { label: 'AI Copilot & Judge', href: '/chat', icon: Sparkles },
     { label: 'Idea Incubator', href: '/ideas', icon: Lightbulb },
     { label: 'Settings & Tokens', href: '/settings', icon: Settings },
   ];

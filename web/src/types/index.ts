@@ -96,3 +96,59 @@ export interface SuggestedProject {
   priority: FutureProjectPriority;
   why_this_project: string;
 }
+
+export type CopilotMode = 'planner' | 'researcher' | 'judge';
+
+export interface JudgeVerdict {
+  score: number;
+  verdict: 'BUILD THIS NOW' | 'PROCEED WITH CAUTION' | 'DO NOT BUILD / REJECT';
+  strengths: string[];
+  fatal_flaws: string[];
+  pivot_advice?: string;
+  verdict_signal: 'GREEN' | 'YELLOW' | 'RED';
+}
+
+export interface RagCitation {
+  id: string;
+  type: string;
+  title: string;
+  score: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  mode: CopilotMode;
+  created_at: string;
+  citations?: RagCitation[];
+  judge_verdict?: JudgeVerdict;
+  suggested_features?: SuggestedFeature[];
+  suggested_projects?: SuggestedProject[];
+}
+
+export interface QdrantStatus {
+  configured: boolean;
+  connected: boolean;
+  message: string;
+  host: string;
+  collection: string;
+  points_count: number;
+  latency_ms?: number;
+}
+
+export interface ChatResponse {
+  reply: string;
+  mode: CopilotMode;
+  citations: RagCitation[];
+  judge_verdict?: JudgeVerdict;
+  suggested_features?: SuggestedFeature[];
+  suggested_projects?: SuggestedProject[];
+}
+
+export interface ChatRequest {
+  message: string;
+  mode: CopilotMode;
+  project_id?: string;
+  history?: { role: 'user' | 'assistant'; content: string }[];
+}

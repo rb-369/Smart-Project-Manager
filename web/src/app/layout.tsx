@@ -27,7 +27,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { Suspense } from "react";
 import { AuthProvider } from "@/context/AuthContext";
+import { ChatLauncher } from "@/components/ChatLauncher";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -38,6 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col bg-white text-slate-900">
         <AuthProvider>
           {children}
+          <Suspense fallback={null}>
+            <ChatLauncher />
+          </Suspense>
         </AuthProvider>
       </body>
     </html>

@@ -38,3 +38,7 @@ def get_session() -> Generator[Session, None, None]:
     """Dependency for providing a database session per request."""
     with Session(engine) as session:
         yield session
+
+
+# Alias for backward-compatibility
+get_db = get_session

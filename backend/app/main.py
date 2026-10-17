@@ -16,6 +16,12 @@ async def lifespan(app: FastAPI):
         init_mongodb_indexes()
     except Exception:
         pass
+    # Initialize Qdrant Cloud collection if configured
+    try:
+        from app.core.qdrant import ensure_collection_exists
+        ensure_collection_exists()
+    except Exception:
+        pass
     yield
 
 
@@ -44,18 +50,22 @@ from app.api.v1.projects import router as projects_router
 from app.api.v1.features import router as features_router
 from app.api.v1.future_projects import router as future_projects_router
 from app.api.v1.mongodb_status import router as mongodb_router
+from app.api.v1.chat import router as chat_router
 
 
 @app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
 def health_check():
     """Verify backend service and database operational status."""
     from app.core.mongodb import check_mongodb_connection
+    from app.core.qdrant import check_qdrant_connection
     mongo_status = check_mongodb_connection()
+    qdrant_status = check_qdrant_connection()
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
-        "mongodb": mongo_status
+        "mongodb": mongo_status,
+        "qdrant": qdrant_status,
     }
 
 
@@ -67,4 +77,5 @@ app.include_router(projects_router, prefix=settings.API_V1_STR)
 app.include_router(features_router, prefix=settings.API_V1_STR)
 app.include_router(future_projects_router, prefix=settings.API_V1_STR)
 app.include_router(mongodb_router, prefix=settings.API_V1_STR)
+app.include_router(chat_router, prefix=settings.API_V1_STR)
 

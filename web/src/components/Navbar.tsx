@@ -40,6 +40,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
 
   const navLinks = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { label: 'Copilot AI', href: '/chat', icon: Sparkles },
     { label: 'Incubator', href: '/ideas', icon: Lightbulb },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];

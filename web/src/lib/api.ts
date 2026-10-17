@@ -165,4 +165,14 @@ export const api = {
   },
   getBaseUrl: () => getApiBaseUrl(),
   setBaseUrl: (url: string) => setApiBaseUrl(url),
+
+  // Copilot AI & Qdrant RAG
+  sendChatMessage: (data: import('../types').ChatRequest) =>
+    request<import('../types').ChatResponse>('/chat/message', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  getQdrantStatus: () => request<import('../types').QdrantStatus>('/chat/qdrant-status', { method: 'GET' }),
+  syncKnowledgeBase: () =>
+    request<{ message: string; points_indexed: number }>('/chat/sync-knowledge', { method: 'POST' }),
 };

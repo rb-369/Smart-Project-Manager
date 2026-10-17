@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     MONGODB_URL: str = ""
     MONGODB_DB_NAME: str = "devcommand"
 
+    # Qdrant Vector Cloud
+    QDRANT_URL: str = ""
+    QDRANT_API_KEY: str = ""
+    QDRANT_COLLECTION: str = "devcommand_knowledge"
+
     # GitHub OAuth
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""

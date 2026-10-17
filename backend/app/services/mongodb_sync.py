@@ -71,6 +71,13 @@ class MongoDBSyncService:
         except Exception as e:
             logger.warning(f"Error syncing project {project.id} to MongoDB Atlas: {e}")
 
+        # Trigger RAG vectorization
+        try:
+            from app.services.rag_service import RAGService
+            RAGService.index_project(project, project.user_id)
+        except Exception:
+            pass
+
     @staticmethod
     def delete_project(project_id: Any):
         if not is_mongodb_configured():
@@ -147,6 +154,13 @@ class MongoDBSyncService:
             db.future_projects.update_one({"_id": str(idea.id)}, {"$set": doc}, upsert=True)
         except Exception as e:
             logger.warning(f"Error syncing future project {idea.id} to MongoDB Atlas: {e}")
+
+        # Trigger RAG vectorization
+        try:
+            from app.services.rag_service import RAGService
+            RAGService.index_future_project(idea, idea.user_id)
+        except Exception:
+            pass
 
     @staticmethod
     def delete_future_project(idea_id: Any):
