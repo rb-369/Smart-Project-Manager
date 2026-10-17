@@ -23,8 +23,8 @@ def _clean_json_response(raw_text: str) -> Dict[str, Any]:
 
 class AIService:
     @classmethod
-    async def _call_openrouter(cls, system_prompt: str, user_prompt: str) -> str:
-        """Tier 1: Call OpenRouter API with free tier models."""
+    async def _call_openrouter(cls, system_prompt: str, user_prompt: str, json_mode: bool = True) -> str:
+        """Tier: Call OpenRouter API with active free/available models."""
         if not settings.OPENROUTER_API_KEY:
             raise ValueError("OPENROUTER_API_KEY not configured")
 
@@ -35,38 +35,56 @@ class AIService:
             "X-Title": "DevCommand",
             "Content-Type": "application/json",
         }
-        payload = {
-            "model": "meta-llama/llama-3.3-70b-instruct:free",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "temperature": 0.3,
-            "response_format": {"type": "json_object"},
-        }
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            resp = await client.post(url, headers=headers, json=payload)
-            if resp.status_code != 200:
-                raise RuntimeError(f"OpenRouter returned {resp.status_code}: {resp.text}")
-            data = resp.json()
-            return data["choices"][0]["message"]["content"]
+        models_to_try = [
+            "liquid/lfm-2.5-2.6b:free",
+            "meta-llama/llama-3.3-70b-instruct",
+            "deepseek/deepseek-chat",
+        ]
+        last_err = None
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            for model_slug in models_to_try:
+                payload: Dict[str, Any] = {
+                    "model": model_slug,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "temperature": 0.3,
+                }
+                if json_mode:
+                    payload["response_format"] = {"type": "json_object"}
+                try:
+                    resp = await client.post(url, headers=headers, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        return data["choices"][0]["message"]["content"]
+                    last_err = f"OpenRouter ({model_slug}) returned {resp.status_code}: {resp.text}"
+                except Exception as e:
+                    last_err = f"OpenRouter ({model_slug}) exception: {e}"
+        raise RuntimeError(last_err or "OpenRouter all models failed")
 
     @classmethod
-    async def _call_gemini(cls, system_prompt: str, user_prompt: str) -> str:
-        """Tier 2 (Fallback 1): Call Google Gemini REST API."""
+    async def _call_gemini(cls, system_prompt: str, user_prompt: str, json_mode: bool = True) -> str:
+        """Tier: Call Google Gemini REST API (Gemini 2.5 Flash)."""
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY not configured")
 
         url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
             f"?key={settings.GEMINI_API_KEY}"
         )
-        combined_prompt = f"{system_prompt}\n\nTask:\n{user_prompt}\n\nReturn strict JSON only."
+        combined_prompt = f"{system_prompt}\n\nTask:\n{user_prompt}"
+        if json_mode:
+            combined_prompt += "\n\nReturn strict JSON only."
+        gen_config: Dict[str, Any] = {"temperature": 0.2}
+        if json_mode:
+            gen_config["responseMimeType"] = "application/json"
+
         payload = {
             "contents": [{"parts": [{"text": combined_prompt}]}],
-            "generationConfig": {"temperature": 0.2, "responseMimeType": "application/json"}
+            "generationConfig": gen_config,
         }
-        async with httpx.AsyncClient(timeout=8.0) as client:
+        async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.post(url, json=payload)
             if resp.status_code != 200:
                 raise RuntimeError(f"Gemini returned {resp.status_code}: {resp.text}")
@@ -74,8 +92,8 @@ class AIService:
             return data["candidates"][0]["content"]["parts"][0]["text"]
 
     @classmethod
-    async def _call_nvidia(cls, system_prompt: str, user_prompt: str) -> str:
-        """Tier 3 (Fallback 2): Call NVIDIA NIM API."""
+    async def _call_nvidia(cls, system_prompt: str, user_prompt: str, json_mode: bool = True) -> str:
+        """Tier: Call NVIDIA NIM API (Llama 3.2 11B Vision Instruct)."""
         if not settings.NVIDIA_API_KEY:
             raise ValueError("NVIDIA_API_KEY not configured")
 
@@ -84,16 +102,18 @@ class AIService:
             "Authorization": f"Bearer {settings.NVIDIA_API_KEY}",
             "Content-Type": "application/json",
         }
-        payload = {
-            "model": "meta/llama-3.1-70b-instruct",
+        payload: Dict[str, Any] = {
+            "model": "meta/llama-3.2-11b-vision-instruct",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": 0.2,
-            "response_format": {"type": "json_object"},
         }
-        async with httpx.AsyncClient(timeout=8.0) as client:
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.post(url, headers=headers, json=payload)
             if resp.status_code != 200:
                 raise RuntimeError(f"NVIDIA returned {resp.status_code}: {resp.text}")
@@ -107,21 +127,21 @@ class AIService:
         """Execute the 3-tier cascade: OpenRouter -> Gemini -> NVIDIA -> Heuristic Fallback."""
         # 1. Try OpenRouter
         try:
-            content = await cls._call_openrouter(system_prompt, user_prompt)
+            content = await cls._call_openrouter(system_prompt, user_prompt, json_mode=True)
             return _clean_json_response(content), "openrouter"
         except Exception:
             pass
 
-        # 2. Try Gemini
+        # 2. Try Gemini (Gemini 2.5 Flash)
         try:
-            content = await cls._call_gemini(system_prompt, user_prompt)
+            content = await cls._call_gemini(system_prompt, user_prompt, json_mode=True)
             return _clean_json_response(content), "gemini"
         except Exception:
             pass
 
-        # 3. Try NVIDIA
+        # 3. Try NVIDIA (Llama 3.2 11B Vision Instruct)
         try:
-            content = await cls._call_nvidia(system_prompt, user_prompt)
+            content = await cls._call_nvidia(system_prompt, user_prompt, json_mode=True)
             return _clean_json_response(content), "nvidia"
         except Exception:
             pass

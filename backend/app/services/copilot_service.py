@@ -112,31 +112,33 @@ class CopilotService:
         # 2. Invoke Multi-Tier AI Cascade
         raw_response = None
         tier_used = "Tier 1: OpenRouter"
+        is_json_mode = (mode == "judge")
 
-        # Try Tier 1: OpenRouter
+        # Priority 1: OpenRouter
         if settings.OPENROUTER_API_KEY:
             try:
-                raw_response = await AIService._call_openrouter(system_prompt, user_prompt)
+                tier_used = "Tier 1: OpenRouter"
+                raw_response = await AIService._call_openrouter(system_prompt, user_prompt, json_mode=is_json_mode)
             except Exception as e:
                 logger.warning(f"[Copilot] OpenRouter call failed: {e}")
 
-        # Fallback to Tier 2: Gemini
+        # Priority 2: Gemini 2.5 Flash
         if not raw_response and settings.GEMINI_API_KEY:
             try:
-                tier_used = "Tier 2: Gemini"
-                raw_response = await AIService._call_gemini(system_prompt, user_prompt)
+                tier_used = "Tier 2: Gemini 2.5 Flash"
+                raw_response = await AIService._call_gemini(system_prompt, user_prompt, json_mode=is_json_mode)
             except Exception as e:
                 logger.warning(f"[Copilot] Gemini call failed: {e}")
 
-        # Fallback to Tier 3: NVIDIA NIM
+        # Priority 3: NVIDIA NIM (Meta Llama 3.2 11B Vision Instruct)
         if not raw_response and settings.NVIDIA_API_KEY:
             try:
-                tier_used = "Tier 3: NVIDIA NIM"
-                raw_response = await AIService._call_nvidia(system_prompt, user_prompt)
+                tier_used = "Tier 3: NVIDIA NIM (Llama 3.2)"
+                raw_response = await AIService._call_nvidia(system_prompt, user_prompt, json_mode=is_json_mode)
             except Exception as e:
                 logger.warning(f"[Copilot] NVIDIA call failed: {e}")
 
-        # Fallback heuristic if no keys configured or external call failed
+        # Fallback heuristic if no keys configured or external calls failed
         if not raw_response:
             tier_used = "Local Intelligent Heuristic"
             raw_response = cls._heuristic_fallback(message, mode, citations)
