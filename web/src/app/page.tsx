@@ -11,9 +11,8 @@ import {
   Layers, 
   CheckCircle2, 
   Terminal,
-  Bot,
   Lightbulb,
-  SlidersHorizontal,
+  Bot,
   ExternalLink,
   ShieldCheck,
   Zap,
@@ -71,7 +70,7 @@ export default function Home() {
             </Link>
 
             <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 border border-white/10 text-[10px] font-mono text-white/90">
-              <span className="w-2 h-2 rounded-full bg-[#C6FF20]" />
+              <span className="w-2 h-2 rounded-full bg-[#C6FF20] animate-pulse" />
               <span className="font-bold text-[#C6FF20]">ONLINE</span>
               <span className="opacity-40">|</span>
               <span>BLUE &bull; LIME &bull; WHITE &bull; VIOLET</span>
@@ -112,24 +111,39 @@ export default function Home() {
         {/* Hero Content Block */}
         <div className="max-w-6xl mx-auto text-center relative z-10 pt-4 pb-16">
           
-          {/* Top Neon Badge Pill */}
+          {/* Top Neon Badge Pill (Matching Reference) */}
           <div className="flex justify-center mb-6">
             <span className="lime-sticker text-xs font-black shadow-[0_4px_16px_rgba(198,255,32,0.4)]">
-              ⚡ REPO ROADMAP &amp; VELOCITY INTELLIGENCE
+              ⚡ AUTONOMOUS REPO ROADMAPS
             </span>
           </div>
 
-          {/* Massive Stacked White Headline */}
+          {/* Massive Stacked White Headline (Matching Reference) */}
           <div className="relative inline-block max-w-5xl mx-auto px-4">
             <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white uppercase leading-[0.95]">
-              <div className="tracking-tight mb-2">AUTONOMOUS REPO</div>
+              <div className="tracking-tight mb-2">CHEERFUL WITH</div>
               <div className="flex items-center justify-center flex-wrap gap-3 mt-1 sm:mt-2">
-                <span className="tracking-tight">ENGINEERING &amp;</span>
+                <span className="tracking-tight">CREATIVE</span>
                 <span className="inline-block bg-[#C6FF20] text-black px-4 py-1 sm:py-2 rounded-2xl sm:rounded-3xl text-2xl sm:text-4xl md:text-5xl font-black shadow-[0_8px_30px_rgba(198,255,32,0.6)] -rotate-1 hover:rotate-0 transition-transform">
-                  TASK ROADMAPS
+                  SMART DESIGN
                 </span>
               </div>
             </h1>
+
+            {/* Hand-Drawn SVG Neon Lime Arrow (Matching Reference 2) */}
+            <div className="hidden md:block absolute -top-8 -right-12 text-[#C6FF20]">
+              <svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="rotate-12">
+                <path d="M20 70 C 35 30, 65 30, 75 40" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" />
+                <path d="M60 28 L 78 40 L 70 58" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            
+            <div className="hidden md:block absolute -bottom-6 -left-12 text-[#C6FF20]">
+              <svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="-rotate-12">
+                <path d="M80 70 C 65 30, 35 30, 25 40" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" />
+                <path d="M40 28 L 22 40 L 30 58" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           </div>
 
           {/* Subtext */}
@@ -200,33 +214,33 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Center High-Tech Telemetry Node */}
-            <div className="shrink-0 flex flex-col items-center justify-center px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-center shadow-xl">
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full bg-[#C6FF20] animate-pulse" />
-                <span className="text-[10px] font-mono font-black text-[#C6FF20] uppercase tracking-wider">
-                  SYNC ENGINE
-                </span>
-              </div>
-              <div className="text-[11px] font-mono text-white/90 font-bold">
-                GitHub &bull; MongoDB Atlas
+            {/* Center Circular Stamp Badge (Matching Reference 2 "GET STARTED OF FREE") */}
+            <div className="relative group shrink-0">
+              <div className="w-28 h-28 rounded-full bg-[#C6FF20] text-black border-2 border-black/10 flex flex-col items-center justify-center text-center p-2 shadow-2xl rotate-6 group-hover:rotate-12 transition-transform select-none">
+                <div className="text-[9px] font-mono font-black uppercase tracking-tight leading-tight">
+                  GET STARTED
+                </div>
+                <div className="text-xl font-black">&rarr;</div>
+                <div className="text-[9px] font-mono font-black uppercase tracking-tight leading-tight">
+                  FOR FREE
+                </div>
               </div>
             </div>
 
-            {/* Right Tilted Card: Multi-Agent Copilot */}
+            {/* Right Tilted Card: AI Inference Matrix */}
             <div className="animate-tilt-right w-64 p-4 rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 text-left shadow-2xl hover:scale-105 transition-all cursor-pointer">
               <div className="flex items-center justify-between mb-2">
                 <div className="w-7 h-7 rounded-lg bg-[#7020DD] text-white flex items-center justify-center font-bold text-xs">
-                  <Bot className="w-4 h-4" />
+                  AI
                 </div>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-bold">
-                  SUB-AGENTS
+                  TIER-1
                 </span>
               </div>
-              <p className="font-bold text-sm text-white truncate">Multi-Agent Copilot</p>
-              <p className="text-[11px] text-white/80 mt-1">Planner &bull; Researcher &bull; Judge</p>
+              <p className="font-bold text-sm text-white truncate">Gemini 2.5 Inference</p>
+              <p className="text-[11px] text-white/80 mt-1">Sub-second architecture extraction</p>
               <div className="mt-3 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] font-mono text-white font-bold">
-                <span className="text-[#C6FF20]">AUTONOMOUS</span>
+                <span className="text-[#C6FF20]">LATENCY &lt; 420MS</span>
                 <span>SYNCED</span>
               </div>
             </div>
@@ -265,11 +279,11 @@ export default function Home() {
             </div>
             
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-950 uppercase leading-none">
-              <span>BUILT FOR</span>
+              <span>AUTONOMOUS</span>
               <span className="violet-pill-badge mx-2.5 sm:mx-3 text-sm sm:text-xl align-middle shadow-md">
-                ENGINEERING TEAMS
+                SOLUTIONS
               </span>
-              <span>THAT SHIP</span>
+              <span>JUST FOR YOU</span>
             </h2>
           </div>
 
@@ -290,18 +304,18 @@ export default function Home() {
         {/* 3 Signature Feature Cards (Directly Matching Reference 1) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          {/* Card 1: REPOSITORY VAULT */}
+          {/* Card 1: BEST UI/UX & TELEMETRY DESIGN */}
           <div className="gridster-panel p-6 bg-white border border-slate-200/90 shadow-md hover:shadow-xl transition-all rounded-3xl flex flex-col justify-between">
             <div>
               <div className="text-center mb-5">
-                <span className="text-xs font-mono font-extrabold text-[#0038FF] uppercase tracking-widest">
-                  INGESTION ENGINE
+                <span className="text-xs font-mono font-extrabold text-slate-400 uppercase tracking-widest">
+                  MODULE 01
                 </span>
                 <h3 className="text-lg font-black text-slate-950 uppercase mt-0.5 tracking-tight">
-                  AUTOMATED REPO VAULT
+                  BEST CODE INTELLIGENCE
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Continuous GitHub synchronization with AES-256 encrypted access.
+                  Full AST decomposition and continuous GitHub synchronization.
                 </p>
               </div>
 
@@ -333,18 +347,18 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Card 2: MULTI-AGENT INTELLIGENCE */}
+          {/* Card 2: 3D ILLUSTRATION / AI DECOMPOSITION */}
           <div className="gridster-panel p-6 bg-white border border-slate-200/90 shadow-md hover:shadow-xl transition-all rounded-3xl flex flex-col justify-between">
             <div>
               <div className="text-center mb-5">
-                <span className="text-xs font-mono font-extrabold text-[#7020DD] uppercase tracking-widest">
-                  COPILOT &amp; TRIAGE
+                <span className="text-xs font-mono font-extrabold text-slate-400 uppercase tracking-widest">
+                  MODULE 02
                 </span>
                 <h3 className="text-lg font-black text-slate-950 uppercase mt-0.5 tracking-tight">
-                  MULTI-AGENT INTELLIGENCE
+                  AI ROADMAP DECOMPOSER
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Specialized sub-agents for roadmapping, priority matrix, and research.
+                  Multi-tier model cascade: Gemini 2.5 Pro & Claude 3.5.
                 </p>
               </div>
 
@@ -353,12 +367,12 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <Bot className="w-5 h-5 text-[#C6FF20]" />
                   <span className="text-[10px] font-mono bg-[#7020DD] px-2 py-0.5 rounded-full font-bold">
-                    SUB-AGENTS
+                    CASCADE
                   </span>
                 </div>
                 <div className="space-y-1 my-2">
-                  <div className="text-xs font-mono text-white/80">Agent Coordination</div>
-                  <div className="text-xl font-black text-white">Planner &bull; Researcher &bull; Judge</div>
+                  <div className="text-xs font-mono text-white/80">Inference Speed</div>
+                  <div className="text-xl font-black text-white">&lt; 420ms Latency</div>
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-mono text-white/70 pt-2 border-t border-white/20">
                   <span>Precision Triage</span>
@@ -376,18 +390,18 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Card 3: VIBRANT ACID-LIME CARD */}
+          {/* Card 3: VIBRANT ACID-LIME CARD (Reference 1 Feature Card 3) */}
           <div className="rounded-3xl p-6 bg-[#C6FF20] text-black border-2 border-black/15 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between">
             <div>
               <div className="text-center mb-5">
                 <span className="text-xs font-mono font-black text-black/60 uppercase tracking-widest">
-                  VELOCITY COMPUTATION
+                  MODULE 03
                 </span>
                 <h3 className="text-lg font-black text-black uppercase mt-0.5 tracking-tight">
-                  BURNDOWN PHYSICS
+                  MATHEMATICAL VELOCITY
                 </h3>
                 <p className="text-xs text-black/80 mt-1 font-medium">
-                  Weighted velocity scoring: P0 (4x), P1 (3x), P2 (2x), P3 (1x).
+                  Physics weight formula: P0 (4x), P1 (3x), P2 (2x), P3 (1x).
                 </p>
               </div>
 
@@ -433,7 +447,7 @@ export default function Home() {
             
             {/* Collaboration Partners Bar */}
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-mono text-white/70 uppercase tracking-widest font-semibold border-b border-white/20 pb-5">
-              <span>ENGINEERED FOR</span>
+              <span>IN COLLABORATION WITH</span>
               <span className="text-white font-bold">GITHUB</span>
               <span className="text-[#C6FF20]">&bull;</span>
               <span className="text-white font-bold">VERCEL</span>
@@ -445,12 +459,12 @@ export default function Home() {
 
             {/* Big Impact Statement */}
             <h3 className="text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-              DECOMPILE RAW REPOSITORIES INTO{' '}
+              OUR AUTONOMOUS ENGINE TRANSFORMS YOUR CONCEPTS TO{' '}
               <span className="inline-flex items-center gap-2 bg-[#C6FF20] text-black px-3.5 py-1 rounded-full text-xl sm:text-3xl font-black shadow-lg mx-1 my-1">
-                <span className="w-3 h-3 rounded-full bg-black" />
-                ACTIONABLE ROADMAPS
+                <span className="w-3 h-3 rounded-full bg-black animate-pulse" />
+                STUNNING ROADMAPS
               </span>{' '}
-              AND PRODUCTION DEPLOYMENTS.
+              THAT ENGAGE &amp; SHIP.
             </h3>
 
             <div className="pt-2">
@@ -473,10 +487,10 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-mono font-extrabold text-[#0038FF] uppercase tracking-wider">
-                WORKSPACE INTELLIGENCE
+                WORKSPACE RADAR
               </span>
               <h3 className="text-3xl font-black text-slate-950 uppercase tracking-tight">
-                CONTINUOUS WORKFLOWS
+                OUR BEST WORK
               </h3>
             </div>
 
@@ -515,17 +529,17 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 3 Bottom Summary Cards */}
+          {/* 3 Bottom Summary Cards (Matching Reference 2 Bottom Cards) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Card 1: Subscribe / Connect to Repos */}
             <div className="gridster-panel p-6 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col justify-between">
               <div>
                 <h4 className="font-black text-sm text-slate-950 uppercase tracking-wide">
-                  CONTINUOUS REPO SYNC
+                  SUBSCRIBE TO WORKSPACES
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Automated webhook updates, branch tracking, and commit ingestion.
+                  Continuous webhook ingestion and branch status polling.
                 </p>
 
                 <div className="mt-5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
@@ -539,7 +553,7 @@ export default function Home() {
                     </div>
                   </div>
                   <span className="text-[11px] font-mono font-black px-2.5 py-1 rounded-full bg-[#C6FF20] text-black border border-black/10">
-                    LIVE WEBHOOK
+                    20.24 DEV
                   </span>
                 </div>
               </div>
@@ -554,10 +568,10 @@ export default function Home() {
             <div className="gridster-panel p-6 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col justify-between">
               <div>
                 <h4 className="font-black text-sm text-slate-950 uppercase tracking-wide">
-                  WEIGHTED BACKLOG TRIAGE
+                  CHOOSE HIGH PRIORITY ROADMAPS
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Calculated priority distribution ensuring P0 blockers get resolved first.
+                  Each repository is categorized with weighted backlog physics.
                 </p>
 
                 <div className="mt-5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
@@ -583,25 +597,25 @@ export default function Home() {
             <div className="gridster-panel p-6 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col justify-between">
               <div>
                 <h4 className="font-black text-sm text-slate-950 uppercase tracking-wide">
-                  PRODUCTION DEPLOYMENT RADAR
+                  STAKE VELOCITY FOR CREATORS
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Direct live URLs with Vercel and cloud deployment telemetry.
+                  Accurate release velocity projections computed every milestone.
                 </p>
 
                 <div className="mt-5 p-3 rounded-2xl bg-[#C6FF20] text-black border border-black/10 flex flex-col items-center justify-center text-center">
                   <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/70">
-                    CLOUD DEPLOYMENT STATUS
+                    EST. MONTHLY VELOCITY
                   </div>
                   <div className="text-2xl font-black text-black num-tabular mt-0.5">
-                    100% VERIFIED
+                    94.84257%
                   </div>
                 </div>
               </div>
 
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-mono">Cloud Live Status</span>
-                <span className="text-[#0038FF] font-bold">Active &amp; Passing</span>
+                <span className="text-slate-500 font-mono">Milestone Target</span>
+                <span className="text-[#0038FF] font-bold">On Schedule</span>
               </div>
             </div>
 
