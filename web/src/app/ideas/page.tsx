@@ -11,8 +11,8 @@ import {
   ArrowRight,
   Trash2,
   Code,
+  Cpu,
   Loader2,
-  Sparkles,
   X,
   Zap,
   Layers,
@@ -24,8 +24,7 @@ import {
   ChevronRight,
   Lightbulb,
   Check,
-  RotateCcw,
-  Sparkle
+  RotateCcw
 } from 'lucide-react';
 
 export default function IdeasPage() {
@@ -339,7 +338,7 @@ export default function IdeasPage() {
               onClick={handleFetchAiProjects}
               className="py-2 px-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 backdrop-blur-md cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#C6FF20]" />
+              <Cpu className="w-3.5 h-3.5 text-[#C6FF20]" />
               <span>AI Suggestions</span>
             </button>
             <button
@@ -517,7 +516,7 @@ export default function IdeasPage() {
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200/70 p-3.5 rounded-2xl flex items-start gap-2.5 text-xs text-blue-900">
-                  <Sparkles className="w-4 h-4 text-[#0038FF] shrink-0 mt-0.5" />
+                  <Zap className="w-4 h-4 text-[#0038FF] shrink-0 mt-0.5" />
                   <p className="text-[11px] leading-relaxed">
                     <strong>Smart Extraction:</strong> DevCommand AI analyzes your messy notes, infers a professional title, crisp pitch, modern tech stack, priority (P0/P1/P2), and generates an MVP starter features checklist.
                   </p>
@@ -798,7 +797,7 @@ export default function IdeasPage() {
           <div className="bg-white border border-slate-200 w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl p-6 rounded-3xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#0038FF]" />
+                <Lightbulb className="w-4 h-4 text-[#0038FF]" />
                 <h2 className="font-black text-sm text-slate-950 uppercase">AI Concept Engine</h2>
               </div>
               <button onClick={() => setShowAiModal(false)} className="text-slate-400 hover:text-slate-800 p-1 cursor-pointer">

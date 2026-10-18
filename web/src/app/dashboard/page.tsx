@@ -9,11 +9,11 @@ import { ProjectSummary, FutureProject, ParsedConcept, ProjectType, FutureProjec
 import { Navbar } from '@/components/Navbar';
 import { ProjectCard } from '@/components/ProjectCard';
 import { TriageModal } from '@/components/TriageModal';
+import { StaticLoader } from '@/components/StaticLoader';
 import {
   GitBranch,
   Activity,
   Cpu,
-  Sparkles,
   CheckCircle2,
   ArrowRight,
   Zap,
@@ -597,7 +597,7 @@ export default function DashboardPage() {
                   className="w-full btn-lime !py-2.5 !px-3 !justify-between text-xs font-black shadow-md cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-black" />
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-black" />
                     <span>Triage Required</span>
                   </span>
                   <span className="bg-black/15 text-black px-1.5 py-0.5 rounded-full font-mono text-[10px]">
@@ -850,9 +850,11 @@ export default function DashboardPage() {
           /* View Mode: Active Repositories */
           <>
             {loading ? (
-              <div className="py-28 text-center text-xs text-white font-mono animate-pulse">
-                Hydrating repository intelligence matrix...
-              </div>
+              <StaticLoader
+                fullScreen={false}
+                label="Hydrating Repository Telemetry"
+                sublabel="Syncing AST, MongoDB Atlas records, and incubator backlog..."
+              />
             ) : filteredProjects.length === 0 ? (
               <div className="bg-white text-slate-900 border border-white/20 p-16 text-center space-y-3 rounded-3xl shadow-2xl">
                 <GitBranch className="w-10 h-10 text-slate-400 mx-auto" />
@@ -950,7 +952,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200/70 p-3.5 rounded-2xl flex items-start gap-2.5 text-xs text-blue-900">
-                  <Sparkles className="w-4 h-4 text-[#0038FF] shrink-0 mt-0.5" />
+                  <Zap className="w-4 h-4 text-[#0038FF] shrink-0 mt-0.5" />
                   <p className="text-[11px] leading-relaxed">
                     <strong>Smart Extraction:</strong> DevCommand AI analyzes informal chat notes and structures them into a prioritized backlog idea without needing a GitHub repository yet.
                   </p>

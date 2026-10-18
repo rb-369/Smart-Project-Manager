@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Lightbulb, Settings, Cpu, Sparkles, Activity } from 'lucide-react';
+import { LayoutDashboard, Lightbulb, Settings, Cpu, Bot, Activity } from 'lucide-react';
 
 export function Sidebar() {
   const pathname = usePathname();
 
   const navItems = [
     { label: 'Command Center', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'AI Copilot & Judge', href: '/chat', icon: Sparkles },
+    { label: 'AI Copilot & Judge', href: '/chat', icon: Bot },
     { label: 'Idea Incubator', href: '/ideas', icon: Lightbulb },
     { label: 'Settings & Tokens', href: '/settings', icon: Settings },
   ];
@@ -80,7 +80,7 @@ export function Sidebar() {
 
       <div className="px-2.5 py-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] text-[11px] text-[#64748b] flex items-center justify-between font-mono">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 glow-emerald animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400 glow-emerald" />
           <span>Local SQLite</span>
         </span>
         <span className="text-[10px] text-[#94a3b8]">200 OK</span>

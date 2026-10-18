@@ -12,7 +12,6 @@ import {
   Lock,
   ArrowRight,
   ShieldCheck,
-  Sparkles,
   AlertCircle,
   Database,
   Users,
@@ -20,6 +19,7 @@ import {
   ExternalLink,
   Loader2
 } from 'lucide-react';
+import { StaticLoader } from '@/components/StaticLoader';
 
 function LoginContent() {
   const router = useRouter();
@@ -414,12 +414,11 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-blue-grid text-white flex items-center justify-center p-4">
-        <div className="bg-white text-slate-900 rounded-3xl p-8 shadow-2xl max-w-md w-full text-center">
-          <Loader2 className="w-8 h-8 text-[#0038FF] animate-spin mx-auto" />
-          <p className="text-xs text-slate-500 mt-3 font-mono">Loading authentication vault...</p>
-        </div>
-      </div>
+      <StaticLoader
+        label="Securing Authentication Vault"
+        sublabel="Connecting to isolated tenant matrix..."
+        fullScreen={true}
+      />
     }>
       <LoginContent />
     </Suspense>

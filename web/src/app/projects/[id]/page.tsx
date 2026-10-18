@@ -6,13 +6,13 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { ProjectDetail, Feature, FeaturePriority, FeatureStatus, SuggestedFeature } from '@/types';
 import { Navbar } from '@/components/Navbar';
+import { StaticLoader } from '@/components/StaticLoader';
 import {
   ArrowLeft,
   ExternalLink,
   Plus,
   CheckCircle2,
   Circle,
-  Sparkles,
   Trash2,
   Loader2,
   Cpu,
@@ -189,9 +189,11 @@ function ProjectDetailContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-blue-grid flex items-center justify-center text-xs text-white font-mono animate-pulse">
-        Hydrating project telemetry matrix...
-      </div>
+      <StaticLoader
+        label="Decompiling Repository Blueprint"
+        sublabel="Hydrating features, status physics, and milestone matrix..."
+        fullScreen={true}
+      />
     );
   }
 
@@ -259,7 +261,7 @@ function ProjectDetailContent() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-black border border-emerald-400 bg-emerald-500/20 text-[#C6FF20] hover:bg-emerald-500/30 rounded-full transition backdrop-blur-md shadow-xs"
               >
-                <Globe className="w-3.5 h-3.5 animate-pulse" />
+                <Globe className="w-3.5 h-3.5" />
                 <span>Launch App</span>
                 <ExternalLink className="w-3 h-3 opacity-70" />
               </a>
@@ -306,7 +308,7 @@ function ProjectDetailContent() {
               onClick={handleFetchAiSuggestions}
               className="btn-lime !py-1.5 !px-4 text-xs font-black shadow-md cursor-pointer flex items-center gap-1.5"
             >
-              <Sparkles className="w-3.5 h-3.5 text-black" />
+              <Cpu className="w-3.5 h-3.5 text-black" />
               <span>AI Strategist</span>
             </button>
           </div>
@@ -345,7 +347,7 @@ function ProjectDetailContent() {
               <div className="mt-3 flex items-center gap-2 flex-wrap">
                 {project.live_url ? (
                   <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-emerald-800 px-3 py-1 rounded-full text-xs font-mono font-bold">
-                    <Globe className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+                    <Globe className="w-3.5 h-3.5 text-emerald-600" />
                     <a
                       href={project.live_url}
                       target="_blank"
@@ -668,7 +670,7 @@ function ProjectDetailContent() {
             <div className="p-6 max-h-[85vh] overflow-y-auto space-y-4">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#0038FF]" />
+                  <Cpu className="w-4 h-4 text-[#0038FF]" />
                   <h3 className="font-black text-sm text-slate-900 uppercase">AI Roadmap Feature Strategist</h3>
                 </div>
                 <button
@@ -730,9 +732,11 @@ export default function ProjectDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-blue-grid flex items-center justify-center text-xs text-white font-mono animate-pulse">
-          Hydrating project...
-        </div>
+        <StaticLoader
+          label="Hydrating Project Matrix"
+          sublabel="Connecting to isolated workspace telemetry..."
+          fullScreen={true}
+        />
       }
     >
       <ProjectDetailContent />

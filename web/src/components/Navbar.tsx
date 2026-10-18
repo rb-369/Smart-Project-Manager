@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
-  Sparkles,
+  Bot,
   LogOut,
   Users,
   Database,
@@ -40,7 +40,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
 
   const navLinks = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'Copilot AI', href: '/chat', icon: Sparkles },
+    { label: 'Copilot AI', href: '/chat', icon: Bot },
     { label: 'Project Ideas', href: '/ideas', icon: Lightbulb },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];
@@ -109,7 +109,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
 
         {/* Database Telemetry Indicator */}
         <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-black/25 border border-white/10 text-[10px] font-mono text-white/90">
-          <span className={`w-2 h-2 rounded-full ${mongoStatus?.connected ? 'bg-[#C6FF20] animate-pulse' : 'bg-amber-400'}`} />
+          <span className={`w-2 h-2 rounded-full ${mongoStatus?.connected ? 'bg-[#C6FF20]' : 'bg-amber-400'}`} />
           <span className="text-[#C6FF20] font-black">
             {mongoStatus?.connected ? 'ATLAS LIVE' : 'MONGODB READY'}
           </span>

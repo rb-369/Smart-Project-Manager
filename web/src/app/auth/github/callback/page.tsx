@@ -8,6 +8,8 @@ import { useAuth } from '@/context/AuthContext';
 import { GithubIcon } from '@/components/GithubIcon';
 import { Loader2, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 
+import { StaticLoader } from '@/components/StaticLoader';
+
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,15 +71,25 @@ function CallbackContent() {
       </div>
 
       {status === 'processing' && (
-        <div className="space-y-3">
-          <h2 className="text-xl font-black text-slate-900">
-            Authenticating with GitHub
-          </h2>
-          <p className="text-xs text-slate-500">
-            Exchanging secure authorization code and preparing your isolated workspace...
-          </p>
-          <div className="flex items-center justify-center pt-4">
-            <Loader2 className="w-8 h-8 text-[#0038FF] animate-spin" />
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <h2 className="text-xl font-black text-slate-900">
+              Authenticating with GitHub
+            </h2>
+            <p className="text-xs text-slate-500 font-mono">
+              Exchanging secure authorization code and preparing your isolated workspace...
+            </p>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono text-slate-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="font-bold">VERIFYING CREDENTIALS</span>
+            <span className="text-slate-300">&bull;</span>
+            <span className="text-slate-500">STANDBY</span>
+          </div>
+
+          <div className="w-44 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden">
+            <div className="w-2/3 h-full bg-[#0038FF] rounded-full" />
           </div>
         </div>
       )}
@@ -124,15 +136,16 @@ function CallbackContent() {
 
 export default function GitHubCallbackPage() {
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col justify-center items-center p-4 selection:bg-[#C6FF20] selection:text-black font-sans">
-      <Suspense fallback={
-        <div className="bg-white text-slate-900 rounded-3xl p-8 shadow-2xl max-w-md w-full text-center">
-          <Loader2 className="w-8 h-8 text-[#0038FF] animate-spin mx-auto" />
-          <p className="text-xs text-slate-500 mt-3 font-mono">Loading OAuth handshake...</p>
-        </div>
-      }>
+    <Suspense fallback={
+      <StaticLoader
+        label="Authorizing with GitHub"
+        sublabel="Exchanging cryptographic OAuth tokens..."
+        fullScreen={true}
+      />
+    }>
+      <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col justify-center items-center p-4 selection:bg-[#C6FF20] selection:text-black font-sans">
         <CallbackContent />
-      </Suspense>
-    </div>
+      </div>
+    </Suspense>
   );
 }

@@ -9,7 +9,7 @@ import {
   QdrantStatus,
 } from '@/types';
 import {
-  Sparkles,
+  Bot,
   Layers,
   Search,
   Scale,
@@ -167,7 +167,7 @@ function ChatLauncherContent() {
             className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-[#0051FF] via-[#0038b8] to-[#1e1b4b] text-white font-bold text-xs shadow-2xl border border-white/30 hover:scale-105 transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,81,255,0.6)] cursor-pointer"
           >
             <div className="w-6 h-6 rounded-lg bg-black/30 border border-white/20 flex items-center justify-center p-0.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#C6FF20]" />
+              <Bot className="w-3.5 h-3.5 text-[#C6FF20]" />
             </div>
             <span className="tracking-wide">AI Copilot & Sub-Agents</span>
             <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
@@ -183,7 +183,7 @@ function ChatLauncherContent() {
           <div className="px-4 py-3 bg-white/[0.04] border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center p-1">
-                <Sparkles className="w-3.5 h-3.5 text-[#C6FF20]" />
+                <Bot className="w-3.5 h-3.5 text-[#C6FF20]" />
               </div>
               <div>
                 <h3 className="font-bold text-xs tracking-tight flex items-center gap-1.5">
@@ -231,7 +231,7 @@ function ChatLauncherContent() {
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-white/60 space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-[#C6FF20]" />
+                  <Bot className="w-6 h-6 text-[#C6FF20]" />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-white">Ask Anything or Pitch an Idea</h4>

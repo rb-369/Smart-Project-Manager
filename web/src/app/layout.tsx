@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DevCommand — Engineering Roadmap Intelligence",
+  title: "DevCommand: Engineering Roadmap Intelligence",
   description: "Automated GitHub ingestion, multi-tier AI feature decomposition, and mathematical milestone velocity physics.",
   icons: {
     icon: [

@@ -13,7 +13,7 @@ import {
   RagCitation,
 } from '@/types';
 import {
-  Sparkles,
+  Bot,
   Layers,
   Search,
   Scale,
@@ -357,7 +357,7 @@ export default function ChatPage() {
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-10 px-4">
               <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border-2 border-white/30 flex items-center justify-center shadow-xl mb-4 p-3">
-                <Sparkles className="w-8 h-8 text-[#C6FF20]" />
+                <Bot className="w-8 h-8 text-[#C6FF20]" />
               </div>
               <h2 className="text-xl font-black text-white tracking-tight mb-2">
                 What feature or idea would you like to evaluate?
@@ -426,7 +426,7 @@ export default function ChatPage() {
                           <div className="flex items-center gap-2">
                             {hasSubAgents ? (
                               <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-blue-100 text-blue-700 border border-blue-200">
-                                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                                <Bot className="w-3.5 h-3.5 text-blue-600" />
                                 <span>3 Sub-Agents Executed</span>
                               </div>
                             ) : (
@@ -758,25 +758,25 @@ export default function ChatPage() {
 
                   {/* Step 2: Market Researcher */}
                   <div className={`p-2 rounded-xl border flex items-center gap-2 ${
-                    activeStep >= 2 ? (activeStep === 2 ? 'bg-sky-950/60 border-sky-400 text-sky-200 animate-pulse' : 'bg-sky-950/40 border-sky-500/40 text-sky-300') : 'bg-slate-900 border-slate-800 text-slate-500'
+                    activeStep >= 2 ? (activeStep === 2 ? 'bg-sky-950/80 border-sky-400 text-sky-100 ring-1 ring-sky-400/40 shadow-xs' : 'bg-sky-950/40 border-sky-500/40 text-sky-300') : 'bg-slate-900 border-slate-800 text-slate-500'
                   }`}>
-                    {activeStep > 2 ? <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" /> : <Search className={`w-3.5 h-3.5 shrink-0 ${activeStep === 2 ? 'text-sky-300 animate-spin' : ''}`} />}
+                    {activeStep > 2 ? <Check className="w-3.5 h-3.5 text-sky-400 shrink-0" /> : <Search className={`w-3.5 h-3.5 shrink-0 ${activeStep === 2 ? 'text-sky-300' : ''}`} />}
                     <span className="truncate">2. Researcher</span>
                   </div>
 
                   {/* Step 3: The Judge */}
                   <div className={`p-2 rounded-xl border flex items-center gap-2 ${
-                    activeStep >= 3 ? (activeStep === 3 ? 'bg-rose-950/60 border-rose-400 text-rose-200 animate-pulse' : 'bg-rose-950/40 border-rose-500/40 text-rose-300') : 'bg-slate-900 border-slate-800 text-slate-500'
+                    activeStep >= 3 ? (activeStep === 3 ? 'bg-rose-950/80 border-rose-400 text-rose-100 ring-1 ring-rose-400/40 shadow-xs' : 'bg-rose-950/40 border-rose-500/40 text-rose-300') : 'bg-slate-900 border-slate-800 text-slate-500'
                   }`}>
-                    {activeStep > 3 ? <Check className="w-3.5 h-3.5 text-rose-400 shrink-0" /> : <Scale className={`w-3.5 h-3.5 shrink-0 ${activeStep === 3 ? 'text-rose-300 animate-spin' : ''}`} />}
+                    {activeStep > 3 ? <Check className="w-3.5 h-3.5 text-rose-400 shrink-0" /> : <Scale className={`w-3.5 h-3.5 shrink-0 ${activeStep === 3 ? 'text-rose-300' : ''}`} />}
                     <span className="truncate">3. The Judge</span>
                   </div>
 
                   {/* Step 4: Feature Planner */}
                   <div className={`p-2 rounded-xl border flex items-center gap-2 ${
-                    activeStep >= 4 ? 'bg-blue-950/60 border-blue-400 text-blue-200 animate-pulse' : 'bg-slate-900 border-slate-800 text-slate-500'
+                    activeStep >= 4 ? 'bg-blue-950/80 border-blue-400 text-blue-100 ring-1 ring-blue-400/40 shadow-xs' : 'bg-slate-900 border-slate-800 text-slate-500'
                   }`}>
-                    <Layers className={`w-3.5 h-3.5 shrink-0 ${activeStep === 4 ? 'text-blue-300 animate-spin' : ''}`} />
+                    <Layers className={`w-3.5 h-3.5 shrink-0 ${activeStep === 4 ? 'text-blue-300' : ''}`} />
                     <span className="truncate">4. Planner</span>
                   </div>
                 </div>

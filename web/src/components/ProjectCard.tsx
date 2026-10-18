@@ -6,7 +6,7 @@ import { ProjectSummary } from '@/types';
 import {
   ExternalLink,
   ArrowRight,
-  Sparkles,
+  SlidersHorizontal,
   Star,
   EyeOff,
   RotateCcw,
@@ -209,7 +209,7 @@ export function ProjectCard({
                 className="flex items-center gap-1.5 text-xs font-mono font-black text-emerald-700 hover:text-emerald-900 transition truncate"
                 title={project.live_url}
               >
-                <Globe className="w-3.5 h-3.5 text-emerald-600 animate-pulse shrink-0" />
+                <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span className="truncate">
                   {project.live_url.replace(/^https?:\/\//, '')}
                 </span>
@@ -335,7 +335,7 @@ export function ProjectCard({
                 }}
                 className="text-xs font-mono font-black px-3 py-1 rounded-full bg-[#C6FF20] text-black hover:bg-[#d5ff38] transition cursor-pointer flex items-center gap-1 shadow-xs"
               >
-                <Sparkles className="w-3 h-3" />
+                <SlidersHorizontal className="w-3 h-3" />
                 <span>Triage</span>
               </button>
             ) : (
