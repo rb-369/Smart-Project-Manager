@@ -6,19 +6,21 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { GitHubStatus, MongoDBStatus } from '@/types';
 import { Navbar } from '@/components/Navbar';
-import { AppShell, PageContainer } from '@/components/AppShell';
+import { AppShell, PageContainer, PageHeader } from '@/components/AppShell';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { TextField } from '@/components/ui/Field';
 import {
-  KeyRound,
   ShieldCheck,
   CheckCircle2,
   AlertCircle,
   GitBranch,
-  Lock,
+  KeyRound,
   ExternalLink,
   Database,
   Users,
   RefreshCw,
-  Server
+  Lock,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -89,7 +91,7 @@ export default function SettingsPage() {
     setError(null);
     try {
       await api.post('/github/token', { token: token.trim() });
-      setMessage('GitHub Personal Access Token encrypted and saved successfully.');
+      setMessage('GitHub personal access token encrypted and saved.');
       setToken('');
       fetchStatus();
     } catch (err: any) {
@@ -101,169 +103,168 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      {/* Floating Island Navigation Header */}
       <Navbar />
 
-      {/* Main Content */}
       <PageContainer className="max-w-4xl space-y-6">
-        
-        {/* Compact Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
-              <span className="text-[11px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
-                ZERO-LEAK CREDENTIAL &amp; CLOUD VAULT
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Settings &amp; Integrations
-            </h1>
-            <p className="text-xs text-white/80 mt-1 leading-relaxed">
-              Configure MongoDB Atlas persistence, GitHub encrypted tokens, and tenant isolation policies.
-            </p>
-          </div>
+        <PageHeader
+          eyebrow={
+            <span className="font-mono text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-brand-lime-300">
+              Zero-leak credential &amp; cloud vault
+            </span>
+          }
+          title="Settings &amp; integrations"
+          description="Configure MongoDB Atlas persistence, encrypted GitHub tokens, and tenant isolation policies."
+          actions={
+            <>
+              <Badge tone={mongoStatus?.connected ? 'emerald' : 'amber'} size="sm">
+                {mongoStatus?.connected ? 'Atlas connected' : 'MongoDB ready'}
+              </Badge>
+              <Badge tone="blue" size="sm">
+                AES-256 GCM
+              </Badge>
+            </>
+          }
+        />
 
-          <div className="flex items-center gap-2.5 self-start sm:self-auto font-mono text-xs">
-            <div className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white/90 font-bold flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5 text-[#C6FF20]" />
-              <span>{mongoStatus?.connected ? 'Atlas Connected' : 'MongoDB Config'}</span>
-            </div>
-            <div className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white/90 font-bold flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-[#C6FF20]" />
-              <span>AES-256 GCM</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 1. MONGODB ATLAS CLUSTER STATUS CARD */}
-        <div className="bg-white text-slate-900 border border-white/20 shadow-2xl p-6 sm:p-8 rounded-3xl space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        {/* Storage */}
+        <section className="surface-card rounded-3xl p-6 sm:p-8">
+          <div className="flex flex-col justify-between gap-4 border-b border-ink-200/80 pb-5 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shrink-0">
-                <Database className="w-6 h-6 text-[#C6FF20]" />
-              </div>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-blue-500 text-white shadow-e2">
+                <Database className="h-5 w-5 text-brand-lime-400" aria-hidden="true" />
+              </span>
               <div>
-                <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>MongoDB Atlas Storage</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                    mongoStatus?.connected 
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' 
-                      : 'bg-amber-100 text-amber-800 border border-amber-300'
-                  }`}>
-                    {mongoStatus?.connected ? '● LIVE ATLAS' : '● ACTION NEEDED'}
-                  </span>
+                <h2 className="flex flex-wrap items-center gap-2 text-h3 font-extrabold tracking-tight text-ink-900">
+                  <span>MongoDB Atlas storage</span>
+                  <Badge tone={mongoStatus?.connected ? 'emerald' : 'amber'} size="xs">
+                    {mongoStatus?.connected ? 'Live atlas' : 'Action needed'}
+                  </Badge>
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Scalable document store persisting multi-tenant repositories, features, and AI triage logs.
+                <p className="mt-0.5 text-[0.8125rem] text-ink-500">
+                  Document store persisting multi-tenant repositories, features, and AI triage logs.
                 </p>
               </div>
             </div>
 
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={fetchMongoStatus}
               disabled={mongoLoading}
-              className="py-1.5 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto"
+              iconLeft={
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${mongoLoading ? 'animate-spin' : ''}`}
+                  aria-hidden="true"
+                />
+              }
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${mongoLoading ? 'animate-spin text-emerald-600' : ''}`} />
-              <span>{mongoLoading ? 'Pinging...' : 'Re-test'}</span>
-            </button>
+              {mongoLoading ? 'Pinging…' : 'Re-test'}
+            </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] text-slate-400 uppercase font-bold">Database Name</span>
-              <div className="font-bold text-slate-900 text-sm mt-0.5">{mongoStatus?.database || 'devcommand'}</div>
+          <dl className="grid grid-cols-1 gap-3 pt-5 sm:grid-cols-3">
+            <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-3.5">
+              <dt className="eyebrow text-ink-400">Database name</dt>
+              <dd className="mt-0.5 truncate font-mono text-sm font-bold text-ink-900">
+                {mongoStatus?.database || 'devcommand'}
+              </dd>
             </div>
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] text-slate-400 uppercase font-bold">Cluster Host</span>
-              <div className="font-bold text-slate-900 text-sm mt-0.5 truncate">{mongoStatus?.host || 'Atlas SRV'}</div>
+            <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-3.5">
+              <dt className="eyebrow text-ink-400">Cluster host</dt>
+              <dd className="mt-0.5 truncate font-mono text-sm font-bold text-ink-900">
+                {mongoStatus?.host || 'Atlas SRV'}
+              </dd>
             </div>
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] text-slate-400 uppercase font-bold">Tenant Isolation</span>
-              <div className="font-bold text-emerald-600 text-sm mt-0.5 flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4" />
-                <span>100% Enforced</span>
-              </div>
+            <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-3.5">
+              <dt className="eyebrow text-ink-400">Tenant isolation</dt>
+              <dd className="mt-0.5 flex items-center gap-1.5 font-mono text-sm font-bold text-emerald-600">
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                Enforced
+              </dd>
             </div>
-          </div>
+          </dl>
 
-          <div className={`p-4 rounded-2xl text-xs font-mono flex items-start gap-3 ${
-            mongoStatus?.connected
-              ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
-              : 'bg-amber-50 border border-amber-200 text-amber-800'
-          }`}>
+          <div
+            role="status"
+            className={`mt-5 flex items-start gap-3 rounded-2xl border px-4 py-3.5 font-mono text-[0.75rem] ${
+              mongoStatus?.connected
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border-amber-200 bg-amber-50 text-amber-800'
+            }`}
+          >
             {mongoStatus?.connected ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
             )}
             <div className="space-y-1">
-              <div className="font-bold">{mongoStatus?.message}</div>
+              <p className="font-bold">{mongoStatus?.message}</p>
               {!mongoStatus?.connected && (
-                <p className="text-[11px] text-amber-700 leading-relaxed font-sans">
-                  To connect your MongoDB Atlas cluster: Add your connection string to the <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">.env</code> file:
+                <p className="font-sans text-[0.6875rem] leading-relaxed text-amber-700">
+                  Add your connection string to the <code className="rounded bg-amber-100 px-1 py-0.5 font-mono">.env</code>{' '}
+                  file:
                   <br />
-                  <code className="text-[10px] bg-white px-2 py-1 rounded block mt-1 border border-amber-300 font-mono select-all">
+                  <code className="mt-1 block select-all rounded border border-amber-300 bg-white px-2 py-1 font-mono text-[0.625rem]">
                     MONGODB_URL=mongodb+srv://&lt;username&gt;:&lt;password&gt;@cluster0.mongodb.net/devcommand?retryWrites=true&amp;w=majority
                   </code>
                 </p>
               )}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* 2. CURRENT USER ISOLATED IDENTITY CARD */}
+        {/* Identity */}
         {user && (
-          <div className="bg-white text-slate-900 border border-white/20 shadow-2xl p-6 sm:p-8 rounded-3xl space-y-4">
-            <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100">
-              <div className="w-12 h-12 rounded-2xl bg-[#0038FF] text-white flex items-center justify-center shadow-md shrink-0">
-                <Users className="w-6 h-6 text-[#C6FF20]" />
-              </div>
+          <section className="surface-card rounded-3xl p-6 sm:p-8">
+            <div className="flex items-center gap-3.5 border-b border-ink-200/80 pb-5">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-blue-500 text-white shadow-e2">
+                <Users className="h-5 w-5 text-brand-lime-400" aria-hidden="true" />
+              </span>
               <div>
-                <h2 className="text-lg font-black text-slate-900 tracking-tight">
-                  Active User Identity &amp; Tenant Workspace
+                <h2 className="text-h3 font-extrabold tracking-tight text-ink-900">
+                  Active identity &amp; tenant workspace
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="mt-0.5 text-[0.8125rem] text-ink-500">
                   Logged in as a distinct tenant. All data is partitioned by your account ID.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-[10px] text-slate-400 uppercase font-bold">Email Address</span>
-                <div className="font-bold text-slate-900 text-sm mt-0.5 truncate">{user.email}</div>
+            <dl className="grid grid-cols-1 gap-3 pt-5 sm:grid-cols-2">
+              <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-3.5">
+                <dt className="eyebrow text-ink-400">Email address</dt>
+                <dd className="mt-0.5 truncate font-mono text-sm font-bold text-ink-900">
+                  {user.email}
+                </dd>
               </div>
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-[10px] text-slate-400 uppercase font-bold">GitHub Account</span>
-                <div className="font-bold text-[#0038FF] text-sm mt-0.5 truncate">
+              <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-3.5">
+                <dt className="eyebrow text-ink-400">GitHub account</dt>
+                <dd className="mt-0.5 truncate font-mono text-sm font-bold text-brand-blue-600">
                   {user.github_username ? `@${user.github_username}` : 'Not linked'}
-                </div>
+                </dd>
               </div>
-            </div>
-          </div>
+            </dl>
+          </section>
         )}
 
-        {/* 3. GITHUB PERSONAL ACCESS TOKEN VAULT CARD */}
-        <div className="bg-white text-slate-900 border border-white/20 shadow-2xl p-6 sm:p-8 rounded-3xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        {/* GitHub token */}
+        <section className="surface-card rounded-3xl p-6 sm:p-8">
+          <div className="flex flex-col justify-between gap-4 border-b border-ink-200/80 pb-5 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-[#0038FF] text-white flex items-center justify-center shadow-md shrink-0">
-                <GitBranch className="w-6 h-6 text-[#C6FF20]" />
-              </div>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-blue-500 text-white shadow-e2">
+                <GitBranch className="h-5 w-5 text-brand-lime-400" aria-hidden="true" />
+              </span>
               <div>
-                <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>GitHub Repository Telemetry Token</span>
+                <h2 className="flex flex-wrap items-center gap-2 text-h3 font-extrabold tracking-tight text-ink-900">
+                  <span>GitHub repository token</span>
                   {status?.is_connected && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      CONNECTED
-                    </span>
+                    <Badge tone="emerald" size="xs">
+                      Connected
+                    </Badge>
                   )}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Synchronize your private and public repositories for roadmap tracking.
+                <p className="mt-0.5 text-[0.8125rem] text-ink-500">
+                  Synchronise your private and public repositories for roadmap tracking.
                 </p>
               </div>
             </div>
@@ -272,82 +273,81 @@ export default function SettingsPage() {
               href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevCommand"
               target="_blank"
               rel="noopener noreferrer"
-              className="py-2 px-4 rounded-xl border border-slate-200 hover:border-[#0038FF] text-slate-700 hover:text-[#0038FF] text-xs font-mono font-bold flex items-center gap-1.5 transition self-start sm:self-auto"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-brand-blue-500/20 px-4 py-2 font-mono text-[0.75rem] font-bold text-ink-700 transition-colors hover:border-brand-blue-500/40 hover:text-brand-blue-600"
             >
               <span>Generate PAT</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
             </a>
           </div>
 
-          <form onSubmit={handleSaveToken} className="space-y-4">
-            <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Personal Access Token (Stored in AES-256 Vault)
-              </label>
-              <div className="relative">
-                <KeyRound className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none font-mono transition shadow-inner font-normal"
-                />
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500 mt-2.5 font-mono">
-                <ShieldCheck className="w-4 h-4 text-[#0038FF]" />
-                <span>Stored using AES-256 cryptographic cipher at rest. Never logged in plaintext.</span>
-              </div>
-            </div>
+          <form onSubmit={handleSaveToken} className="space-y-4 pt-5">
+            <TextField
+              label="Personal access token (stored in the AES-256 vault)"
+              type="password"
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              hint="Requires the repo and read:user scopes. Stored using AES-256 at rest and never logged in plaintext."
+            />
 
             {message && (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2 font-bold">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              <div
+                role="status"
+                className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[0.75rem] font-bold text-emerald-800"
+              >
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
                 {message}
               </div>
             )}
 
             {error && (
-              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center gap-2 font-bold">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              <div
+                role="alert"
+                className="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-[0.75rem] font-bold text-rose-800"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" aria-hidden="true" />
                 {error}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading || !token.trim()}
-              className="btn-lime !py-3 !px-7 text-xs font-black shadow-md cursor-pointer disabled:opacity-50"
-            >
-              {loading ? 'Encrypting & Storing...' : 'Save & Encrypt Token'}
-            </button>
+            <Button type="submit" disabled={loading || !token.trim()} loading={loading}>
+              {loading ? 'Encrypting & storing…' : 'Save & encrypt token'}
+            </Button>
           </form>
-        </div>
+        </section>
 
-        {/* 4. SECURITY & ARCHITECTURE SPECS */}
-        <div className="bg-white text-slate-900 border border-white/20 shadow-2xl p-6 sm:p-8 rounded-3xl space-y-4">
-          <h3 className="font-black text-sm text-slate-950 uppercase tracking-wide">
-            Zero-Leak Architecture Specifications
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Persistence</span>
-              <p className="font-bold text-xs text-slate-900 mt-1">MongoDB Atlas</p>
-              <p className="text-[11px] text-slate-500 mt-1">Encrypted documents with collection-level isolation.</p>
+        {/* Architecture */}
+        <section className="surface-card rounded-3xl p-6 sm:p-8">
+          <h3 className="eyebrow text-ink-400">Zero-leak architecture</h3>
+          <dl className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-3">
+            <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-4">
+              <dt className="eyebrow text-ink-400">Persistence</dt>
+              <dd className="mt-1 text-[0.8125rem] font-bold text-ink-900">MongoDB Atlas</dd>
+              <dd className="mt-1 text-[0.6875rem] leading-relaxed text-ink-500">
+                Encrypted documents with collection-level isolation.
+              </dd>
             </div>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Vault Cipher</span>
-              <p className="font-bold text-xs text-slate-900 mt-1">AES-256 GCM</p>
-              <p className="text-[11px] text-slate-500 mt-1">Hardware-accelerated authenticated cipher.</p>
+            <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-4">
+              <dt className="eyebrow text-ink-400">Vault cipher</dt>
+              <dd className="mt-1 text-[0.8125rem] font-bold text-ink-900">AES-256 GCM</dd>
+              <dd className="mt-1 text-[0.6875rem] leading-relaxed text-ink-500">
+                Authenticated encryption for every stored secret.
+              </dd>
             </div>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">Tenant Scoping</span>
-              <p className="font-bold text-xs text-slate-900 mt-1">UUID Filter Guard</p>
-              <p className="text-[11px] text-slate-500 mt-1">Every database query is constrained to caller user ID.</p>
+            <div className="rounded-2xl border border-ink-200/80 bg-ink-50 p-4">
+              <dt className="eyebrow text-ink-400">Tenant scoping</dt>
+              <dd className="mt-1 text-[0.8125rem] font-bold text-ink-900">UUID filter guard</dd>
+              <dd className="mt-1 text-[0.6875rem] leading-relaxed text-ink-500">
+                Every query is constrained to the calling user ID.
+              </dd>
             </div>
-          </div>
-        </div>
+          </dl>
 
+          <p className="mt-5 flex items-center gap-2 border-t border-ink-200/80 pt-4 font-mono text-[0.6875rem] text-ink-500">
+            <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>Secrets are encrypted before they ever reach the database.</span>
+          </p>
+        </section>
       </PageContainer>
     </AppShell>
   );

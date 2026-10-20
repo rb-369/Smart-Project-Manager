@@ -33,8 +33,8 @@ interface NavbarProps {
 }
 
 const NAV_LINKS = [
-  { label: 'Command Center', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Copilot AI', href: '/chat', icon: Bot },
+  { label: 'Command', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Copilot', href: '/chat', icon: Bot },
   { label: 'Ideas', href: '/ideas', icon: Lightbulb },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
@@ -127,7 +127,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
       : pathname === href || pathname.startsWith(`${href}/`);
 
   const navLinkClass = (active: boolean) =>
-    `flex items-center gap-2 rounded-full px-3.5 py-2 font-mono text-[0.6875rem] font-bold transition-colors duration-150 ${
+    `flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 font-mono text-[0.6875rem] font-bold transition-colors duration-150 ${
       active
         ? 'bg-brand-lime-400 text-black shadow-lime'
         : 'text-white/80 hover:bg-white/10 hover:text-white'
@@ -164,7 +164,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
 
           {/* Storage telemetry — one chip instead of two competing badges */}
           <div
-            className="telemetry-pill hidden xl:inline-flex"
+            className="telemetry-pill hidden shrink-0 2xl:inline-flex"
             title="Isolated tenant storage status"
           >
             <span
@@ -181,7 +181,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
           </div>
 
           {/* Search — reachable on every breakpoint */}
-          <div className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white transition-colors focus-within:border-white/40 focus-within:bg-white/20 md:flex">
+          <div className="hidden shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white transition-colors focus-within:border-white/40 focus-within:bg-white/20 md:flex">
             <Search className="h-3.5 w-3.5 shrink-0 text-white/60" aria-hidden="true" />
             <label htmlFor="global-search" className="sr-only">
               Search repositories

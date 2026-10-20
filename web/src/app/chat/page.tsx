@@ -267,22 +267,23 @@ export default function ChatPage() {
       <PageContainer className="flex flex-col pb-10">
         
         {/* Top Control Bar: Title + Telemetry + Project Scope */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
-              <span className="text-[11px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
-                DEVCOMMAND AUTONOMOUS COPILOT
+        <div className="flex flex-col justify-between gap-4 border-b border-white/10 pb-4 lg:flex-row lg:items-center">
+          <div className="min-w-0">
+            <div className="mb-1.5 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-brand-lime-400 pulse-lime" aria-hidden="true" />
+              <span className="font-mono text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-brand-lime-300">
+                DevCommand autonomous copilot
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
-              <span>Single Copilot & Sub-Agents</span>
-            </h1>
-            <p className="text-xs text-white/80 mt-1">
-              Single unified interface coordinating <strong className="text-sky-300">Market Researcher</strong>, <strong className="text-rose-300">The Judge</strong>, and <strong className="text-[#C6FF20]">Feature Planner</strong> sub-agents with Qdrant Cloud RAG.
+            <h1 className="text-h1 font-extrabold tracking-tight text-white">Copilot &amp; sub-agents</h1>
+            <p className="mt-1.5 max-w-2xl text-[0.8125rem] leading-relaxed text-white/80">
+              One interface coordinating the{' '}
+              <strong className="text-brand-blue-300">market researcher</strong>, the{' '}
+              <strong className="text-brand-violet-300">judge</strong>, and the{' '}
+              <strong className="text-brand-lime-300">feature planner</strong> — grounded in your
+              repositories through Qdrant RAG.
             </p>
           </div>
-
           {/* Controls: RAG Status, Project Scope, Clear History */}
           <div className="flex items-center gap-2.5 flex-wrap">
             {/* Project Scope Selector */}
@@ -404,7 +405,7 @@ export default function ChatPage() {
                   <div
                     className={`max-w-4xl rounded-3xl p-5 text-sm leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-blue-600 text-white shadow-lg border border-blue-400/40'
+                        ? 'bg-brand-blue-500 text-white shadow-lg border border-brand-blue-400/40'
                         : 'bg-white text-slate-900 shadow-2xl border border-white/30 w-full'
                     }`}
                   >
@@ -456,7 +457,7 @@ export default function ChatPage() {
                         {hasSubAgents && subData.judge && (
                           <div className="space-y-4">
                             {/* 1. Executive Verdict Banner */}
-                            <div className="p-4 rounded-2xl bg-slate-950 text-white border border-slate-800 shadow-xl space-y-3">
+                            <div className="p-4 rounded-2xl bg-ink-950 text-white border border-brand-violet-500/30 shadow-xl space-y-3">
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
                                 <div>
                                   <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">
@@ -506,7 +507,7 @@ export default function ChatPage() {
                                 onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'judge' }))}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
                                   activeTab === 'judge'
-                                    ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20'
+                                    ? 'bg-brand-violet-500 text-white shadow-md shadow-brand-violet-500/25'
                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                               >
@@ -519,7 +520,7 @@ export default function ChatPage() {
                                 onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'researcher' }))}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
                                   activeTab === 'researcher'
-                                    ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
+                                    ? 'bg-brand-blue-500 text-white shadow-md shadow-brand-blue-500/25'
                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                               >
@@ -532,7 +533,7 @@ export default function ChatPage() {
                                 onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'planner' }))}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono flex items-center gap-1.5 transition-all ${
                                   activeTab === 'planner'
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                                    ? 'bg-brand-lime-400 text-black shadow-md shadow-brand-lime-400/30'
                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                               >
@@ -669,7 +670,7 @@ export default function ChatPage() {
                                               className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono shrink-0 flex items-center gap-1.5 transition-all ${
                                                 isAdded
                                                   ? 'bg-emerald-600 text-white cursor-default'
-                                                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow'
+                                                  : 'bg-brand-blue-500 hover:bg-brand-blue-400 text-white shadow'
                                               }`}
                                             >
                                               {isAdded ? (
@@ -734,7 +735,7 @@ export default function ChatPage() {
           {/* Submitting Live Multi-Agent Stepper Indicator */}
           {isSubmitting && (
             <div className="flex items-start space-y-2 animate-fade-in w-full max-w-2xl">
-              <div className="bg-slate-950 text-white rounded-3xl p-5 shadow-2xl border border-slate-800 w-full space-y-3">
+              <div className="bg-ink-950 text-white rounded-3xl p-5 shadow-2xl border border-brand-blue-500/25 w-full space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-xs font-mono">
                   <div className="flex items-center gap-2 text-[#C6FF20] font-bold">
                     <Loader2 className="w-4 h-4 animate-spin text-[#C6FF20]" />

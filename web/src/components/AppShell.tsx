@@ -34,7 +34,7 @@ export function PageContainer({ children, className = '' }: PageContainerProps) 
   return (
     <main
       id="main-content"
-      className={`relative z-10 mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-24 sm:px-6 sm:pt-28 lg:px-8 ${className}`}
+      className={`relative z-10 mx-auto w-full max-w-7xl flex-1 px-4 pb-28 pt-24 sm:px-6 sm:pt-28 lg:px-8 ${className}`}
     >
       {children}
     </main>

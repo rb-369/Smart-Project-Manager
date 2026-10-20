@@ -7,13 +7,15 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { ProjectSummary, FutureProject } from '@/types';
 import { Navbar } from '@/components/Navbar';
-import { AppShell, PageContainer } from '@/components/AppShell';
+import { AppShell, PageContainer, PageHeader } from '@/components/AppShell';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Toast } from '@/components/ui/Toast';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
 import { IdeaCard } from '@/components/IdeaCard';
 import { ConceptImportModal } from '@/components/ConceptImportModal';
+import { Badge } from '@/components/ui/Badge';
+import { ProgressRing } from '@/components/ui/ProgressRing';
 import { ProjectCard } from '@/components/ProjectCard';
 import { TriageModal } from '@/components/TriageModal';
 import { StaticLoader } from '@/components/StaticLoader';
@@ -57,6 +59,7 @@ export default function DashboardPage() {
   const [activeTriageProject, setActiveTriageProject] = useState<ProjectSummary | null>(null);
   const [backendOffline, setBackendOffline] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Smart WhatsApp import modal state on Dashboard
   const [showImportModal, setShowImportModal] = useState(false);
@@ -99,6 +102,20 @@ export default function DashboardPage() {
       setIdeas(res || []);
     } catch (err) {
       console.warn('Unable to load ideas:', err);
+    }
+  };
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      const res: any = await api.post('/github/sync');
+      const count = res?.new_repos_imported || 0;
+      showToast(count > 0 ? `Imported ${count} new repositor${count === 1 ? 'y' : 'ies'}.` : 'Already up to date.');
+      await fetchProjects();
+    } catch (err: any) {
+      showToast(err?.message || 'Sync failed.');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -333,234 +350,200 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Compact Header Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
-              <span className="text-[11px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
-                WORKSPACE TELEMETRY
-              </span>
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-              <span>Mission Control</span>
+        {/* Header */}
+        <PageHeader
+          eyebrow={
+            <span className="font-mono text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-brand-lime-300">
+              Workspace telemetry
+            </span>
+          }
+          title={
+            <span className="flex flex-wrap items-center gap-3">
+              Command Center
               {starredProjects.length > 0 && (
-                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-amber-300 text-amber-300" />
-                  <span>{starredProjects.length} Pinned</span>
-                </span>
-              )}
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-xs font-mono text-white/70">
-              Active: <strong className="text-[#C6FF20]">{nonHiddenProjects.length}</strong> repos
-              {hiddenProjects.length > 0 && (
-                <span className="text-white/40 ml-1.5">({hiddenProjects.length} hidden)</span>
+                <Badge tone="amber" size="sm">
+                  {starredProjects.length} pinned
+                </Badge>
               )}
             </span>
-            <button
-              onClick={() => setActiveTab('IDEAS')}
-              className="text-xs font-mono px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center gap-1.5 transition cursor-pointer"
-            >
-              <Lightbulb className="w-3 h-3 text-[#C6FF20]" />
-              <span>Ideas Backlog: <strong className="text-[#C6FF20]">{unpromotedIdeas.length}</strong></span>
-            </button>
-          </div>
-        </div>
+          }
+          description={`${nonHiddenProjects.length} active ${nonHiddenProjects.length === 1 ? 'repository' : 'repositories'}${hiddenProjects.length > 0 ? `, ${hiddenProjects.length} hidden` : ''}. Everything here is scoped to your own tenant.`}
+          actions={
+            <>
+              <span className="font-mono text-[0.6875rem] text-white/70">
+                Average velocity{' '}
+                <strong className="font-black text-brand-lime-300">{avgProgress}%</strong>
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab('IDEAS')}
+                className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                iconLeft={<Lightbulb className="h-3.5 w-3.5" aria-hidden="true" />}
+              >
+                Backlog {unpromotedIdeas.length}
+              </Button>
+            </>
+          }
+        />
 
-        {/* Bento Grid Header */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
-          {/* Bento Card 1: Production Deployed Telemetry (4 cols) */}
+        {/* Metrics */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-12">
+          {/* Production deployments — deep panel so it separates from the canvas */}
           <div className="gridster-panel-deep relative flex flex-col justify-between overflow-hidden p-6 lg:col-span-4">
-            <div className="absolute -right-8 -top-10 h-40 w-40 rounded-full bg-brand-lime-400/20 blur-3xl transition-transform duration-500 group-hover:scale-125" />
+            <div
+              className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-brand-lime-400/20 blur-3xl"
+              aria-hidden="true"
+            />
 
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-mono uppercase tracking-wider text-[#C6FF20] flex items-center gap-1.5 font-black">
-                  <Globe className="w-3.5 h-3.5" />
-                  Production Deployments
+            <div className="relative">
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 font-mono text-[0.6875rem] font-black uppercase tracking-[0.1em] text-brand-lime-300">
+                  <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+                  Production
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-bold">
-                  VERCEL &amp; CLOUD
-                </span>
+                <Badge tone="lime" size="xs">
+                  Live
+                </Badge>
               </div>
 
-              <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-5xl font-black tracking-tight text-white num-tabular">
+              <div className="flex items-baseline gap-3">
+                <span className="num-tabular text-5xl font-black tracking-tight text-white">
                   {productionProjects.length}
                 </span>
-                <span className="text-xs font-mono text-white/70 font-semibold">
-                  Live Deployed Apps
+                <span className="font-mono text-[0.6875rem] text-white/70">
+                  live {productionProjects.length === 1 ? 'app' : 'apps'}
                 </span>
               </div>
 
-              <p className="text-xs text-white/80 leading-relaxed font-normal">
+              <p className="mt-3 text-[0.8125rem] leading-relaxed text-white/80">
                 {productionProjects.length > 0
-                  ? `${productionProjects.length} applications with verified public URLs, real-time health, and live launch buttons.`
-                  : 'Add your live Vercel, Render, or custom deployment links to monitor live apps.'}
+                  ? 'Repositories with a verified public URL, launchable straight from the card.'
+                  : 'Add a Vercel, Render or custom deployment link to any repository to track it here.'}
               </p>
             </div>
 
-            <div className="pt-4 border-t border-white/20 flex items-center justify-between text-xs font-mono">
+            <div className="relative mt-5 flex items-center justify-between border-t border-white/20 pt-4 font-mono text-[0.6875rem]">
               <button
+                type="button"
                 onClick={() => setActiveTab('PRODUCTION')}
-                className="text-[#C6FF20] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                className="flex cursor-pointer items-center gap-1 font-bold text-brand-lime-300 hover:underline"
               >
-                <span>View Production Apps</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>View production apps</span>
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
-              <span className="text-white/60">{avgProgress}% avg velocity</span>
+              <span className="text-white/60">{avgProgress}% avg</span>
             </div>
           </div>
 
-          {/* Bento Card 2: Velocity & Sprint Gauges (5 cols) */}
-          <div className="lg:col-span-5 bg-white text-slate-900 border border-white/20 shadow-2xl p-6 rounded-3xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono text-slate-800 uppercase tracking-wider flex items-center gap-1.5 font-black">
-                <Activity className="w-3.5 h-3.5 text-[#0038FF]" />
-                Sprint Velocity &amp; Quality
+          {/* Velocity */}
+          <div className="surface-card flex flex-col justify-between p-6 lg:col-span-5">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 font-mono text-[0.6875rem] font-black uppercase tracking-[0.1em] text-ink-800">
+                <Activity className="h-3.5 w-3.5 text-brand-blue-600" aria-hidden="true" />
+                Sprint velocity
               </span>
-              <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold">
-                HEURISTIC 100%
-              </span>
+              <Badge tone="emerald" size="xs">
+                {completedFeatures}/{totalFeatures} shipped
+              </Badge>
             </div>
 
             <div className="grid grid-cols-2 gap-4 py-3">
               <div className="flex flex-col items-center text-center">
-                <div className="relative w-24 h-24">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      className="text-slate-100"
-                      strokeWidth="8"
-                      stroke="currentColor"
-                      fill="transparent"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      stroke="#0038FF"
-                      strokeWidth="8"
-                      strokeDasharray={2 * Math.PI * 38}
-                      strokeDashoffset={2 * Math.PI * 38 * (1 - avgProgress / 100)}
-                      strokeLinecap="round"
-                      fill="transparent"
-                      className="transition-all duration-1000 shadow-sm"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-slate-950 font-mono num-tabular">
-                      {avgProgress}%
-                    </span>
-                    <span className="text-[9px] font-mono text-slate-500 font-bold">Velocity</span>
-                  </div>
-                </div>
-                <span className="text-xs font-black text-slate-900 mt-2 font-mono">Sprint Velocity</span>
-                <span className="text-[10px] font-mono text-slate-500 font-bold">Weighted (4x/3x/2x/1x)</span>
+                <ProgressRing
+                  value={avgProgress}
+                  size={96}
+                  label={`Average delivery velocity ${avgProgress} percent`}
+                >
+                  <span className="num-tabular font-mono text-xl font-black leading-none text-ink-900">
+                    {avgProgress}%
+                  </span>
+                </ProgressRing>
+                <span className="mt-2 font-mono text-[0.6875rem] font-bold text-ink-900">
+                  Weighted progress
+                </span>
+                <span className="font-mono text-[0.625rem] text-ink-500">4× / 3× / 2× / 1×</span>
               </div>
 
               <div className="flex flex-col items-center text-center">
-                <div className="relative w-24 h-24">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      className="text-slate-100"
-                      strokeWidth="8"
-                      stroke="currentColor"
-                      fill="transparent"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="38"
-                      stroke="#C6FF20"
-                      strokeWidth="8"
-                      strokeDasharray={2 * Math.PI * 38}
-                      strokeDashoffset={2 * Math.PI * 38 * (1 - 0.89)}
-                      strokeLinecap="round"
-                      fill="transparent"
-                      className="transition-all duration-1000 shadow-sm"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-slate-950 font-mono num-tabular">89%</span>
-                    <span className="text-[9px] font-mono text-purple-700 font-black">Coverage</span>
-                  </div>
-                </div>
-                <span className="text-xs font-black text-slate-900 mt-2 font-mono">Test Coverage</span>
-                <span className="text-[10px] font-mono text-slate-500 font-bold">Unit &amp; AST</span>
+                <ProgressRing
+                  value={activeProjects.length ? 100 : 0}
+                  size={96}
+                  progressClassName="text-brand-lime-500"
+                  label={`${activeProjects.length} active repositories`}
+                >
+                  <span className="num-tabular font-mono text-xl font-black leading-none text-ink-900">
+                    {activeProjects.length}
+                  </span>
+                </ProgressRing>
+                <span className="mt-2 font-mono text-[0.6875rem] font-bold text-ink-900">
+                  Repos in progress
+                </span>
+                <span className="font-mono text-[0.625rem] text-ink-500">of {nonHiddenProjects.length} tracked</span>
               </div>
             </div>
 
-            <div className="text-[11px] font-mono text-slate-500 pt-3 border-t border-slate-100 flex items-center justify-between font-bold">
-              <span>Completed: {completedFeatures}/{totalFeatures}</span>
-              <span className="text-[#0038FF]">{activeProjects.length} Active Repos</span>
+            <div className="flex items-center justify-between border-t border-ink-200/80 pt-3 font-mono text-[0.6875rem] font-bold text-ink-500">
+              <span>
+                Completed {completedFeatures} of {totalFeatures} features
+              </span>
+              <span className="text-brand-blue-600">{activeProjects.length} active</span>
             </div>
           </div>
 
-          {/* Bento Card 3: AI Cascade Matrix & Triage (3 cols) */}
-          <div className="lg:col-span-3 bg-white text-slate-900 border border-white/20 shadow-2xl p-6 rounded-3xl flex flex-col justify-between">
+          {/* AI cascade */}
+          <div className="surface-card flex flex-col justify-between p-6 lg:col-span-3">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-mono text-slate-800 uppercase tracking-wider flex items-center gap-1.5 font-black">
-                  <Cpu className="w-3.5 h-3.5 text-[#0038FF]" />
-                  AI Cascade Matrix
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 font-mono text-[0.6875rem] font-black uppercase tracking-[0.1em] text-ink-800">
+                  <Cpu className="h-3.5 w-3.5 text-brand-violet-600" aria-hidden="true" />
+                  AI council
                 </span>
-                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[#0038FF] font-black">
-                  ONLINE
-                </span>
+                <Badge tone="blue" size="xs">
+                  Online
+                </Badge>
               </div>
 
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-slate-900 font-mono text-[11px] font-bold">Gemini 2.5 Flash</span>
-                  <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#0038FF] font-black">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0038FF] pulse-blue" />
-                    Fast Primary
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-slate-900 font-mono text-[11px] font-bold">Llama 3.2 11B</span>
-                  <span className="flex items-center gap-1.5 text-[10px] font-mono text-purple-700 font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#7020DD] pulse-violet" />
-                    NVIDIA NIM
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-slate-700 font-mono text-[11px] font-medium">Concept Extractor</span>
-                  <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 font-bold">
-                    WhatsApp Ingest
-                  </span>
-                </div>
-              </div>
+              <ul className="space-y-2">
+                {[
+                  { name: 'Gemini 2.5 Flash', role: 'Fast primary', dot: 'bg-brand-blue-500' },
+                  { name: 'Llama 3.2 11B', role: 'NVIDIA NIM', dot: 'bg-brand-violet-500' },
+                  { name: 'Concept extractor', role: 'WhatsApp ingest', dot: 'bg-emerald-500' },
+                ].map((agent) => (
+                  <li
+                    key={agent.name}
+                    className="flex items-center justify-between gap-2 rounded-xl border border-ink-200/80 bg-ink-50 px-2.5 py-2"
+                  >
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <span
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${agent.dot}`}
+                        aria-hidden="true"
+                      />
+                      <span className="truncate font-mono text-[0.625rem] font-bold text-ink-700">
+                        {agent.name}
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-mono text-[0.5625rem] text-ink-400">
+                      {agent.role}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="mt-4">
               {needsReviewProjects.length > 0 ? (
-                <button
+                <Button
+                  size="sm"
+                  fullWidth
                   onClick={() => setActiveTriageProject(needsReviewProjects[0])}
-                  className="w-full btn-lime !py-2.5 !px-3 !justify-between text-xs font-black shadow-md cursor-pointer"
+                  iconLeft={<SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />}
                 >
-                  <span className="flex items-center gap-1.5">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-black" />
-                    <span>Triage Required</span>
-                  </span>
-                  <span className="bg-black/15 text-black px-1.5 py-0.5 rounded-full font-mono text-[10px]">
-                    {needsReviewProjects.length}
-                  </span>
-                </button>
+                  Triage {needsReviewProjects.length} repos
+                </Button>
               ) : (
-                <div className="text-[11px] font-mono text-slate-500 flex items-center justify-center gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#0038FF]" />
+                <div className="flex items-center justify-center gap-1.5 rounded-xl border border-ink-200/80 bg-ink-50 p-2.5 font-mono text-[0.625rem] font-bold text-ink-500">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-brand-blue-600" aria-hidden="true" />
                   <span>All repositories synchronized</span>
                 </div>
               )}
@@ -742,29 +725,36 @@ export default function DashboardPage() {
                 sublabel="Syncing AST, MongoDB Atlas records, and incubator backlog..."
               />
             ) : filteredProjects.length === 0 ? (
-              <div className="bg-white text-slate-900 border border-white/20 p-16 text-center space-y-3 rounded-3xl shadow-2xl">
-                <GitBranch className="w-10 h-10 text-slate-400 mx-auto" />
-                <h3 className="text-base font-black text-slate-900">
-                  {activeTab === 'HIDDEN'
+              <EmptyState
+                icon={<GitBranch className="h-5 w-5" aria-hidden="true" />}
+                title={
+                  activeTab === 'HIDDEN'
                     ? 'No hidden repositories'
                     : activeTab === 'STARRED'
-                    ? 'No starred repositories yet'
-                    : activeTab === 'PRODUCTION'
-                    ? 'No production deployed repositories'
-                    : 'No repositories found'}
-                </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-mono">
-                  {searchQuery
-                    ? 'No results matched your search term. Try adjusting filters.'
+                      ? 'Nothing pinned yet'
+                      : activeTab === 'PRODUCTION'
+                        ? 'No production deployments yet'
+                        : 'No repositories found'
+                }
+                description={
+                  searchQuery
+                    ? 'No results matched your search term. Try a different filter or clear the search.'
                     : activeTab === 'STARRED'
-                    ? 'Click the star icon on any project card to pin it here.'
-                    : activeTab === 'PRODUCTION'
-                    ? 'Add a live Vercel or deployment URL to any repository to track it here.'
-                    : activeTab === 'HIDDEN'
-                    ? 'You have not hidden any repositories yet.'
-                    : 'Click "Sync" in the top bar to pull repositories from GitHub.'}
-                </p>
-              </div>
+                      ? 'Pin a repository with the star icon and it will show up here.'
+                      : activeTab === 'PRODUCTION'
+                        ? 'Add a live Vercel or deployment URL to any repository to track it here.'
+                        : activeTab === 'HIDDEN'
+                          ? 'You have not hidden any repositories yet.'
+                          : 'Hit Sync in the top bar to pull your repositories from GitHub.'
+                }
+                action={
+                  searchQuery ? null : activeTab === 'ALL' ? (
+                    <Button size="sm" onClick={handleSync} loading={isSyncing}>
+                      Sync from GitHub
+                    </Button>
+                  ) : null
+                }
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProjects.map((p, idx) => (

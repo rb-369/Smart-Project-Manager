@@ -205,6 +205,17 @@ p {
 }
 
 /* ==========================================================================
+   COMPONENT CLASSES
+
+   These live in the `components` cascade layer so that Tailwind utilities
+   (which sit in the later `utilities` layer) always win. Without the layer,
+   a plain `display: inline-flex` here would beat Tailwind's `hidden`
+   utility and the element would stay visible.
+   ========================================================================== */
+
+@layer components {
+
+/* ==========================================================================
    SURFACES — the layer stack
    0 canvas  →  1 deep panel  →  2 card  →  3 well  →  4 glass
    ========================================================================== */
@@ -605,6 +616,9 @@ p {
 .animate-fade-in-up {
   animation: fade-in-up var(--dur-3) var(--ease-out-expo) both;
 }
+
+}
+
 
 /* ==========================================================================
    REDUCED MOTION — honour the OS setting for every animation
