@@ -11,13 +11,16 @@ import {
   EyeOff,
   RotateCcw,
   Globe,
-  Link2,
   ChevronUp,
   ChevronDown,
   Check,
   X,
-  Radio
+  Radio,
+  Pencil,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
+import { Menu } from '@/components/ui/Menu';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 
 interface ProjectCardProps {
   project: ProjectSummary;
@@ -30,6 +33,15 @@ interface ProjectCardProps {
   canMoveUp?: boolean;
   canMoveDown?: boolean;
 }
+
+const LANGUAGE_COLORS: Record<string, string> = {
+  python: 'bg-blue-500',
+  typescript: 'bg-sky-500',
+  javascript: 'bg-amber-400',
+  dart: 'bg-teal-500',
+  go: 'bg-cyan-500',
+  rust: 'bg-orange-500',
+};
 
 export function ProjectCard({
   project,
@@ -46,39 +58,26 @@ export function ProjectCard({
   const [urlInput, setUrlInput] = useState(project.live_url || '');
   const [urlSaving, setUrlSaving] = useState(false);
 
-  const getLanguageColor = (lang: string | null) => {
-    switch (lang?.toLowerCase()) {
-      case 'python':
-        return 'bg-blue-600 shadow-xs';
-      case 'typescript':
-        return 'bg-sky-500 shadow-xs';
-      case 'javascript':
-        return 'bg-amber-400 shadow-xs';
-      case 'dart':
-        return 'bg-teal-500 shadow-xs';
-      case 'go':
-        return 'bg-cyan-500 shadow-xs';
-      case 'rust':
-        return 'bg-orange-500 shadow-xs';
-      default:
-        return 'bg-slate-400';
-    }
-  };
+  const languageKey = project.primary_language?.toLowerCase() ?? '';
+  const languageColor = LANGUAGE_COLORS[languageKey] ?? 'bg-ink-400';
 
-  const getStatusIndicator = (status: string) => {
-    switch (status) {
-      case 'IN_PROGRESS':
-        return { label: 'Active', dotColor: 'bg-[#C6FF20] pulse-lime' };
-      case 'PAUSED':
-        return { label: 'Paused', dotColor: 'bg-amber-400' };
-      case 'COMPLETED':
-        return { label: 'Complete', dotColor: 'bg-white' };
-      default:
-        return { label: status.replace('_', ' '), dotColor: 'bg-slate-300' };
-    }
-  };
+  const statusLabel =
+    project.status === 'IN_PROGRESS'
+      ? 'Active'
+      : project.status === 'PAUSED'
+        ? 'Paused'
+        : project.status === 'COMPLETED'
+          ? 'Complete'
+          : project.status.replace('_', ' ');
 
-  const statusInfo = getStatusIndicator(project.status);
+  const statusTone =
+    project.status === 'IN_PROGRESS'
+      ? 'lime'
+      : project.status === 'PAUSED'
+        ? 'amber'
+        : project.status === 'COMPLETED'
+          ? 'emerald'
+          : 'neutral';
 
   const handleSaveLiveUrl = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,325 +92,316 @@ export function ProjectCard({
   };
 
   return (
-    <div
-      className={`gridster-panel group transition-all duration-300 hover:-translate-y-1 bg-white border ${
+    <article
+      className={`surface-card group relative flex h-full flex-col rounded-3xl transition-[transform,box-shadow,border-color] duration-200 ease-out-expo hover:-translate-y-0.5 hover:shadow-e3 ${
         project.is_starred
-          ? 'border-amber-300/80 ring-2 ring-amber-400/30 shadow-lg'
+          ? 'border-amber-300 ring-1 ring-amber-400/30'
           : project.is_hidden
-          ? 'border-dashed border-slate-300 opacity-75'
-          : 'border-slate-200/90 shadow-md hover:shadow-xl'
-      } rounded-3xl p-5 flex flex-col justify-between h-full relative`}
+            ? 'border-dashed border-ink-300 opacity-80'
+            : ''
+      }`}
     >
-      {/* Top Banner Ribbon for Starred or Hidden repos */}
+      {/* Pinned accent — a bar rather than a floating ribbon, which the
+          card's own border radius used to clip. */}
       {project.is_starred && (
-        <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-mono text-[9px] font-black uppercase tracking-widest shadow-sm flex items-center gap-1 z-20">
-          <Star className="w-2.5 h-2.5 fill-black" />
-          <span>MAIN / PINNED</span>
-        </div>
+        <span
+          className="absolute inset-x-6 top-0 h-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500"
+          aria-hidden="true"
+        />
       )}
 
-      {project.is_hidden && (
-        <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-slate-800 text-white font-mono text-[9px] font-bold uppercase tracking-widest shadow-sm flex items-center gap-1 z-20">
-          <EyeOff className="w-2.5 h-2.5 text-slate-300" />
-          <span>HIDDEN FROM DEFAULT VIEW</span>
-        </div>
-      )}
-
-      <div>
-        {/* Electric Blue Inner Box */}
-        <div className="bg-[#0038FF] text-white rounded-2xl p-4 shadow-inner mb-3.5 relative overflow-hidden group/box">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 text-xs text-white/90 font-mono font-bold">
-                <span className={`w-2 h-2 rounded-full ${statusInfo.dotColor}`} />
-                {statusInfo.label}
-              </span>
-              <span className="text-white/40">&bull;</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/15 text-white border border-white/20 font-bold">
-                {project.project_type}
-              </span>
-            </div>
-
-            {/* Quick Actions in Inner Box: Star & GitHub */}
-            <div className="flex items-center gap-1.5">
-              {/* Star Button */}
-              {onStarToggle && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onStarToggle(project);
-                  }}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                    project.is_starred
-                      ? 'bg-amber-400 text-black shadow-sm'
-                      : 'bg-white/10 hover:bg-white/20 text-white/80 hover:text-white'
-                  }`}
-                  title={project.is_starred ? 'Unstar (unpin)' : 'Star (pin to top)'}
-                >
-                  <Star
-                    className={`w-3.5 h-3.5 ${
-                      project.is_starred ? 'fill-black text-black' : ''
-                    }`}
-                  />
-                </button>
-              )}
-
-              {/* GitHub Link */}
-              {project.html_url && (
-                <a
-                  href={project.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition"
-                  title="View on GitHub"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* Project Name */}
-          <Link href={`/projects/${project.id}`}>
-            <h3 className="font-black text-lg text-white group-hover/box:text-[#C6FF20] transition-colors tracking-tight flex items-center justify-between truncate">
-              <span>{project.name}</span>
-            </h3>
-          </Link>
-
-          {/* Language & Task Counter */}
-          <div className="flex items-center justify-between text-[10px] font-mono text-white/80 pt-2 mt-2 border-t border-white/15">
-            {project.primary_language ? (
-              <span className="flex items-center gap-1.5 font-bold">
-                <span
-                  className={`w-2 h-2 rounded-full ${getLanguageColor(
-                    project.primary_language
-                  )}`}
-                />
-                {project.primary_language}
-              </span>
-            ) : (
-              <span>Codebase</span>
+      <div className="flex flex-1 flex-col gap-3.5 p-5">
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <Badge tone={statusTone} dot size="xs">
+              {statusLabel}
+            </Badge>
+            <Badge tone="blue" size="xs">
+              {project.project_type}
+            </Badge>
+            {project.is_starred && (
+              <Badge tone="amber" size="xs">
+                Pinned
+              </Badge>
             )}
-            <span className="text-[#C6FF20] font-bold num-tabular">
-              {project.completed_features}/{project.total_features} TASKS
-            </span>
+            {project.is_hidden && (
+              <Badge tone="slate" size="xs">
+                Hidden
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            {onStarToggle && (
+              <button
+                type="button"
+                onClick={() => onStarToggle(project)}
+                aria-pressed={project.is_starred}
+                aria-label={project.is_starred ? 'Unpin repository' : 'Pin repository to top'}
+                title={project.is_starred ? 'Unpin' : 'Pin to top'}
+                className={`grid h-8 w-8 place-items-center rounded-lg border transition-colors ${
+                  project.is_starred
+                    ? 'border-amber-300 bg-amber-400 text-black'
+                    : 'border-ink-200 bg-white text-ink-400 hover:border-brand-blue-500/30 hover:bg-brand-blue-50 hover:text-brand-blue-600'
+                }`}
+              >
+                <Star
+                  className={`h-3.5 w-3.5 ${project.is_starred ? 'fill-black' : ''}`}
+                  aria-hidden="true"
+                />
+              </button>
+            )}
+
+            {project.html_url && (
+              <a
+                href={project.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`View ${project.name} on GitHub`}
+                title="View on GitHub"
+                className="grid h-8 w-8 place-items-center rounded-lg border border-ink-200 bg-white text-ink-400 transition-colors hover:border-brand-blue-500/30 hover:bg-brand-blue-50 hover:text-brand-blue-600"
+              >
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+              </a>
+            )}
           </div>
         </div>
 
-        {/* Live URL Pill / Production Badge */}
-        <div className="mb-3">
+        {/* Title */}
+        <Link href={`/projects/${project.id}`} className="block min-w-0">
+          <h3 className="truncate text-[1.0625rem] font-extrabold tracking-tight text-ink-900 transition-colors group-hover:text-brand-blue-600">
+            {project.name}
+          </h3>
+        </Link>
+
+        {/* Description */}
+        {project.description ? (
+          <p className="line-clamp-2 text-[0.8125rem] leading-relaxed text-ink-500">
+            {project.description}
+          </p>
+        ) : (
+          <p className="text-[0.8125rem] italic leading-relaxed text-ink-400">
+            Repository ingested and synced.
+          </p>
+        )}
+
+        {/* Language + task count */}
+        <div className="flex items-center justify-between gap-2 font-mono text-[0.6875rem] text-ink-500">
+          <span className="flex items-center gap-1.5 font-semibold">
+            <span className={`h-2 w-2 rounded-full ${languageColor}`} aria-hidden="true" />
+            {project.primary_language ?? 'Codebase'}
+          </span>
+          <span className="num-tabular font-bold text-ink-700">
+            {project.completed_features}/{project.total_features} tasks
+          </span>
+        </div>
+
+        {/* Live deployment */}
+        <div>
           {project.live_url ? (
-            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800">
+            <div className="flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-1.5">
               <a
                 href={project.live_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs font-mono font-black text-emerald-700 hover:text-emerald-900 transition truncate"
+                className="flex min-w-0 items-center gap-1.5 font-mono text-[0.6875rem] font-bold text-emerald-700 transition-colors hover:text-emerald-900"
                 title={project.live_url}
               >
-                <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <Globe className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" />
                 <span className="truncate">
                   {project.live_url.replace(/^https?:\/\//, '')}
                 </span>
-                <ExternalLink className="w-3 h-3 opacity-60 shrink-0" />
+                <ExternalLink className="h-3 w-3 shrink-0 opacity-60" aria-hidden="true" />
               </a>
 
               <button
+                type="button"
                 onClick={() => {
                   setUrlInput(project.live_url || '');
                   setIsEditingUrl(!isEditingUrl);
                 }}
-                className="text-[10px] font-mono text-emerald-700 hover:text-emerald-900 underline shrink-0 cursor-pointer"
-                title="Edit Deployed URL"
+                className="shrink-0 cursor-pointer font-mono text-[0.625rem] font-bold text-emerald-700 underline-offset-2 hover:underline"
+                title="Edit deployed URL"
               >
                 Edit
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 px-1">
-              <span className="flex items-center gap-1 text-slate-400">
-                <Radio className="w-3 h-3 text-slate-300" />
-                <span>No live deployment</span>
+            <div className="flex items-center justify-between gap-2 px-1">
+              <span className="flex items-center gap-1.5 font-mono text-[0.6875rem] text-ink-400">
+                <Radio className="h-3 w-3" aria-hidden="true" />
+                No live deployment
               </span>
               <button
+                type="button"
                 onClick={() => {
                   setUrlInput('');
                   setIsEditingUrl(!isEditingUrl);
                 }}
-                className="text-[#0038FF] hover:underline font-bold cursor-pointer text-[10px]"
+                className="cursor-pointer font-mono text-[0.6875rem] font-bold text-brand-blue-600 transition-colors hover:text-brand-blue-700"
               >
-                + Add Vercel Link
+                + Add Vercel link
               </button>
             </div>
           )}
 
-          {/* Inline Edit URL Popover */}
           {isEditingUrl && (
-            <form onSubmit={handleSaveLiveUrl} className="mt-2 p-2 rounded-xl bg-slate-100 border border-slate-300 flex items-center gap-1.5">
+            <form
+              onSubmit={handleSaveLiveUrl}
+              className="mt-2 flex items-center gap-1.5 rounded-xl border border-ink-200 bg-ink-50 p-1.5"
+            >
+              <label htmlFor={`live-url-${project.id}`} className="sr-only">
+                Deployment URL for {project.name}
+              </label>
               <input
+                id={`live-url-${project.id}`}
                 type="url"
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="https://my-app.vercel.app"
-                className="flex-1 bg-white border border-slate-300 text-slate-900 text-xs rounded-lg px-2 py-1 outline-none focus:border-[#0038FF]"
                 autoFocus
+                className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1 font-mono text-[0.75rem] text-ink-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-blue-500"
               />
               <button
                 type="submit"
                 disabled={urlSaving}
-                className="px-2.5 py-1 rounded-lg bg-[#0038FF] text-white text-xs font-bold hover:bg-blue-700 transition cursor-pointer"
+                aria-label="Save deployment URL"
+                className="grid h-7 w-7 place-items-center rounded-lg bg-brand-blue-500 text-white transition-colors hover:bg-brand-blue-400 disabled:opacity-50"
               >
-                {urlSaving ? '...' : <Check className="w-3.5 h-3.5" />}
+                {urlSaving ? (
+                  <span className="text-[0.625rem]">…</span>
+                ) : (
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
               </button>
               <button
                 type="button"
                 onClick={() => setIsEditingUrl(false)}
-                className="p-1 rounded-lg text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                aria-label="Cancel editing deployment URL"
+                className="grid h-7 w-7 place-items-center rounded-lg text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </form>
           )}
         </div>
 
-        {/* Description */}
-        {project.description ? (
-          <p className="text-xs text-slate-600 line-clamp-2 mb-3.5 leading-relaxed font-normal">
-            {project.description}
-          </p>
-        ) : (
-          <p className="text-xs text-slate-400 italic mb-3.5">
-            Autonomous repo ingested and synced.
-          </p>
-        )}
-
-        {/* Target Goal if available */}
+        {/* Target goal */}
         {project.goal && (
-          <div className="mb-4 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80">
-            <p className="text-xs text-slate-700 line-clamp-2">
-              <span className="text-[#0038FF] font-mono text-[11px] mr-1.5 font-bold">
-                Target:
+          <div className="rounded-xl border border-brand-blue-500/10 bg-brand-blue-50/70 px-3 py-2">
+            <p className="line-clamp-2 text-[0.75rem] leading-relaxed text-ink-700">
+              <span className="mr-1.5 font-mono text-[0.6875rem] font-bold text-brand-blue-600">
+                Target
               </span>
               {project.goal}
             </p>
           </div>
         )}
-      </div>
 
-      <div>
-        {/* Holographic Velocity Progress Bar */}
-        <div className="mb-3.5 pt-1">
-          <div className="flex justify-between items-center text-xs mb-1.5">
-            <span className="text-slate-500 font-mono text-[11px] font-semibold">
-              Velocity Progress
+        <div className="flex-1" />
+
+        {/* Velocity */}
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="font-mono text-[0.6875rem] font-semibold text-ink-500">
+              Velocity
             </span>
-            <span className="font-mono text-xs font-black text-slate-950 num-tabular">
+            <span className="num-tabular font-mono text-[0.75rem] font-extrabold text-ink-900">
               {project.progress_percentage}%
             </span>
           </div>
-          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                project.progress_percentage === 100
-                  ? 'bg-[#C6FF20]'
-                  : project.progress_percentage > 50
-                  ? 'bg-gradient-to-r from-[#0038FF] to-[#C6FF20]'
-                  : 'bg-gradient-to-r from-[#0038FF] to-violet-500'
-              }`}
-              style={{ width: `${project.progress_percentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Card Footer with Details, Triage, Hide, and Manual Reorder Controls */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs gap-2">
-          {/* Left Footer: Triage Button or Status Tag */}
-          <div className="flex items-center gap-1.5">
-            {project.needs_review && onTriageClick ? (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  onTriageClick(project);
-                }}
-                className="text-xs font-mono font-black px-3 py-1 rounded-full bg-[#C6FF20] text-black hover:bg-[#d5ff38] transition cursor-pointer flex items-center gap-1 shadow-xs"
-              >
-                <SlidersHorizontal className="w-3 h-3" />
-                <span>Triage</span>
-              </button>
-            ) : (
-              <span className="text-[10px] font-mono text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                OPTIMIZED
-              </span>
-            )}
-
-            {/* Manual Order Up / Down Arrows */}
-            {(onMoveUp || onMoveDown) && (
-              <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
-                {onMoveUp && (
-                  <button
-                    onClick={() => onMoveUp(project)}
-                    disabled={!canMoveUp}
-                    className="p-1 rounded text-slate-600 hover:text-black hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
-                    title="Move higher in priority"
-                  >
-                    <ChevronUp className="w-3 h-3" />
-                  </button>
-                )}
-                {onMoveDown && (
-                  <button
-                    onClick={() => onMoveDown(project)}
-                    disabled={!canMoveDown}
-                    className="p-1 rounded text-slate-600 hover:text-black hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
-                    title="Move lower in priority"
-                  >
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Right Footer: Hide/Restore Action & Roadmap Link */}
-          <div className="flex items-center gap-2">
-            {/* Soft-Hide or Restore Button */}
-            {onHideToggle && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  onHideToggle(project);
-                }}
-                className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center gap-1 text-[11px] font-mono ${
-                  project.is_hidden
-                    ? 'bg-blue-50 border-blue-200 text-[#0038FF] hover:bg-blue-100 font-bold'
-                    : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200'
-                }`}
-                title={
-                  project.is_hidden
-                    ? 'Restore to active dashboard'
-                    : 'Hide repository from DevCommand (soft delete)'
-                }
-              >
-                {project.is_hidden ? (
-                  <>
-                    <RotateCcw className="w-3 h-3" />
-                    <span>Restore</span>
-                  </>
-                ) : (
-                  <EyeOff className="w-3 h-3" />
-                )}
-              </button>
-            )}
-
-            <Link
-              href={`/projects/${project.id}`}
-              className="flex items-center gap-1 text-xs font-black text-[#0038FF] hover:underline"
-            >
-              <span>Roadmap</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+          <ProgressBar
+            value={project.progress_percentage}
+            label={`${project.name} delivery velocity`}
+            tone={project.progress_percentage === 100 ? 'lime' : 'brand'}
+          />
         </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between gap-2 border-t border-ink-200/80 px-5 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          {project.needs_review && onTriageClick ? (
+            <button
+              type="button"
+              onClick={() => onTriageClick(project)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-brand-lime-400 px-3 py-1 font-mono text-[0.6875rem] font-bold text-black shadow-lime transition-colors hover:bg-brand-lime-300"
+            >
+              <SlidersHorizontal className="h-3 w-3" aria-hidden="true" />
+              Triage
+            </button>
+          ) : (
+            <Badge tone="emerald" size="xs">
+              Optimized
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Menu
+            label={`Actions for ${project.name}`}
+            items={[
+              ...(onMoveUp
+                ? [
+                    {
+                      label: 'Move up',
+                      icon: <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />,
+                      onSelect: () => onMoveUp(project),
+                      disabled: !canMoveUp,
+                    },
+                  ]
+                : []),
+              ...(onMoveDown
+                ? [
+                    {
+                      label: 'Move down',
+                      icon: <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />,
+                      onSelect: () => onMoveDown(project),
+                      disabled: !canMoveDown,
+                    },
+                  ]
+                : []),
+              {
+                label: project.live_url ? 'Edit deployment URL' : 'Add deployment URL',
+                icon: <Pencil className="h-3.5 w-3.5" aria-hidden="true" />,
+                onSelect: () => {
+                  setUrlInput(project.live_url || '');
+                  setIsEditingUrl(true);
+                },
+              },
+              ...(onHideToggle
+                ? [
+                    {
+                      label: project.is_hidden ? 'Restore to dashboard' : 'Hide repository',
+                      icon:
+                        project.is_hidden ? (
+                          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                        ) : (
+                          <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+                        ),
+                      onSelect: () => onHideToggle(project),
+                      tone: project.is_hidden ? ('default' as const) : ('danger' as const),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+
+          <Link
+            href={`/projects/${project.id}`}
+            className="inline-flex items-center gap-1 text-[0.75rem] font-extrabold text-brand-blue-600 transition-colors hover:text-brand-blue-700"
+          >
+            <span>Roadmap</span>
+            <ArrowRight
+              className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </Link>
+        </div>
+      </div>
+    </article>
   );
 }
+
+export default ProjectCard;

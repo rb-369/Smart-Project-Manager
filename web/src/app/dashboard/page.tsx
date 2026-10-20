@@ -5,10 +5,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { ProjectSummary, FutureProject, ParsedConcept, ProjectType, FutureProjectPriority } from '@/types';
+import { ProjectSummary, FutureProject } from '@/types';
 import { Navbar } from '@/components/Navbar';
 import { AppShell, PageContainer } from '@/components/AppShell';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { Toast } from '@/components/ui/Toast';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Button } from '@/components/ui/Button';
+import { IdeaCard } from '@/components/IdeaCard';
+import { ConceptImportModal } from '@/components/ConceptImportModal';
 import { ProjectCard } from '@/components/ProjectCard';
 import { TriageModal } from '@/components/TriageModal';
 import { StaticLoader } from '@/components/StaticLoader';
@@ -33,7 +38,8 @@ import {
   Code,
   Trash2,
   Check,
-  LayoutDashboard
+  LayoutDashboard,
+  AlertCircle
 } from 'lucide-react';
 
 type DashboardTab = 'ALL' | 'STARRED' | 'PRODUCTION' | 'IDEAS' | 'RESUME' | 'COLLEGE' | 'HIDDEN';
@@ -54,9 +60,6 @@ export default function DashboardPage() {
 
   // Smart WhatsApp import modal state on Dashboard
   const [showImportModal, setShowImportModal] = useState(false);
-  const [rawText, setRawText] = useState('');
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [parsedPreview, setParsedPreview] = useState<ParsedConcept | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -237,60 +240,6 @@ export default function DashboardPage() {
     }
   };
 
-  // WhatsApp Smart Extractor on Dashboard
-  const handleExtractConcept = async () => {
-    if (!rawText.trim()) return;
-    setIsExtracting(true);
-    try {
-      const res: any = await api.post('/future-projects/parse-concept', {
-        raw_text: rawText.trim(),
-      });
-      setParsedPreview(res);
-    } catch (err: any) {
-      console.warn('Smart extract fallback locally:', err);
-      const clean = rawText.trim();
-      const firstLine = clean.split('\n')[0].slice(0, 50);
-      setParsedPreview({
-        title: firstLine || 'Extracted Project Concept',
-        elevator_pitch: clean.slice(0, 220),
-        target_tech_stack: 'Python, FastAPI, React, SQLite',
-        project_type: 'RESUME',
-        priority: 'P1',
-        notes: `Raw WhatsApp notes:\n${clean}`,
-        starter_features: [
-          'Core MVP Data Architecture & Endpoints',
-          'Interactive Frontend User Interface',
-          'Production Deployment & CI Workflow',
-        ],
-        provider_used: 'Local Heuristic Cascade',
-      });
-    } finally {
-      setIsExtracting(false);
-    }
-  };
-
-  const handleSaveImportedConcept = async () => {
-    if (!parsedPreview || !parsedPreview.title.trim()) return;
-    try {
-      const created = await api.post<FutureProject>('/future-projects', {
-        title: parsedPreview.title.trim(),
-        elevator_pitch: parsedPreview.elevator_pitch.trim() || undefined,
-        target_tech_stack: parsedPreview.target_tech_stack.trim() || undefined,
-        project_type: parsedPreview.project_type,
-        priority: parsedPreview.priority,
-        notes: parsedPreview.notes?.trim() || undefined,
-        raw_message: parsedPreview.raw_message || rawText.trim() || undefined,
-      });
-      showToast(`Concept "${parsedPreview.title.trim()}" added to backlog!`);
-      setShowImportModal(false);
-      setRawText('');
-      setParsedPreview(null);
-      fetchIdeas();
-    } catch (err) {
-      console.warn('Failed to save imported concept:', err);
-    }
-  };
-
   // Filter logic for projects
   let baseList = projects;
   if (activeTab === 'HIDDEN') {
@@ -357,12 +306,6 @@ export default function DashboardPage() {
     return prioScore[a.priority] - prioScore[b.priority];
   });
 
-  const priorityStyles: Record<string, { badge: string; dot: string; label: string }> = {
-    P0: { badge: 'border-rose-200 bg-rose-50 text-rose-700', dot: 'bg-rose-500', label: 'P0 Immediate' },
-    P1: { badge: 'border-amber-200 bg-amber-50 text-amber-700', dot: 'bg-amber-500', label: 'P1 Upcoming' },
-    P2: { badge: 'border-blue-200 bg-blue-50 text-[#0038FF]', dot: 'bg-[#0038FF]', label: 'P2 Backlog' },
-  };
-
   return (
     <AppShell>
       {/* Floating Island Navigation Header */}
@@ -370,14 +313,26 @@ export default function DashboardPage() {
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 right-6 z-50 bg-[#C6FF20] text-black font-mono text-xs font-black px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border border-black/10 animate-in fade-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="w-4 h-4 text-black" />
-          <span>{toastMessage}</span>
+        <div className="fixed right-4 top-20 z-[60] sm:right-6">
+          <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
         </div>
       )}
 
       {/* Main Content */}
       <PageContainer className="space-y-6">
+        {backendOffline && (
+          <div
+            role="status"
+            className="flex items-start gap-2.5 rounded-2xl border border-amber-300/60 bg-amber-50/95 px-4 py-3 font-mono text-[0.75rem] text-amber-900"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
+            <span>
+              The workspace API is unreachable, so these numbers may be out of date. Your
+              repositories are still safe — reconnect to resync.
+            </span>
+          </div>
+        )}
+
         {/* Compact Header Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
           <div>
@@ -732,11 +687,7 @@ export default function DashboardPage() {
 
               <div className="flex items-center gap-2.5 flex-wrap">
                 <button
-                  onClick={() => {
-                    setShowImportModal(true);
-                    setRawText('');
-                    setParsedPreview(null);
-                  }}
+                  onClick={() => setShowImportModal(true)}
                   className="btn-lime !py-1.5 !px-3.5 text-xs font-black shadow-md flex items-center gap-1.5 cursor-pointer"
                 >
                   <MessageSquareText className="w-3.5 h-3.5 text-black" />
@@ -754,109 +705,30 @@ export default function DashboardPage() {
 
             {/* Ideas Grid */}
             {filteredIdeas.length === 0 ? (
-              <div className="bg-white text-slate-900 border border-white/20 p-16 text-center space-y-3 rounded-3xl shadow-2xl">
-                <Lightbulb className="w-10 h-10 text-amber-500 mx-auto" />
-                <h3 className="text-base font-black text-slate-900">No future ideas queued</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-mono">
-                  Have an idea on WhatsApp or voice notes? Click &quot;Import from WhatsApp&quot; to extract and prioritize it before building.
-                </p>
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      setShowImportModal(true);
-                      setRawText('');
-                      setParsedPreview(null);
-                    }}
-                    className="btn-lime !py-2 !px-4 text-xs font-black inline-flex items-center gap-1.5"
+              <EmptyState
+                icon={<Lightbulb className="h-5 w-5" aria-hidden="true" />}
+                title="No future ideas queued"
+                description="Have an idea on WhatsApp or in voice notes? Import it and DevCommand will extract, prioritise and structure it before you build."
+                action={
+                  <Button
+                    size="sm"
+                    onClick={() => setShowImportModal(true)}
+                    iconLeft={<MessageSquareText className="h-3.5 w-3.5" aria-hidden="true" />}
                   >
-                    <MessageSquareText className="w-3.5 h-3.5 text-black" />
-                    <span>Import Concept from WhatsApp</span>
-                  </button>
-                </div>
-              </div>
+                    Import a concept
+                  </Button>
+                }
+              />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredIdeas.map((idea) => {
-                  const pConfig = priorityStyles[idea.priority];
-                  return (
-                    <div
-                      key={idea.id}
-                      className="bg-white text-slate-900 border border-white/20 shadow-2xl p-5 space-y-3.5 hover:translate-y-[-2px] transition-all rounded-3xl flex flex-col justify-between"
-                    >
-                      <div>
-                        {/* Header Box */}
-                        <div className="bg-[#0038FF] text-white rounded-2xl p-4 shadow-inner mb-3 flex items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/20">
-                                {idea.project_type}
-                              </span>
-                              <span className="text-[9px] font-mono font-black px-2 py-0.5 rounded-full bg-[#C6FF20] text-black">
-                                NO REPO YET
-                              </span>
-                            </div>
-                            <h2 className="font-black text-base text-white leading-snug mt-2">{idea.title}</h2>
-                          </div>
-                          <button
-                            onClick={() => handleDeleteIdea(idea.id)}
-                            className="text-white/70 hover:text-rose-300 transition-colors p-1 cursor-pointer"
-                            title="Delete idea"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        {idea.elevator_pitch && (
-                          <p className="text-xs text-slate-600 mt-2 leading-relaxed font-normal">
-                            {idea.elevator_pitch}
-                          </p>
-                        )}
-
-                        {idea.notes && (
-                          <div className="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] font-mono text-slate-700 whitespace-pre-wrap max-h-28 overflow-y-auto">
-                            <span className="font-bold text-slate-900 block mb-0.5">Notes &amp; Scope:</span>
-                            {idea.notes}
-                          </div>
-                        )}
-
-                        {idea.raw_message && (
-                          <details className="mt-2 text-xs group">
-                            <summary className="cursor-pointer font-mono text-[10px] text-slate-500 hover:text-slate-800 flex items-center gap-1 select-none font-bold">
-                              <MessageSquareText className="w-3 h-3 text-emerald-600" />
-                              <span>View Original Message</span>
-                            </summary>
-                            <div className="mt-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/70 text-[11px] font-mono text-slate-800 whitespace-pre-wrap leading-relaxed max-h-28 overflow-y-auto">
-                              {idea.raw_message}
-                            </div>
-                          </details>
-                        )}
-                      </div>
-
-                      {idea.target_tech_stack && (
-                        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                          <Code className="w-3.5 h-3.5 text-[#0038FF] shrink-0" />
-                          <span className="font-bold truncate">{idea.target_tech_stack}</span>
-                        </div>
-                      )}
-
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${pConfig.badge}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${pConfig.dot}`} />
-                          {pConfig.label}
-                        </span>
-
-                        <button
-                          onClick={() => handlePromoteIdea(idea.id, idea.title)}
-                          className="btn-lime !py-1 !px-3 text-xs font-black flex items-center gap-1 transition cursor-pointer shadow-xs"
-                          title="Convert to active repository on Mission Control"
-                        >
-                          <span>Start Building</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {filteredIdeas.map((idea) => (
+                  <IdeaCard
+                    key={idea.id}
+                    idea={idea}
+                    onPromote={handlePromoteIdea}
+                    onDelete={handleDeleteIdea}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -926,208 +798,12 @@ export default function DashboardPage() {
       )}
 
       {/* Smart Concept / WhatsApp Text Import Modal */}
-      {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-          <div className="bg-white border border-slate-200 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 rounded-3xl space-y-4 text-slate-900">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
-                  <MessageSquareText className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="font-black text-sm text-slate-950 uppercase">Import Concept from WhatsApp / Notes</h2>
-                  <p className="text-[11px] text-slate-500 font-mono">
-                    AI smartly extracts title, pitch, tech stack, priority, and starter MVP scope.
-                  </p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowImportModal(false)} 
-                className="text-slate-400 hover:text-slate-800 p-1 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {!parsedPreview ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-black text-slate-800 mb-1">
-                    Paste WhatsApp Text or Voice Transcript
-                  </label>
-                  <textarea
-                    rows={6}
-                    autoFocus
-                    placeholder="e.g. bro what if we build a bot that automatically tweets git commits using python and fastapi, top priority asap. We could add discord alerts too."
-                    value={rawText}
-                    onChange={(e) => setRawText(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-2xl p-3.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none transition resize-none shadow-inner font-mono leading-relaxed"
-                  />
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200/70 p-3.5 rounded-2xl flex items-start gap-2.5 text-xs text-blue-900">
-                  <Zap className="w-4 h-4 text-[#0038FF] shrink-0 mt-0.5" />
-                  <p className="text-[11px] leading-relaxed">
-                    <strong>Smart Extraction:</strong> DevCommand AI analyzes informal chat notes and structures them into a prioritized backlog idea without needing a GitHub repository yet.
-                  </p>
-                </div>
-
-                <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setShowImportModal(false)}
-                    className="px-4 py-2 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50 font-bold cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isExtracting || !rawText.trim()}
-                    onClick={handleExtractConcept}
-                    className="btn-lime !py-2 !px-5 text-xs font-black shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  >
-                    {isExtracting ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
-                        <span>Smart Extracting...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-3.5 h-3.5 text-black" />
-                        <span>⚡ Smart Extract</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl text-xs text-emerald-800">
-                  <div className="flex items-center gap-1.5 font-bold">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Concept Extracted! Review before saving:</span>
-                  </div>
-                  {parsedPreview.provider_used && (
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold">
-                      {parsedPreview.provider_used}
-                    </span>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-black text-slate-800 mb-1">Concept Title</label>
-                    <input
-                      type="text"
-                      value={parsedPreview.title}
-                      onChange={(e) => setParsedPreview({ ...parsedPreview, title: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-xl px-3.5 py-2 text-xs text-slate-900 font-bold focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-slate-800 mb-1">Elevator Pitch</label>
-                    <textarea
-                      rows={2}
-                      value={parsedPreview.elevator_pitch}
-                      onChange={(e) => setParsedPreview({ ...parsedPreview, elevator_pitch: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-slate-800 mb-1">Target Tech Stack</label>
-                    <input
-                      type="text"
-                      value={parsedPreview.target_tech_stack}
-                      onChange={(e) => setParsedPreview({ ...parsedPreview, target_tech_stack: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-xl px-3.5 py-2 text-xs text-slate-900 font-mono font-bold focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-black text-slate-800 mb-1">Category</label>
-                      <select
-                        value={parsedPreview.project_type}
-                        onChange={(e) => setParsedPreview({ ...parsedPreview, project_type: e.target.value as ProjectType })}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none font-mono font-bold"
-                      >
-                        <option value="RESUME">Resume Portfolio</option>
-                        <option value="COLLEGE">Academic / College</option>
-                        <option value="PRODUCTION">Production SaaS</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-black text-slate-800 mb-1">Priority Track</label>
-                      <select
-                        value={parsedPreview.priority}
-                        onChange={(e) => setParsedPreview({ ...parsedPreview, priority: e.target.value as FutureProjectPriority })}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none font-mono font-bold"
-                      >
-                        <option value="P0">P0 - Next Immediate</option>
-                        <option value="P1">P1 - Upcoming</option>
-                        <option value="P2">P2 - Research Backlog</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-black text-slate-800 mb-1">Notes &amp; Scope</label>
-                    <textarea
-                      rows={3}
-                      value={parsedPreview.notes || ''}
-                      onChange={(e) => setParsedPreview({ ...parsedPreview, notes: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none font-mono text-[11px]"
-                    />
-                  </div>
-
-                  {parsedPreview.raw_message && (
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                      <span className="text-[10px] font-mono font-bold text-slate-500 block mb-1">
-                        💬 Original Message (Saved):
-                      </span>
-                      <p className="text-[11px] font-mono text-slate-700 italic bg-white p-2 rounded-lg border border-slate-200 max-h-20 overflow-y-auto">
-                        &ldquo;{parsedPreview.raw_message}&rdquo;
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-3 flex items-center justify-between border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setParsedPreview(null)}
-                    className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 font-bold"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Paste New Text</span>
-                  </button>
-
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowImportModal(false)}
-                      className="px-4 py-2 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-50 font-bold cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSaveImportedConcept}
-                      className="btn-lime !py-2 !px-5 text-xs font-black shadow-md cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Check className="w-3.5 h-3.5 text-black" />
-                      <span>Save to Ideas Backlog</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ConceptImportModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSaved={fetchIdeas}
+        onNotify={showToast}
+      />
     </AppShell>
   );
 }

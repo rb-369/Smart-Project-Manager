@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { ProjectSummary, ProjectType, FeaturePriority } from '@/types';
-import { Check, X, Loader2, AlertCircle, SlidersHorizontal } from 'lucide-react';
+import { Check, Loader2, AlertCircle, SlidersHorizontal } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 
 interface TriageModalProps {
   project: ProjectSummary;
@@ -12,6 +15,12 @@ interface TriageModalProps {
   onConfirmed: () => void;
 }
 
+const CLASSIFICATIONS: { id: ProjectType; label: string }[] = [
+  { id: 'COLLEGE', label: 'College' },
+  { id: 'RESUME', label: 'Resume' },
+  { id: 'PRODUCTION', label: 'Production' },
+];
+
 export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageModalProps) {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -19,7 +28,9 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
 
   const [projectType, setProjectType] = useState<ProjectType>(project.project_type);
   const [goal, setGoal] = useState<string>(project.goal || '');
-  const [features, setFeatures] = useState<Array<{ title: string; priority: FeaturePriority; description?: string }>>([]);
+  const [features, setFeatures] = useState<
+    Array<{ title: string; priority: FeaturePriority; description?: string }>
+  >([]);
   const [providerUsed, setProviderUsed] = useState<string>('');
 
   const fetchAITriage = async () => {
@@ -42,6 +53,7 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
     if (isOpen) {
       fetchAITriage();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleConfirm = async () => {
@@ -66,128 +78,146 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-xs p-4">
-      <div className="gridster-panel bg-white border border-slate-300 w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-blue-50 border border-blue-200 text-[#0A5CFF] flex items-center justify-center shadow-xs">
-              <SlidersHorizontal className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="font-bold text-base text-slate-900 tracking-tight">Autonomous Repository Triage</h2>
-              <p className="text-xs text-slate-500">
-                Synthesizing architecture & backlog for <span className="text-[#0A5CFF] font-mono font-bold">{project.name}</span>
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:text-slate-900 transition">
-            <X className="w-4 h-4" />
-          </button>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title="Autonomous Repository Triage"
+      description={
+        <>
+          Synthesizing architecture &amp; backlog for{' '}
+          <span className="font-mono font-bold text-brand-blue-600">{project.name}</span>
+        </>
+      }
+      icon={<SlidersHorizontal className="h-4 w-4" aria-hidden="true" />}
+      footer={
+        <>
+          <Button variant="outline" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleConfirm}
+            disabled={submitting || loading}
+            iconLeft={
+              submitting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+              )
+            }
+          >
+            {submitting ? 'Applying…' : 'Confirm & import features'}
+          </Button>
+        </>
+      }
+    >
+      {loading ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
+          <Loader2 className="mb-1 h-7 w-7 animate-spin text-brand-blue-500" aria-hidden="true" />
+          <p className="font-mono text-[0.75rem] font-bold text-ink-800">
+            Analyzing README &amp; codebase context…
+          </p>
+          <p className="font-mono text-[0.6875rem] text-ink-500">
+            Cascading: OpenRouter → Gemini → NVIDIA NIM
+          </p>
         </div>
+      ) : (
+        <div className="space-y-5">
+          {error && (
+            <div
+              role="alert"
+              className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-[0.75rem] text-rose-700"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" aria-hidden="true" />
+              {error}
+            </div>
+          )}
 
-        {loading ? (
-          <div className="py-16 flex flex-col items-center justify-center text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-[#0A5CFF] mb-3" />
-            <p className="text-xs font-mono font-bold text-slate-800">Analyzing README & codebase context...</p>
-            <p className="text-[11px] text-slate-500 mt-1 font-mono">Cascading: OpenRouter &rarr; Gemini &rarr; NVIDIA NIM</p>
+          {providerUsed && (
+            <div className="flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50 px-3 py-1.5 font-mono text-[0.6875rem] text-ink-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              <span>Inference engine:</span>
+              <strong className="font-bold uppercase text-brand-blue-600">{providerUsed}</strong>
+            </div>
+          )}
+
+          <div>
+            <span className="mb-2 block text-[0.75rem] font-bold text-ink-800">
+              Project classification
+            </span>
+            <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Project classification">
+              {CLASSIFICATIONS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={projectType === t.id}
+                  onClick={() => setProjectType(t.id)}
+                  className={`cursor-pointer rounded-full border px-3 py-2 font-mono text-[0.6875rem] font-bold transition-colors ${
+                    projectType === t.id
+                      ? 'border-brand-lime-400 bg-brand-lime-400 text-black'
+                      : 'border-ink-200 bg-ink-50 text-ink-600 hover:border-brand-blue-500/30 hover:text-ink-900'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {error && (
-              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                {error}
-              </div>
-            )}
 
-            {providerUsed && (
-              <div className="text-[11px] font-mono text-slate-600 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Inference Engine:</span>
-                <strong className="text-[#0A5CFF] uppercase font-bold">{providerUsed}</strong>
-              </div>
-            )}
+          <div>
+            <label
+              htmlFor="triage-goal"
+              className="mb-1.5 block text-[0.75rem] font-bold text-ink-800"
+            >
+              Target deliverable goal
+            </label>
+            <textarea
+              id="triage-goal"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              rows={2}
+              placeholder="What is the objective or target milestone?"
+              className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 text-[0.8125rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+            />
+          </div>
 
-            {/* Project Type Picker */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-2">Project Classification</label>
-              <div className="grid grid-cols-3 gap-3">
-                {(['COLLEGE', 'RESUME', 'PRODUCTION'] as ProjectType[]).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setProjectType(t)}
-                    className={`py-2 px-3 text-xs font-bold rounded-full border text-center transition cursor-pointer font-mono ${
-                      projectType === t
-                        ? 'bg-[#C6FF20] text-black border-[#C6FF20] shadow-sm'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Goal Input */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">Target Deliverable Goal</label>
-              <textarea
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                rows={2}
-                placeholder="What is the objective or target milestone?"
-                className="w-full bg-slate-50 border border-slate-200 focus:border-[#0A5CFF] focus:bg-white rounded-2xl px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden transition resize-none"
-              />
-            </div>
-
-            {/* Proposed Initial Features */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                Synthesized Initial Features ({features.length})
-              </label>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <div>
+            <span className="mb-1.5 block text-[0.75rem] font-bold text-ink-800">
+              Synthesized initial features ({features.length})
+            </span>
+            {features.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-ink-200 px-3.5 py-6 text-center font-mono text-[0.75rem] text-ink-400">
+                No features were proposed for this repository.
+              </p>
+            ) : (
+              <ul className="max-h-48 space-y-2 overflow-y-auto pr-1">
                 {features.map((f, i) => (
-                  <div
+                  <li
                     key={i}
-                    className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-3"
+                    className="flex items-start justify-between gap-3 rounded-xl border border-ink-200 bg-ink-50 px-3 py-2.5"
                   >
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-bold text-slate-900">{f.title}</p>
-                      {f.description && <p className="text-[11px] text-slate-500 leading-relaxed">{f.description}</p>}
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="text-[0.75rem] font-bold text-ink-900">{f.title}</p>
+                      {f.description && (
+                        <p className="text-[0.6875rem] leading-relaxed text-ink-500">
+                          {f.description}
+                        </p>
+                      )}
                     </div>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[#0A5CFF] shrink-0">
+                    <Badge tone="blue" size="xs" className="shrink-0">
                       {f.priority}
-                    </span>
-                  </div>
+                    </Badge>
+                  </li>
                 ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-outline-white !py-1.5 !px-4 text-xs font-bold"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirm}
-                disabled={submitting}
-                className="btn-lime !py-2 !px-5 text-xs font-black flex items-center gap-1.5 shadow-md cursor-pointer"
-              >
-                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : <Check className="w-3.5 h-3.5" />}
-                <span>Confirm & Import Features</span>
-              </button>
-            </div>
+              </ul>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </Modal>
   );
 }
+
+export default TriageModal;
