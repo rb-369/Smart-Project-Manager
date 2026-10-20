@@ -127,7 +127,7 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className={`w-full ${SIZE_CLASSES[size]} animate-fade-in-up overflow-hidden rounded-3xl border border-brand-blue-500/12 bg-white shadow-e3 focus:outline-none ${className}`}
+        className={`w-full ${SIZE_CLASSES[size]} animate-fade-in-up overflow-hidden rounded-3xl border border-brand-blue-500/12 bg-white shadow-e3 on-light focus:outline-none ${className}`}
       >
         <div className="flex items-start justify-between gap-4 border-b border-ink-200/80 px-5 py-4 sm:px-6 sm:py-5">
           <div className="flex min-w-0 items-start gap-3">

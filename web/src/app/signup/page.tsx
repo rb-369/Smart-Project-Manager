@@ -92,17 +92,17 @@ export default function SignupPage() {
 
       {/* Main Form Card */}
       <main id="main-content" className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8">
-        <div className="bg-white text-slate-900 border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+        <div className="on-light bg-white text-ink-900 border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
           
           <div className="text-center space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0038FF]/10 text-[#0038FF] border border-[#0038FF]/20 text-[0.6875rem] font-mono font-bold uppercase tracking-wider mb-1">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Isolated Environment</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-ink-900 tracking-tight">
               Create Account
             </h1>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+            <p className="text-xs text-ink-500 max-w-xs mx-auto">
               Get an isolated workspace with autonomous GitHub repo ingestion &amp; AI triage.
             </p>
           </div>
@@ -137,54 +137,54 @@ export default function SignupPage() {
           </button>
 
           <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-slate-200" />
-            <span className="flex-shrink mx-3 text-[0.6875rem] font-mono text-slate-400 font-bold uppercase">
+            <div className="flex-grow border-t border-brand-blue-500/15" />
+            <span className="flex-shrink mx-3 text-[0.6875rem] font-mono text-ink-400 font-bold uppercase">
               Or with email
             </span>
-            <div className="flex-grow border-t border-slate-200" />
+            <div className="flex-grow border-t border-brand-blue-500/15" />
           </div>
 
           {/* Email Registration Form */}
           <form onSubmit={handleRegister} className="space-y-3">
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-bold text-ink-700 uppercase tracking-wider mb-1">
                 Full Name
               </label>
               <div className="relative">
-                <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <UserIcon className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Jane Doe"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-brand-blue-500/15 text-xs font-mono bg-brand-blue-50/60 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-bold text-ink-700 uppercase tracking-wider mb-1">
                 Email Address *
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jane@example.com"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-brand-blue-500/15 text-xs font-mono bg-brand-blue-50/60 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-bold text-ink-700 uppercase tracking-wider mb-1">
                 Password *
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   required
@@ -192,23 +192,23 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-brand-blue-500/15 text-xs font-mono bg-brand-blue-50/60 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-bold text-ink-700 uppercase tracking-wider mb-1">
                 GitHub Username (Optional)
               </label>
               <div className="relative">
-                <GithubIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <GithubIcon className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={githubUsername}
                   onChange={(e) => setGithubUsername(e.target.value)}
                   placeholder="janedoe"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-brand-blue-500/15 text-xs font-mono bg-brand-blue-50/60 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                 />
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function SignupPage() {
           </form>
 
           {/* Footer inside card */}
-          <div className="text-center pt-2 text-xs text-slate-500">
+          <div className="text-center pt-2 text-xs text-ink-500">
             <span>Already have an account? </span>
             <Link href="/login" className="font-bold text-[#0038FF] hover:underline">
               Sign in

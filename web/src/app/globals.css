@@ -263,6 +263,7 @@ p {
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 18px 44px -20px rgba(0, 8, 36, 0.7);
   color: #fff;
+  --focus-color: var(--color-brand-lime-400);
 }
 
 /* --- Layer 2: the standard card ---------------------------------------- */
@@ -341,6 +342,16 @@ p {
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 18px 44px -20px rgba(0, 8, 36, 0.7);
   color: #fff;
+  --focus-color: var(--color-brand-lime-400);
+}
+
+/* --- Focus colour reset for light surfaces ------------------------------
+   The canvas flips the focus ring to lime, because a blue ring on a blue
+   background is invisible. But that variable inherits into white children,
+   where a lime ring is just as invisible. Any container with a light
+   background needs to reset it. Apply .on-light to those. */
+.on-light {
+  --focus-color: var(--color-brand-blue-500);
 }
 
 .gridster-panel-deep:hover {

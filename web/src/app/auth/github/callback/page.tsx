@@ -65,7 +65,7 @@ function CallbackContent() {
   }, [code, errorParam, refreshUser, router]);
 
   return (
-    <div className="bg-white text-slate-900 border border-white/30 rounded-3xl p-8 shadow-2xl max-w-md w-full mx-auto text-center space-y-6">
+    <div className="on-light bg-white text-ink-900 border border-white/30 rounded-3xl p-8 shadow-2xl max-w-md w-full mx-auto text-center space-y-6">
       <div className="w-14 h-14 rounded-2xl bg-[#24292F] text-white flex items-center justify-center mx-auto shadow-md">
         <GithubIcon className="w-8 h-8" />
       </div>
@@ -73,22 +73,22 @@ function CallbackContent() {
       {status === 'processing' && (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <h2 className="text-xl font-black text-slate-900">
+            <h2 className="text-xl font-black text-ink-900">
               Authenticating with GitHub
             </h2>
-            <p className="text-xs text-slate-500 font-mono">
+            <p className="text-xs text-ink-500 font-mono">
               Exchanging secure authorization code and preparing your isolated workspace...
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono text-slate-700">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-blue-50 border border-brand-blue-500/15 text-xs font-mono text-ink-700">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
             <span className="font-bold">VERIFYING CREDENTIALS</span>
-            <span className="text-slate-300">&bull;</span>
-            <span className="text-slate-500">STANDBY</span>
+            <span className="text-ink-300">&bull;</span>
+            <span className="text-ink-500">STANDBY</span>
           </div>
 
-          <div className="w-44 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden">
+          <div className="w-44 h-1.5 bg-brand-blue-50 rounded-full mx-auto overflow-hidden">
             <div className="w-2/3 h-full bg-[#0038FF] rounded-full" />
           </div>
         </div>
@@ -99,10 +99,10 @@ function CallbackContent() {
           <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-black text-slate-900">
+          <h2 className="text-xl font-black text-ink-900">
             Welcome to DevCommand!
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-ink-500">
             GitHub profile linked successfully. Redirecting to Command Center...
           </p>
         </div>
@@ -113,7 +113,7 @@ function CallbackContent() {
           <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-black text-slate-900">
+          <h2 className="text-xl font-black text-ink-900">
             GitHub Authentication Failed
           </h2>
           <p className="text-xs text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-200 text-left font-mono">

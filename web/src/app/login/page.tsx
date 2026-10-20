@@ -123,7 +123,7 @@ function LoginContent() {
 
       {/* Main Card */}
       <main id="main-content" className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8">
-        <div className="bg-white text-slate-900 border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="on-light bg-white text-ink-900 border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
           
           {/* Header inside card */}
           <div className="text-center space-y-1.5">
@@ -131,10 +131,10 @@ function LoginContent() {
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Multi-Tenant Vault</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-ink-900 tracking-tight">
               Sign In to DevCommand
             </h1>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+            <p className="text-xs text-ink-500 max-w-xs mx-auto">
               Each user account is strictly separated and backed by dedicated MongoDB Atlas collections.
             </p>
           </div>
@@ -173,14 +173,14 @@ function LoginContent() {
           )}
 
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-2xl text-xs font-mono font-bold">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-brand-blue-50 rounded-2xl text-xs font-mono font-bold">
             <button
               type="button"
               onClick={() => { setAuthMode('github'); setError(null); }}
               className={`py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 authMode === 'github'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white text-ink-900 shadow-sm'
+                  : 'text-ink-500 hover:text-ink-900'
               }`}
             >
               <GithubIcon className="w-3.5 h-3.5" />
@@ -191,8 +191,8 @@ function LoginContent() {
               onClick={() => { setAuthMode('token'); setError(null); }}
               className={`py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 authMode === 'token'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white text-ink-900 shadow-sm'
+                  : 'text-ink-500 hover:text-ink-900'
               }`}
             >
               <KeyRound className="w-3.5 h-3.5" />
@@ -203,8 +203,8 @@ function LoginContent() {
               onClick={() => { setAuthMode('email'); setError(null); }}
               className={`py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
                 authMode === 'email'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white text-ink-900 shadow-sm'
+                  : 'text-ink-500 hover:text-ink-900'
               }`}
             >
               <Mail className="w-3.5 h-3.5" />
@@ -225,7 +225,7 @@ function LoginContent() {
                 <span>{loading ? 'Connecting to GitHub...' : 'Continue with GitHub'}</span>
                 <ArrowRight className="w-4 h-4 ml-auto text-white/60 group-hover:translate-x-1 transition-transform" />
               </button>
-              <p className="text-[0.6875rem] text-slate-400 text-center font-mono">
+              <p className="text-[0.6875rem] text-ink-400 text-center font-mono">
                 One-click authorization with GitHub identity &amp; repositories.
               </p>
             </div>
@@ -235,20 +235,20 @@ function LoginContent() {
           {authMode === 'token' && (
             <form onSubmit={handleTokenLogin} className="space-y-3.5 pt-1">
               <div>
-                <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-mono font-bold text-ink-700 uppercase tracking-wider mb-1.5">
                   GitHub Personal Access Token
                 </label>
                 <div className="relative">
-                  <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <KeyRound className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="password"
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value)}
                     placeholder="ghp_... or github_pat_..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-brand-blue-500/15 text-xs font-mono bg-brand-blue-50/60 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                   />
                 </div>
-                <div className="flex items-center justify-between text-[0.6875rem] text-slate-400 mt-1.5">
+                <div className="flex items-center justify-between text-[0.6875rem] text-ink-400 mt-1.5">
                   <span>Requires read:user &amp; repo scopes</span>
                   <a
                     href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevCommand"
@@ -277,33 +277,33 @@ function LoginContent() {
           {authMode === 'email' && (
             <form onSubmit={handleEmailLogin} className="space-y-3 pt-1">
               <div>
-                <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-ink-700 uppercase tracking-wider mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="developer@example.com"
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-brand-blue-500/15 text-xs font-mono bg-brand-blue-50/60 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-ink-700 uppercase tracking-wider mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-ink-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-brand-blue-500/15 text-xs font-mono bg-brand-blue-50/60 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                   />
                 </div>
               </div>
@@ -320,8 +320,8 @@ function LoginContent() {
           )}
 
           {/* MULTI-USER SEPARATION TESTER (ONE-CLICK SWITCHER) */}
-          <div className="pt-4 border-t border-slate-100 space-y-2.5">
-            <div className="flex items-center justify-between text-[0.6875rem] font-mono text-slate-500 font-bold">
+          <div className="pt-4 border-t border-ink-200/80 space-y-2.5">
+            <div className="flex items-center justify-between text-[0.6875rem] font-mono text-ink-500 font-bold">
               <span className="flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-[#0038FF]" />
                 <span>TEST USER SEPARATION</span>
@@ -336,16 +336,16 @@ function LoginContent() {
                 type="button"
                 onClick={() => handleDemoSwitch('alice')}
                 disabled={loading}
-                className="p-2.5 rounded-xl border border-slate-200 hover:border-[#0038FF] hover:bg-blue-50/50 text-left transition flex items-center gap-2 cursor-pointer group"
+                className="p-2.5 rounded-xl border border-brand-blue-500/15 hover:border-brand-blue-500 hover:bg-brand-blue-50 text-left transition flex items-center gap-2 cursor-pointer group"
               >
                 <div className="w-7 h-7 rounded-lg bg-pink-100 text-pink-700 font-black text-xs flex items-center justify-center shrink-0">
                   A
                 </div>
                 <div className="truncate">
-                  <div className="font-bold text-slate-800 text-[0.6875rem] group-hover:text-[#0038FF] truncate">
+                  <div className="font-bold text-ink-800 text-[0.6875rem] group-hover:text-[#0038FF] truncate">
                     Alice Smith
                   </div>
-                  <div className="text-[0.6875rem] font-mono text-slate-400 truncate">
+                  <div className="text-[0.6875rem] font-mono text-ink-400 truncate">
                     Frontend Dev
                   </div>
                 </div>
@@ -355,28 +355,28 @@ function LoginContent() {
                 type="button"
                 onClick={() => handleDemoSwitch('bob')}
                 disabled={loading}
-                className="p-2.5 rounded-xl border border-slate-200 hover:border-[#0038FF] hover:bg-blue-50/50 text-left transition flex items-center gap-2 cursor-pointer group"
+                className="p-2.5 rounded-xl border border-brand-blue-500/15 hover:border-brand-blue-500 hover:bg-brand-blue-50 text-left transition flex items-center gap-2 cursor-pointer group"
               >
                 <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
                   B
                 </div>
                 <div className="truncate">
-                  <div className="font-bold text-slate-800 text-[0.6875rem] group-hover:text-[#0038FF] truncate">
+                  <div className="font-bold text-ink-800 text-[0.6875rem] group-hover:text-[#0038FF] truncate">
                     Bob Chen
                   </div>
-                  <div className="text-[0.6875rem] font-mono text-slate-400 truncate">
+                  <div className="text-[0.6875rem] font-mono text-ink-400 truncate">
                     Platform Lead
                   </div>
                 </div>
               </button>
             </div>
-            <p className="text-[0.6875rem] text-slate-400 leading-tight">
+            <p className="text-[0.6875rem] text-ink-400 leading-tight">
               Switch between Alice and Bob to verify that Alice cannot see Bob&apos;s repositories, and Bob cannot see Alice&apos;s incubator ideas.
             </p>
           </div>
 
           {/* Footer inside card: link to Sign Up */}
-          <div className="text-center pt-2 text-xs text-slate-500">
+          <div className="text-center pt-2 text-xs text-ink-500">
             <span>Don&apos;t have an account? </span>
             <Link href="/signup" className="font-bold text-[#0038FF] hover:underline">
               Create one

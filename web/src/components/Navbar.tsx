@@ -265,7 +265,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
               {menuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 z-50 mt-3 w-72 animate-fade-in-up space-y-3 rounded-2xl border border-brand-blue-500/12 bg-white p-3 font-sans text-ink-900 shadow-e3"
+                  className="absolute right-0 z-50 mt-3 w-72 animate-fade-in-up space-y-3 rounded-2xl border border-brand-blue-500/12 bg-white p-3 font-sans text-ink-900 shadow-e3 on-light"
                 >
                   <div className="space-y-1 rounded-xl bg-brand-blue-50 p-3">
                     <div className="flex items-center justify-between gap-2">

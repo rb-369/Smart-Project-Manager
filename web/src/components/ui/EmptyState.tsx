@@ -17,10 +17,10 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-brand-blue-500/20 bg-brand-blue-50/40 px-6 py-14 text-center ${className}`}
+      className={`surface-card flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-brand-blue-500/25 px-6 py-14 text-center ${className}`}
     >
       {icon && (
-        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-brand-blue-500/15 bg-white text-brand-blue-500 shadow-e1">
+        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-brand-blue-500/15 bg-brand-blue-50 text-brand-blue-500">
           {icon}
         </div>
       )}

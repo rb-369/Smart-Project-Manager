@@ -261,7 +261,7 @@ function ChatLauncherContent() {
                         'Should we add biometric authentication to our application?',
                       )
                     }
-                    className="w-full rounded-xl border border-white/10 bg-white/5 p-2 text-left text-[0.6875rem] text-white/80 transition-colors hover:bg-white/10"
+                    className="w-full rounded-xl border border-white/15 bg-white/[0.07] p-2.5 text-left text-[0.6875rem] leading-relaxed text-white/85 transition-colors hover:border-brand-lime-400/40 hover:bg-white/[0.12] hover:text-white"
                   >
                     Should we add biometric authentication?
                   </button>
@@ -272,7 +272,7 @@ function ChatLauncherContent() {
                         'Evaluate building an automated subscription billing system',
                       )
                     }
-                    className="w-full rounded-xl border border-white/10 bg-white/5 p-2 text-left text-[0.6875rem] text-white/80 transition-colors hover:bg-white/10"
+                    className="w-full rounded-xl border border-white/15 bg-white/[0.07] p-2.5 text-left text-[0.6875rem] leading-relaxed text-white/85 transition-colors hover:border-brand-lime-400/40 hover:bg-white/[0.12] hover:text-white"
                   >
                     Evaluate automated subscription billing
                   </button>
@@ -308,9 +308,9 @@ function ChatLauncherContent() {
                         <div className="space-y-3">
                           {isPipeline && sub.judge && (
                             <div className="space-y-2.5">
-                              <div className="space-y-1.5 rounded-xl border border-ink-800 bg-ink-950 p-3 text-white">
+                              <div className="space-y-1.5 rounded-xl border border-brand-violet-500/30 bg-gradient-to-br from-brand-blue-700 to-brand-blue-900 p-3 text-white">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="font-mono text-[0.625rem] font-bold uppercase tracking-wider text-ink-400">
+                                  <span className="font-mono text-[0.625rem] font-bold uppercase tracking-wider text-brand-lime-300">
                                     The Judge
                                   </span>
                                   <div className="flex items-center gap-1.5">
@@ -330,7 +330,7 @@ function ChatLauncherContent() {
                                     </span>
                                   </div>
                                 </div>
-                                <p className="text-[0.6875rem] leading-normal text-ink-300">
+                                <p className="text-[0.6875rem] leading-normal text-white/80">
                                   {sub.judge.summary_verdict}
                                 </p>
                               </div>
@@ -338,15 +338,15 @@ function ChatLauncherContent() {
                               <div
                                 role="tablist"
                                 aria-label="Sub-agent output"
-                                className="flex items-center gap-1 border-b border-ink-200 pb-1.5 font-mono text-[0.6875rem]"
+                                className="flex items-center gap-1 rounded-xl bg-ink-50 p-1 font-mono text-[0.6875rem]"
                               >
                                 {(
                                   [
-                                    ['judge', 'Judge', Scale],
-                                    ['researcher', 'Researcher', Search],
-                                    ['planner', 'Planner', Layers],
+                                    ['judge', 'Judge', Scale, 'bg-brand-violet-500 text-white'],
+                                    ['researcher', 'Researcher', Search, 'bg-brand-blue-500 text-white'],
+                                    ['planner', 'Planner', Layers, 'bg-brand-lime-400 text-black'],
                                   ] as const
-                                ).map(([id, label, Icon]) => (
+                                ).map(([id, label, Icon, activeClass]) => (
                                   <button
                                     key={id}
                                     type="button"
@@ -355,10 +355,10 @@ function ChatLauncherContent() {
                                     onClick={() =>
                                       setActiveTabPerMessage((p) => ({ ...p, [msg.id]: id }))
                                     }
-                                    className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 font-bold transition-colors ${
+                                    className={`inline-flex flex-1 items-center justify-center gap-1 rounded-lg px-2 py-1.5 font-bold transition-colors ${
                                       tab === id
-                                        ? 'bg-brand-blue-500 text-white'
-                                        : 'text-ink-600 hover:bg-ink-100'
+                                        ? activeClass
+                                        : 'text-ink-500 hover:bg-white hover:text-ink-800'
                                     }`}
                                   >
                                     <Icon className="h-3 w-3" aria-hidden="true" />

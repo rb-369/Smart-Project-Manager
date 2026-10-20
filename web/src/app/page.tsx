@@ -244,7 +244,7 @@ export default function Home() {
       {/* ====================================================================
           WHITE SHEET
           ==================================================================== */}
-      <section className="relative z-30 w-full bg-white pb-20 pt-16 text-ink-900 sm:pt-20">
+      <section className="on-light relative z-30 w-full bg-white pb-20 pt-16 text-ink-900 sm:pt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
         {/* ---------------- HOW IT WORKS ---------------- */}
         <div className="mb-14">

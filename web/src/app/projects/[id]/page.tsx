@@ -83,14 +83,18 @@ function ProjectDetailContent() {
   }, [authLoading, isAuthenticated, sessionError, projectId, router]);
 
   const fetchProject = async () => {
-    if (!api.isAuthenticated()) return;
+    if (!api.isAuthenticated()) {
+      setError('You need to be signed in to view this repository.');
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const res: any = await api.get(`/projects/${projectId}`);
       setProject(res);
       setLiveUrlInput(res.live_url || '');
     } catch (err: any) {
-      setError(err.message || 'Failed to load project details');
+      setError(err?.message || 'Failed to load project details');
     } finally {
       setLoading(false);
     }
@@ -214,18 +218,21 @@ function ProjectDetailContent() {
 
   if (error || !project) {
     return (
-      <div className="surface-canvas flex min-h-screen items-center justify-center p-8">
-        <EmptyState
-          icon={<X className="h-5 w-5" aria-hidden="true" />}
-          title="This project could not be loaded"
-          description={error || 'It may have been deleted, or the workspace API is unreachable.'}
-          action={
-            <Button size="sm" onClick={() => router.push('/dashboard')}>
-              Back to command center
-            </Button>
-          }
-        />
-      </div>
+      <AppShell>
+        <Navbar />
+        <PageContainer className="max-w-3xl">
+          <EmptyState
+            icon={<X className="h-5 w-5" aria-hidden="true" />}
+            title="This project could not be loaded"
+            description={error || 'It may have been deleted, or the workspace API is unreachable.'}
+            action={
+              <Button size="sm" onClick={() => router.push('/dashboard')}>
+                Back to command center
+              </Button>
+            }
+          />
+        </PageContainer>
+      </AppShell>
     );
   }
 

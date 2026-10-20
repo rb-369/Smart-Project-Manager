@@ -128,11 +128,40 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       localStorage.removeItem('devcommand_refresh_token');
       window.dispatchEvent(new CustomEvent('devcommand:unauthorized'));
     }
-    const message = data.detail || response.statusText || 'API request failed';
+    const message = formatApiError(data, response.statusText);
     throw new ApiError(message, response.status, data);
   }
 
   return data as T;
+}
+
+/**
+ * FastAPI returns `detail` as a string for HTTPException but as a list of
+ * validation objects for request errors. Passing that straight to
+ * `new Error()` renders the literal text "[object Object]".
+ */
+function formatApiError(data: any, fallback: string): string {
+  const detail = data?.detail;
+
+  if (typeof detail === 'string' && detail.trim()) return detail;
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    const messages = detail
+      .map((item: any) =>
+        typeof item === 'string'
+          ? item
+          : item?.msg || item?.message || JSON.stringify(item),
+      )
+      .filter(Boolean);
+    if (messages.length) return messages.join('; ');
+  }
+
+  if (detail && typeof detail === 'object') {
+    const message = detail.message || detail.msg;
+    if (typeof message === 'string' && message.trim()) return message;
+  }
+
+  return fallback || 'API request failed';
 }
 
 /**

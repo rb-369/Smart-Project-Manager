@@ -62,7 +62,7 @@ export function Menu({ items, label = 'More actions', align = 'right', className
       {open && (
         <div
           role="menu"
-          className={`absolute z-30 mt-1.5 w-48 animate-fade-in-up overflow-hidden rounded-xl border border-ink-200 bg-white p-1 shadow-e3 ${
+          className={`absolute z-30 mt-1.5 w-48 animate-fade-in-up overflow-hidden rounded-xl border border-ink-200 bg-white p-1 shadow-e3 on-light ${
             align === 'right' ? 'right-0' : 'left-0'
           }`}
         >

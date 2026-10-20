@@ -629,18 +629,19 @@ export default function DashboardPage() {
 
         {/* Notice banner for Hidden tab */}
         {activeTab === 'HIDDEN' && (
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700/80 text-white flex items-center justify-between gap-3 text-xs font-mono">
+          <div className="gridster-panel-deep flex items-center justify-between gap-3 rounded-2xl p-4 font-mono text-xs">
             <div className="flex items-center gap-2">
-              <EyeOff className="w-4 h-4 text-slate-400" />
+              <EyeOff className="h-4 w-4 text-brand-lime-400" aria-hidden="true" />
               <span>
                 These repositories are soft-hidden from your active views. They remain intact on GitHub and can be restored anytime.
               </span>
             </div>
             <button
+              type="button"
               onClick={() => setActiveTab('ALL')}
-              className="text-[#C6FF20] hover:underline font-bold whitespace-nowrap cursor-pointer"
+              className="cursor-pointer whitespace-nowrap font-bold text-brand-lime-300 hover:underline"
             >
-              Back to Active Repos &rarr;
+              Back to active repos &rarr;
             </button>
           </div>
         )}
