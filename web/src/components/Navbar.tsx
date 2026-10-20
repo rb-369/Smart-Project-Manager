@@ -132,10 +132,33 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
         : 'text-white/80 hover:bg-white/10 hover:text-white'
     }`;
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4">
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-200 ${
+        isScrolled
+          ? 'border-b border-white/10 bg-[#061234]/98 px-3 py-2 shadow-e3 backdrop-blur-xl sm:px-5 sm:py-2.5'
+          : 'bg-transparent px-3 pt-3 sm:px-5 sm:pt-4'
+      }`}
+    >
       <div className="mx-auto w-full max-w-7xl">
-        <div className="surface-glass flex items-center gap-2 rounded-2xl px-3 py-2.5 sm:gap-3 sm:rounded-full sm:px-4">
+        <div
+          className={`flex items-center gap-2 transition-all duration-200 sm:gap-3 ${
+            isScrolled
+              ? 'px-1 py-0.5'
+              : 'surface-glass rounded-2xl px-3 py-2.5 sm:rounded-full sm:px-4'
+          }`}
+        >
           {/* Brand */}
           <Link href="/" className="shrink-0" aria-label="DevCommand home">
             <BrandLogo size={30} tagline="Autonomous Engine" />
