@@ -15,9 +15,7 @@ import {
   AlertCircle,
   Database,
   Users,
-  CheckCircle2,
-  ExternalLink,
-  Loader2
+  ExternalLink
 } from 'lucide-react';
 import { StaticLoader } from '@/components/StaticLoader';
 import { BrandLogo } from '@/components/ui/BrandLogo';
@@ -129,7 +127,7 @@ function LoginContent() {
           
           {/* Header inside card */}
           <div className="text-center space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0038FF]/10 text-[#0038FF] border border-[#0038FF]/20 text-[11px] font-mono font-bold uppercase tracking-wider mb-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0038FF]/10 text-[#0038FF] border border-[#0038FF]/20 text-[0.6875rem] font-mono font-bold uppercase tracking-wider mb-1">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Multi-Tenant Vault</span>
             </div>
@@ -155,7 +153,7 @@ function LoginContent() {
                     api.setBaseUrl('https://smart-project-manager-em2i.onrender.com/api/v1');
                     setError(null);
                   }}
-                  className="mt-1 py-1.5 px-3 rounded-xl bg-[#0038FF] text-white text-[11px] font-mono font-bold hover:bg-[#002AD4] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs self-start"
+                  className="mt-1 py-1.5 px-3 rounded-xl bg-[#0038FF] text-white text-[0.6875rem] font-mono font-bold hover:bg-[#002AD4] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs self-start"
                 >
                   <Database className="w-3.5 h-3.5 text-[#C6FF20]" />
                   <span>Switch to Live Cloud API (Render + Atlas)</span>
@@ -227,7 +225,7 @@ function LoginContent() {
                 <span>{loading ? 'Connecting to GitHub...' : 'Continue with GitHub'}</span>
                 <ArrowRight className="w-4 h-4 ml-auto text-white/60 group-hover:translate-x-1 transition-transform" />
               </button>
-              <p className="text-[11px] text-slate-400 text-center font-mono">
+              <p className="text-[0.6875rem] text-slate-400 text-center font-mono">
                 One-click authorization with GitHub identity &amp; repositories.
               </p>
             </div>
@@ -247,10 +245,10 @@ function LoginContent() {
                     value={tokenInput}
                     onChange={(e) => setTokenInput(e.target.value)}
                     placeholder="ghp_... or github_pat_..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0038FF] transition"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                   />
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5">
+                <div className="flex items-center justify-between text-[0.6875rem] text-slate-400 mt-1.5">
                   <span>Requires read:user &amp; repo scopes</span>
                   <a
                     href="https://github.com/settings/tokens/new?scopes=repo,read:user&description=DevCommand"
@@ -289,7 +287,7 @@ function LoginContent() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="developer@example.com"
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0038FF] transition"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                   />
                 </div>
               </div>
@@ -305,7 +303,7 @@ function LoginContent() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0038FF] transition"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:border-brand-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500 transition"
                   />
                 </div>
               </div>
@@ -323,12 +321,12 @@ function LoginContent() {
 
           {/* MULTI-USER SEPARATION TESTER (ONE-CLICK SWITCHER) */}
           <div className="pt-4 border-t border-slate-100 space-y-2.5">
-            <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 font-bold">
+            <div className="flex items-center justify-between text-[0.6875rem] font-mono text-slate-500 font-bold">
               <span className="flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-[#0038FF]" />
                 <span>TEST USER SEPARATION</span>
               </span>
-              <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[0.6875rem] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                 100% Isolated
               </span>
             </div>
@@ -344,10 +342,10 @@ function LoginContent() {
                   A
                 </div>
                 <div className="truncate">
-                  <div className="font-bold text-slate-800 text-[11px] group-hover:text-[#0038FF] truncate">
+                  <div className="font-bold text-slate-800 text-[0.6875rem] group-hover:text-[#0038FF] truncate">
                     Alice Smith
                   </div>
-                  <div className="text-[9px] font-mono text-slate-400 truncate">
+                  <div className="text-[0.6875rem] font-mono text-slate-400 truncate">
                     Frontend Dev
                   </div>
                 </div>
@@ -363,16 +361,16 @@ function LoginContent() {
                   B
                 </div>
                 <div className="truncate">
-                  <div className="font-bold text-slate-800 text-[11px] group-hover:text-[#0038FF] truncate">
+                  <div className="font-bold text-slate-800 text-[0.6875rem] group-hover:text-[#0038FF] truncate">
                     Bob Chen
                   </div>
-                  <div className="text-[9px] font-mono text-slate-400 truncate">
+                  <div className="text-[0.6875rem] font-mono text-slate-400 truncate">
                     Platform Lead
                   </div>
                 </div>
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 leading-tight">
+            <p className="text-[0.6875rem] text-slate-400 leading-tight">
               Switch between Alice and Bob to verify that Alice cannot see Bob&apos;s repositories, and Bob cannot see Alice&apos;s incubator ideas.
             </p>
           </div>

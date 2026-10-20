@@ -17,7 +17,6 @@ import {
   Bot,
   LogOut,
   Users,
-  Database,
   ChevronDown,
   ShieldCheck,
   Menu,
@@ -192,7 +191,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
               placeholder="Search repos..."
               value={searchValue}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-28 bg-transparent text-xs text-white outline-none placeholder:text-white/50 focus:w-44 transition-all font-mono lg:w-36 xl:w-44"
+              className="w-28 bg-transparent text-xs text-white placeholder:text-white/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lime-400 focus:w-44 transition-all font-mono lg:w-36 xl:w-44"
             />
           </div>
 
@@ -397,7 +396,7 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
                 placeholder="Search repos..."
                 value={searchValue}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full bg-transparent font-mono text-xs text-white outline-none placeholder:text-white/50"
+                className="w-full bg-transparent font-mono text-xs text-white placeholder:text-white/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lime-400"
               />
             </div>
 

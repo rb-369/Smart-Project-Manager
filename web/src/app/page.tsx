@@ -6,7 +6,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   GitBranch,
-  Cpu,
   Layers,
   CheckCircle2,
   Terminal,
@@ -138,6 +137,7 @@ export default function Home() {
           {isAuthenticated ? (
             <Link
               href="/dashboard"
+              aria-label="Open command center"
               className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-brand-lime-400 px-4 py-2 font-mono text-[0.6875rem] font-black text-black shadow-lime transition-colors hover:bg-brand-lime-300"
             >
               <span className="hidden sm:inline">Open command center</span>
@@ -147,6 +147,7 @@ export default function Home() {
           ) : (
             <Link
               href="/login"
+              aria-label="Sign in with GitHub"
               className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-brand-lime-400 px-4 py-2 font-mono text-[0.6875rem] font-black text-black shadow-lime transition-colors hover:bg-brand-lime-300"
             >
               <GithubIcon className="h-3.5 w-3.5" />

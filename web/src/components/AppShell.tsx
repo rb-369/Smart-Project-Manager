@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { WifiOff } from 'lucide-react';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -12,11 +14,28 @@ interface AppShellProps {
  * navigation island, and a consistent content column.
  */
 export function AppShell({ children, className = '' }: AppShellProps) {
+  const { sessionError } = useAuth();
+
   return (
     <div
       className={`surface-canvas relative min-h-screen overflow-x-clip text-white selection:bg-brand-lime-400 selection:text-black ${className}`}
     >
       {children}
+
+      {sessionError && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-x-3 bottom-3 z-[70] mx-auto flex max-w-lg items-start gap-2.5 rounded-2xl border border-amber-300/60 bg-amber-50/95 px-4 py-3 font-mono text-[0.75rem] text-amber-900 shadow-e3 sm:inset-x-auto sm:bottom-6"
+        >
+          <WifiOff className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
+          <span>
+            <strong className="font-black">Workspace unreachable.</strong> Your session is
+            still valid — this is a connection problem, not a sign-out. Data on screen may
+            be stale.
+          </span>
+        </div>
+      )}
     </div>
   );
 }

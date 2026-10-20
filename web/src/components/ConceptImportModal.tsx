@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { ParsedConcept, ProjectType, FutureProjectPriority } from '@/types';
-import { CheckCircle2, Loader2, RotateCcw, Zap } from 'lucide-react';
+import { CheckCircle2, RotateCcw, Zap } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/Field';
@@ -161,7 +161,7 @@ export function ConceptImportModal({
               placeholder="e.g. bro what if we build a bot that automatically tweets git commits using python and fastapi, top priority asap. We could add discord alerts too."
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              className="w-full resize-none rounded-2xl border border-brand-blue-500/15 bg-brand-blue-50/60 p-3.5 font-mono text-[0.8125rem] leading-relaxed text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+              className="w-full resize-none rounded-2xl border border-brand-blue-500/15 bg-brand-blue-50/60 p-3.5 font-mono text-[0.8125rem] leading-relaxed text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
             />
             <p className="mt-1.5 text-[0.6875rem] text-ink-500">
               Slang, typos and bullet points are all supported.
@@ -211,7 +211,7 @@ export function ConceptImportModal({
                 onChange={(e) =>
                   setParsedPreview({ ...parsedPreview, elevator_pitch: e.target.value })
                 }
-                className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 text-[0.8125rem] text-ink-900 transition-colors focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 text-[0.8125rem] text-ink-900 transition-colors focus:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
               />
             </div>
 
@@ -240,7 +240,7 @@ export function ConceptImportModal({
                       project_type: e.target.value as ProjectType,
                     })
                   }
-                  className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                  className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
                 >
                   <option value="RESUME">Resume portfolio</option>
                   <option value="COLLEGE">Academic / college</option>
@@ -264,7 +264,7 @@ export function ConceptImportModal({
                       priority: e.target.value as FutureProjectPriority,
                     })
                   }
-                  className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                  className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
                 >
                   <option value="P0">P0 — next immediate</option>
                   <option value="P1">P1 — upcoming</option>
@@ -285,7 +285,7 @@ export function ConceptImportModal({
                 rows={3}
                 value={parsedPreview.notes || ''}
                 onChange={(e) => setParsedPreview({ ...parsedPreview, notes: e.target.value })}
-                className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] text-ink-900 focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] text-ink-900 focus:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
               />
             </div>
 

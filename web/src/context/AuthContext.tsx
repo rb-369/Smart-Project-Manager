@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, ApiError } from '@/lib/api';
+import { api } from '@/lib/api';
 import { User } from '@/types';
 
 interface AuthResponse {
@@ -25,6 +25,12 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
+  /**
+   * Set when the API could not be reached at all. The session is still
+   * valid — we just cannot confirm it right now — so the app stays put and
+   * tells the user, instead of bouncing them to the login screen.
+   */
+  sessionError: string | null;
   loginWithGitHub: () => Promise<void>;
   loginWithGitHubToken: (token: string, syncRepos?: boolean) => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
@@ -39,11 +45,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const router = useRouter();
 
   const fetchCurrentUser = useCallback(async () => {
     if (!api.isAuthenticated()) {
       setUser(null);
+      setSessionError(null);
       setLoading(false);
       return;
     }
@@ -51,12 +59,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const profile = await api.get<User>('/auth/me');
       setUser(profile);
+      setSessionError(null);
     } catch (err: any) {
       console.warn('[DevCommand Auth] Session restoration issue:', err);
-      // Only clear tokens if the server explicitly confirmed 401 Unauthorized and it was not a network/cold-start error
+      // Only clear tokens if the server explicitly confirmed 401 Unauthorized.
       if (!err?.isNetworkError && err?.status === 401) {
         api.clearTokens();
         setUser(null);
+      } else if (err?.isNetworkError) {
+        // The API is unreachable. The session may well still be valid, so
+        // keep the tokens and tell the user rather than logging them out.
+        setSessionError(err?.message || 'Cannot reach the DevCommand API.');
       }
     } finally {
       setLoading(false);
@@ -69,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for unauthorized 401 events from api fetcher
     const handleUnauthorized = () => {
       setUser(null);
+      setSessionError(null);
       if (typeof window !== 'undefined') {
         const path = window.location.pathname;
         if (!path.startsWith('/login') && !path.startsWith('/signup') && !path.startsWith('/auth')) {
@@ -141,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     api.clearTokens();
     setUser(null);
+    setSessionError(null);
     router.push('/login');
   };
 
@@ -154,6 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         isAuthenticated: !!user,
+        sessionError,
         loginWithGitHub,
         loginWithGitHubToken,
         loginWithEmail,

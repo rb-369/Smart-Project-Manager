@@ -13,10 +13,8 @@ import {
   Loader2,
   X,
   Maximize2,
-  Database,
   Layers,
   Trash2,
-  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -484,7 +482,7 @@ function ChatLauncherContent() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Pitch a feature idea or ask a codebase question…"
-                className="min-w-0 flex-1 resize-none rounded-xl border border-white/20 bg-black/40 p-2.5 text-xs text-white outline-none transition-colors placeholder:text-white/40 focus:border-brand-lime-400"
+                className="min-w-0 flex-1 resize-none rounded-xl border border-white/20 bg-black/40 p-2.5 text-xs text-white transition-colors placeholder:text-white/40 focus:border-brand-lime-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lime-400"
               />
               <Button
                 onClick={() => handleSendMessage()}

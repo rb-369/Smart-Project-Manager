@@ -179,7 +179,7 @@ export function TriageModal({ project, isOpen, onClose, onConfirmed }: TriageMod
               onChange={(e) => setGoal(e.target.value)}
               rows={2}
               placeholder="What is the objective or target milestone?"
-              className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 text-[0.8125rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+              className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 text-[0.8125rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
             />
           </div>
 

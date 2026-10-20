@@ -43,9 +43,19 @@ const PRIORITY_TRACKS: {
   },
 ];
 
+/**
+ * Offline ids need to be unique but stable across renders. Generating them
+ * in a module-scope helper keeps the component body pure.
+ */
+let offlineCounter = 0;
+function nextOfflineId(): string {
+  offlineCounter += 1;
+  return `offline-${Date.now()}-${offlineCounter}`;
+}
+
 export default function IdeasPage() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, sessionError } = useAuth();
   const [ideas, setIdeas] = useState<FutureProject[]>([]);
   const [, setLoading] = useState(true);
 
@@ -70,10 +80,10 @@ export default function IdeasPage() {
 
   // Protect route
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !sessionError) {
       router.push('/login?next=/ideas');
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, sessionError, router]);
 
   const showNotification = (msg: string) => {
     setSuccessToast(msg);
@@ -127,7 +137,7 @@ export default function IdeasPage() {
     } catch (err: any) {
       console.warn('Backend unavailable, saving idea in local state:', err?.message || err);
       const fallbackIdea: FutureProject = {
-        id: `offline-${Date.now()}`,
+        id: nextOfflineId(),
         title: title.trim(),
         elevator_pitch: elevatorPitch.trim() || undefined,
         target_tech_stack: techStack.trim() || undefined,
@@ -199,7 +209,7 @@ export default function IdeasPage() {
     } catch (err: any) {
       console.warn('Unable to add suggested project:', err?.message || err);
       const fallbackIdea: FutureProject = {
-        id: `offline-${Date.now()}`,
+        id: nextOfflineId(),
         title: p.title,
         elevator_pitch: p.elevator_pitch,
         target_tech_stack: p.target_tech_stack,
@@ -391,7 +401,7 @@ export default function IdeasPage() {
               placeholder="Brief description of goals, mechanics, and value proposition"
               value={elevatorPitch}
               onChange={(e) => setElevatorPitch(e.target.value)}
-              className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 text-[0.8125rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+              className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 text-[0.8125rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
             />
           </div>
 
@@ -414,7 +424,7 @@ export default function IdeasPage() {
                 id="manual-type"
                 value={projectType}
                 onChange={(e) => setProjectType(e.target.value as ProjectType)}
-                className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
               >
                 <option value="RESUME">Resume portfolio</option>
                 <option value="COLLEGE">Academic / college</option>
@@ -433,7 +443,7 @@ export default function IdeasPage() {
                 id="manual-priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as FutureProjectPriority)}
-                className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                className="w-full cursor-pointer rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
               >
                 <option value="P0">P0 — next immediate</option>
                 <option value="P1">P1 — upcoming</option>
@@ -455,7 +465,7 @@ export default function IdeasPage() {
               placeholder="Bullet points or key technical milestones"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+              className="w-full resize-none rounded-xl border border-brand-blue-500/15 bg-brand-blue-50/60 px-3.5 py-2.5 font-mono text-[0.75rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
             />
           </div>
         </form>

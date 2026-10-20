@@ -25,21 +25,13 @@ import {
   Cpu,
   CheckCircle2,
   ArrowRight,
-  Zap,
   Star,
   Globe,
   EyeOff,
-  RotateCcw,
   SlidersHorizontal,
   ArrowDownUp,
   Lightbulb,
   MessageSquareText,
-  Plus,
-  X,
-  Loader2,
-  Code,
-  Trash2,
-  Check,
   LayoutDashboard,
   AlertCircle
 } from 'lucide-react';
@@ -49,7 +41,7 @@ type SortOption = 'DEFAULT' | 'PROGRESS' | 'RECENT' | 'NAME' | 'ORDER';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, sessionError } = useAuth();
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [ideas, setIdeas] = useState<FutureProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,10 +63,10 @@ export default function DashboardPage() {
 
   // Protect route
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !sessionError) {
       router.push('/login?next=/dashboard');
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, sessionError, router]);
 
   const fetchProjects = async () => {
     if (!api.isAuthenticated()) return;
@@ -274,7 +266,7 @@ export default function DashboardPage() {
   }
 
   // Search filtering
-  let searched = baseList.filter((p) => {
+  const searched = baseList.filter((p) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -614,7 +606,7 @@ export default function DashboardPage() {
                   id="dashboard-sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="cursor-pointer bg-transparent text-xs font-bold text-white outline-none [&>option]:bg-ink-900 [&>option]:text-white"
+                  className="cursor-pointer bg-transparent text-xs font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lime-400 [&>option]:bg-ink-900 [&>option]:text-white"
                 >
                   <option value="DEFAULT">Starred First</option>
                   <option value="ORDER">Custom Priority Order</option>

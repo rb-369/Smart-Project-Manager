@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   AlertCircle,
   GitBranch,
-  KeyRound,
   ExternalLink,
   Database,
   Users,
@@ -25,7 +24,7 @@ import {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, sessionError } = useAuth();
 
   const [token, setToken] = useState('');
   const [status, setStatus] = useState<GitHubStatus | null>(null);
@@ -37,10 +36,10 @@ export default function SettingsPage() {
 
   // Route protection
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !sessionError) {
       router.push('/login?next=/settings');
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, sessionError, router]);
 
   const fetchStatus = async () => {
     if (!api.isAuthenticated()) return;

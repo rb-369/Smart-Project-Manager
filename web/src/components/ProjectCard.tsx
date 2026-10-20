@@ -261,7 +261,7 @@ export function ProjectCard({
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="https://my-app.vercel.app"
                 autoFocus
-                className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1 font-mono text-[0.75rem] text-ink-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-blue-500"
+                className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1 font-mono text-[0.75rem] text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-blue-500"
               />
               <button
                 type="submit"

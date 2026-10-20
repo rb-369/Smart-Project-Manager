@@ -123,7 +123,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    if (response.status === 401 && typeof window !== 'undefined') {
+    if (response.status === 401 && typeof window !== 'undefined' && isSessionCritical(endpoint)) {
       localStorage.removeItem('devcommand_access_token');
       localStorage.removeItem('devcommand_refresh_token');
       window.dispatchEvent(new CustomEvent('devcommand:unauthorized'));
@@ -133,6 +133,24 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   return data as T;
+}
+
+/**
+ * Endpoints whose 401 genuinely means the session is gone.
+ *
+ * Previously every 401 on any endpoint cleared the tokens and bounced the
+ * user to /login. One failed telemetry call — a flaky `/mongodb/status`, a
+ * misconfigured AI provider — logged you out of a working session.
+ */
+const SESSION_CRITICAL_PREFIXES = [
+  '/auth/',
+  '/projects',
+  '/future-projects',
+  '/features',
+];
+
+function isSessionCritical(endpoint: string): boolean {
+  return SESSION_CRITICAL_PREFIXES.some((prefix) => endpoint.startsWith(prefix));
 }
 
 export const api = {

@@ -53,7 +53,7 @@ function ProjectDetailContent() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.id as string;
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, sessionError } = useAuth();
 
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,10 +77,10 @@ function ProjectDetailContent() {
 
   // Route protection
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !sessionError) {
       router.push(`/login?next=/projects/${projectId}`);
     }
-  }, [authLoading, isAuthenticated, projectId, router]);
+  }, [authLoading, isAuthenticated, sessionError, projectId, router]);
 
   const fetchProject = async () => {
     if (!api.isAuthenticated()) return;
@@ -409,7 +409,7 @@ function ProjectDetailContent() {
                       onChange={(e) => setLiveUrlInput(e.target.value)}
                       placeholder="https://my-app.vercel.app"
                       autoFocus
-                      className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1 font-mono text-[0.75rem] text-ink-900 outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-blue-500"
+                      className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1 font-mono text-[0.75rem] text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-blue-500"
                     />
                     <button
                       type="submit"
@@ -509,7 +509,7 @@ function ProjectDetailContent() {
                 placeholder="Register a deliverable (e.g. Implement webhook dispatcher)…"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="min-w-0 flex-1 rounded-full border border-brand-blue-500/15 bg-brand-blue-50/60 px-4 py-2.5 text-[0.8125rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                className="min-w-0 flex-1 rounded-full border border-brand-blue-500/15 bg-brand-blue-50/60 px-4 py-2.5 text-[0.8125rem] text-ink-900 placeholder:text-ink-400 transition-colors focus:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
               />
               <label htmlFor="new-feature-priority" className="sr-only">
                 Task priority
@@ -518,7 +518,7 @@ function ProjectDetailContent() {
                 id="new-feature-priority"
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as FeaturePriority)}
-                className="cursor-pointer rounded-full border border-brand-blue-500/15 bg-brand-blue-50/60 px-4 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
+                className="cursor-pointer rounded-full border border-brand-blue-500/15 bg-brand-blue-50/60 px-4 py-2.5 font-mono text-[0.75rem] font-bold text-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue-500"
               >
                 <option value="P0">P0 — critical (4×)</option>
                 <option value="P1">P1 — high (3×)</option>

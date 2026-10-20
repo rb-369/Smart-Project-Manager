@@ -10,8 +10,6 @@ import {
   ChatMessage,
   QdrantStatus,
   ProjectSummary,
-  SubAgentData,
-  RagCitation,
 } from '@/types';
 import {
   Bot,
@@ -30,16 +28,23 @@ import {
   Zap,
   Copy,
   FolderGit2,
-  ThumbsUp,
   Trash2,
-  Compass,
-  ArrowRight,
   Target,
 } from 'lucide-react';
 
+/**
+ * Message ids must be unique but stable across renders. Generating them in
+ * a module-scope helper keeps the component body pure.
+ */
+let messageCounter = 0;
+function nextMessageId(role: string): string {
+  messageCounter += 1;
+  return `${role}-${Date.now()}-${messageCounter}`;
+}
+
 export default function ChatPage() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated, sessionError } = useAuth();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -70,19 +75,54 @@ export default function ChatPage() {
 
   // Route protection
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated && !sessionError) {
       router.push('/login?next=/chat');
     }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, sessionError, router]);
+
+  const fetchQdrantStatus = async () => {
+    try {
+      const status = await api.getQdrantStatus();
+      setQdrantStatus(status);
+    } catch (err) {
+      console.warn('Failed to fetch Qdrant status:', err);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const res: any = await api.get('/projects');
+      setProjects(res || []);
+    } catch (err) {
+      console.warn('Failed to load projects for chat context:', err);
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const res: any = await api.getChatHistory(selectedProjectId || undefined);
+      if (res && res.history) {
+        setMessages(res.history);
+      }
+    } catch (err) {
+      console.warn('Failed to load chat history from MongoDB Atlas:', err);
+    }
+  };
 
   // Fetch initial telemetry, project list, and MongoDB cloud history
   useEffect(() => {
     if (isAuthenticated) {
       fetchQdrantStatus();
       fetchProjects();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
       fetchHistory();
     }
   }, [isAuthenticated, selectedProjectId]);
+
 
   // Stepper animation timer when submitting
   useEffect(() => {
@@ -107,34 +147,6 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isSubmitting, activeStep]);
 
-  const fetchQdrantStatus = async () => {
-    try {
-      const status = await api.getQdrantStatus();
-      setQdrantStatus(status);
-    } catch (err) {
-      console.warn('Failed to fetch Qdrant status:', err);
-    }
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const res: any = await api.get('/projects');
-      setProjects(res || []);
-    } catch (err) {
-      console.warn('Failed to load projects for chat context:', err);
-    }
-  };
-
-  const fetchHistory = async () => {
-    try {
-      const res = await api.getChatHistory(selectedProjectId || undefined);
-      if (res && res.history) {
-        setMessages(res.history);
-      }
-    } catch (err) {
-      console.warn('Failed to load chat history from MongoDB Atlas:', err);
-    }
-  };
 
   const handleClearHistory = async () => {
     if (!confirm('Are you sure you want to clear your chat history? This will remove saved conversations from MongoDB Atlas.')) {
@@ -172,7 +184,7 @@ export default function ChatPage() {
     if (!textToSend || isSubmitting) return;
 
     const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
+      id: nextMessageId('user'),
       role: 'user',
       content: textToSend,
       created_at: new Date().toISOString(),
@@ -196,7 +208,7 @@ export default function ChatPage() {
       });
 
       const assistantMessage: ChatMessage = {
-        id: `ai-${Date.now()}`,
+        id: nextMessageId('ai'),
         role: 'assistant',
         content: response.response,
         mode: response.mode,
@@ -209,7 +221,7 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err: any) {
       const errorMessage: ChatMessage = {
-        id: `ai-err-${Date.now()}`,
+        id: nextMessageId('ai-err'),
         role: 'assistant',
         content: `Error: ${err?.message || 'Failed to reach AI Copilot. Please check backend connection.'}`,
         created_at: new Date().toISOString(),
@@ -292,7 +304,7 @@ export default function ChatPage() {
               <select
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="bg-transparent text-white text-xs outline-none cursor-pointer"
+                className="bg-transparent text-white text-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lime-400"
               >
                 <option value="" className="bg-slate-900 text-white">🌐 All Repositories</option>
                 {projects.map((p) => (
@@ -312,7 +324,7 @@ export default function ChatPage() {
               <Database className="w-3.5 h-3.5" />
               <span>{qdrantStatus?.connected ? 'Qdrant: Online' : 'Connecting'}</span>
               {qdrantStatus?.points_count !== undefined && (
-                <span className="px-1.5 py-0.2 rounded bg-black/30 text-[10px]">
+                <span className="px-1.5 py-0.2 rounded bg-black/30 text-[0.6875rem]">
                   {qdrantStatus.points_count} pts
                 </span>
               )}
@@ -366,7 +378,7 @@ export default function ChatPage() {
 
               {/* Starter Prompt Cards */}
               <div className="w-full max-w-2xl grid grid-cols-1 gap-2 text-left">
-                <div className="text-[11px] font-mono text-[#C6FF20] uppercase font-bold tracking-wider px-1">
+                <div className="text-[0.6875rem] font-mono text-[#C6FF20] uppercase font-bold tracking-wider px-1">
                   Try pitching an idea to the sub-agent pipeline:
                 </div>
                 {starterPrompts.map((prompt, idx) => (
@@ -394,11 +406,11 @@ export default function ChatPage() {
                   className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-2`}
                 >
                   {/* Header label */}
-                  <div className="flex items-center gap-2 text-[11px] font-mono text-white/60 px-1">
+                  <div className="flex items-center gap-2 text-[0.6875rem] font-mono text-white/60 px-1">
                     <span>{msg.role === 'user' ? 'You' : (hasSubAgents ? 'DevCommand Copilot (Sub-Agent Pipeline)' : 'DevCommand AI')}</span>
                     <span>•</span>
                     <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    {msg.tier_used && <span className="text-[10px] text-[#C6FF20]">[{msg.tier_used}]</span>}
+                    {msg.tier_used && <span className="text-[0.6875rem] text-[#C6FF20]">[{msg.tier_used}]</span>}
                   </div>
 
                   {/* Message Body */}
@@ -423,12 +435,12 @@ export default function ChatPage() {
                         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                           <div className="flex items-center gap-2">
                             {hasSubAgents ? (
-                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[0.6875rem] font-mono font-bold bg-blue-100 text-blue-700 border border-blue-200">
                                 <Bot className="w-3.5 h-3.5 text-blue-600" />
                                 <span>3 Sub-Agents Executed</span>
                               </div>
                             ) : (
-                              <div className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                              <div className="px-2.5 py-0.5 rounded-full text-[0.6875rem] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                 Conversational Copilot
                               </div>
                             )}
@@ -460,7 +472,7 @@ export default function ChatPage() {
                             <div className="p-4 rounded-2xl bg-ink-950 text-white border border-brand-violet-500/30 shadow-xl space-y-3">
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
                                 <div>
-                                  <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-bold">
+                                  <div className="text-[0.6875rem] font-mono text-slate-400 uppercase tracking-widest font-bold">
                                     THE JUDGE SUB-AGENT VERDICT
                                   </div>
                                   <div className="text-base font-black tracking-tight mt-0.5 text-white">
@@ -546,7 +558,7 @@ export default function ChatPage() {
                             {activeTab === 'judge' && (
                               <div className="space-y-3 animate-fade-in text-xs">
                                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                                  <div className="font-bold font-mono text-slate-700 uppercase tracking-wider text-[11px]">
+                                  <div className="font-bold font-mono text-slate-700 uppercase tracking-wider text-[0.6875rem]">
                                     Unvarnished Assessment
                                   </div>
                                   <p className="text-slate-700 leading-relaxed">
@@ -558,7 +570,7 @@ export default function ChatPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                   {/* Fatal Flaws */}
                                   <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 space-y-1.5">
-                                    <div className="font-bold text-rose-700 flex items-center gap-1.5 font-mono text-[11px]">
+                                    <div className="font-bold text-rose-700 flex items-center gap-1.5 font-mono text-[0.6875rem]">
                                       <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                                       <span>FATAL FLAWS & RISKS</span>
                                     </div>
@@ -574,7 +586,7 @@ export default function ChatPage() {
 
                                   {/* What To Build Instead */}
                                   <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 space-y-1.5">
-                                    <div className="font-bold text-purple-700 flex items-center gap-1.5 font-mono text-[11px]">
+                                    <div className="font-bold text-purple-700 flex items-center gap-1.5 font-mono text-[0.6875rem]">
                                       <Zap className="w-3.5 h-3.5 text-purple-600" />
                                       <span>SMART ALTERNATIVE (JUDGE&apos;S CHOICE)</span>
                                     </div>
@@ -603,7 +615,7 @@ export default function ChatPage() {
                                   <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-100 border border-slate-200">
                                     <button
                                       onClick={() => setPlannerSubTabPerMessage((prev) => ({ ...prev, [msg.id]: 'pivot' }))}
-                                      className={`flex-1 py-1 px-2.5 rounded-lg font-bold font-mono text-[11px] flex items-center justify-center gap-1.5 transition-all ${
+                                      className={`flex-1 py-1 px-2.5 rounded-lg font-bold font-mono text-[0.6875rem] flex items-center justify-center gap-1.5 transition-all ${
                                         plannerSubTab === 'pivot'
                                           ? 'bg-purple-600 text-white shadow'
                                           : 'text-slate-600 hover:text-slate-900'
@@ -614,7 +626,7 @@ export default function ChatPage() {
                                     </button>
                                     <button
                                       onClick={() => setPlannerSubTabPerMessage((prev) => ({ ...prev, [msg.id]: 'original' }))}
-                                      className={`flex-1 py-1 px-2.5 rounded-lg font-bold font-mono text-[11px] flex items-center justify-center gap-1.5 transition-all ${
+                                      className={`flex-1 py-1 px-2.5 rounded-lg font-bold font-mono text-[0.6875rem] flex items-center justify-center gap-1.5 transition-all ${
                                         plannerSubTab === 'original'
                                           ? 'bg-slate-700 text-white shadow'
                                           : 'text-slate-600 hover:text-slate-900'
@@ -637,7 +649,7 @@ export default function ChatPage() {
                                   ? subData.pivot_plan.suggested_features
                                   : subData.planner.suggested_features) || []).length > 0 && (
                                   <div className="pt-2 space-y-2">
-                                    <div className="font-mono font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                                    <div className="font-mono font-bold text-slate-800 uppercase tracking-wider text-[0.6875rem] flex items-center gap-1.5">
                                       <Layers className="w-3.5 h-3.5 text-blue-600" />
                                       <span>1-Click Add to Project Roadmap</span>
                                     </div>
@@ -655,12 +667,12 @@ export default function ChatPage() {
                                           >
                                             <div className="space-y-0.5">
                                               <div className="flex items-center gap-2">
-                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-700">
+                                                <span className="px-1.5 py-0.5 rounded text-[0.6875rem] font-mono font-bold bg-blue-100 text-blue-700">
                                                   {feat.priority}
                                                 </span>
                                                 <span className="font-bold text-slate-900 text-xs">{feat.title}</span>
                                               </div>
-                                              <p className="text-[11px] text-slate-600 leading-normal">
+                                              <p className="text-[0.6875rem] text-slate-600 leading-normal">
                                                 {feat.description}
                                               </p>
                                             </div>
@@ -705,7 +717,7 @@ export default function ChatPage() {
 
                         {/* Grounded RAG Citations Bar */}
                         {msg.citations && msg.citations.length > 0 && (
-                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap text-[11px] font-mono text-slate-500">
+                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap text-[0.6875rem] font-mono text-slate-500">
                             <div className="flex items-center gap-1 text-slate-700 font-bold">
                               <Database className="w-3 h-3 text-[#0051FF]" />
                               <span>Qdrant Vectors Retrieved:</span>
@@ -717,7 +729,7 @@ export default function ChatPage() {
                               >
                                 <span className="capitalize text-slate-400">[{cite.entity_type || 'code'}]</span>
                                 <span className="font-bold">{cite.title}</span>
-                                <span className="text-[9px] text-blue-600">
+                                <span className="text-[0.6875rem] text-blue-600">
                                   {(cite.score * 100).toFixed(0)}%
                                 </span>
                               </span>
@@ -745,7 +757,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Animated 4-Stage Stepper */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 font-mono text-[0.6875rem]">
                   {/* Step 1: Qdrant Context */}
                   <div className={`p-2 rounded-xl border flex items-center gap-2 ${
                     activeStep >= 1 ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-800 text-slate-500'
@@ -779,7 +791,7 @@ export default function ChatPage() {
                   </div>
                 </div>
 
-                <div className="text-[11px] font-mono text-slate-400 pt-1">
+                <div className="text-[0.6875rem] font-mono text-slate-400 pt-1">
                   {activeStep === 1 && 'Querying Qdrant Cloud vectors for user repository codebase context...'}
                   {activeStep === 2 && 'Market Researcher Sub-Agent is discovering competitors and evaluating feasibility...'}
                   {activeStep === 3 && 'The Judge Sub-Agent is calculating feature score, brutal critique, and fatal flaws...'}
@@ -797,14 +809,14 @@ export default function ChatPage() {
           
           {/* Quick Prompts Row */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-            <span className="text-[10px] font-mono text-[#C6FF20] uppercase font-bold shrink-0 flex items-center gap-1">
+            <span className="text-[0.6875rem] font-mono text-[#C6FF20] uppercase font-bold shrink-0 flex items-center gap-1">
               <Zap className="w-3 h-3" /> Quick Ideas:
             </span>
             {starterPrompts.map((prompt, idx) => (
               <button
                 key={idx}
                 onClick={() => setInputValue(prompt)}
-                className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[11px] whitespace-nowrap transition-colors shrink-0 border border-white/10"
+                className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[0.6875rem] whitespace-nowrap transition-colors shrink-0 border border-white/10"
               >
                 {prompt.length > 50 ? `${prompt.slice(0, 50)}...` : prompt}
               </button>
@@ -820,7 +832,7 @@ export default function ChatPage() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Pitch a feature idea, ask about competitors, or evaluate an architectural change..."
-              className="flex-1 bg-black/40 border border-white/20 text-white placeholder-white/40 text-sm rounded-2xl p-3 outline-none focus:border-[#C6FF20] transition-colors resize-none leading-relaxed"
+              className="flex-1 bg-black/40 border border-white/20 text-white placeholder-white/40 text-sm rounded-2xl p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-lime-400 focus:border-brand-lime-400 transition-colors resize-none leading-relaxed"
             />
             <button
               onClick={() => handleSendMessage()}
@@ -835,7 +847,7 @@ export default function ChatPage() {
             </button>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] font-mono text-white/50 px-2 pt-1">
+          <div className="flex items-center justify-between text-[0.6875rem] font-mono text-white/50 px-2 pt-1">
             <span>Press Enter to send, Shift+Enter for new line</span>
             <span className="flex items-center gap-1 text-[#C6FF20]">
               <ShieldCheck className="w-3.5 h-3.5" />

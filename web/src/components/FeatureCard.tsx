@@ -1,7 +1,7 @@
 'use client';
 
 import { Feature } from '@/types';
-import { CheckCircle2, RotateCcw, Trash2, Check } from 'lucide-react';
+import { RotateCcw, Trash2, Check } from 'lucide-react';
 import { PriorityBadge } from '@/components/ui/Badge';
 import { Menu } from '@/components/ui/Menu';
 
