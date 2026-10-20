@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { GitHubStatus, MongoDBStatus } from '@/types';
 import { Navbar } from '@/components/Navbar';
+import { AppShell, PageContainer } from '@/components/AppShell';
 import {
   KeyRound,
   ShieldCheck,
@@ -99,16 +100,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
-
+    <AppShell>
       {/* Floating Island Navigation Header */}
       <Navbar />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto w-full px-4 sm:px-6 pt-32 pb-20 space-y-6 relative z-10 flex-1">
+      <PageContainer className="max-w-4xl space-y-6">
         
         {/* Compact Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
@@ -351,7 +348,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-      </main>
-    </div>
+      </PageContainer>
+    </AppShell>
   );
 }

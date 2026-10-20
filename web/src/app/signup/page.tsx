@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   ExternalLink
 } from 'lucide-react';
+import { BrandLogo } from '@/components/ui/BrandLogo';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -78,38 +79,21 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col justify-between selection:bg-[#C6FF20] selection:text-black font-sans">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-[500px] h-[500px] bg-[#C6FF20]/15 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="surface-canvas relative flex min-h-screen flex-col justify-between overflow-x-clip font-sans text-white selection:bg-brand-lime-400 selection:text-black">
       {/* Header Monogram */}
-      <header className="max-w-6xl mx-auto w-full px-6 pt-8 pb-4 flex items-center justify-between relative z-10">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative p-1 shrink-0">
-            <svg viewBox="0 0 512 512" fill="none" className="w-full h-full drop-shadow">
-              <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
-              <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-black text-base tracking-tight text-white leading-none">
-              DevCommand
-            </span>
-            <span className="text-[9px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
-              AUTONOMOUS ENGINE
-            </span>
-          </div>
+      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 pb-4 pt-6 sm:px-6 sm:pt-8">
+        <Link href="/" className="group flex items-center gap-2.5">
+          <BrandLogo size={36} />
         </Link>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-mono text-white/90">
-          <Database className="w-3.5 h-3.5 text-[#C6FF20]" />
+        <div className="hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 font-mono text-[0.6875rem] text-white/90 backdrop-blur-md sm:flex">
+          <Database className="h-3.5 w-3.5 text-[#C6FF20]" />
           <span>MONGODB ATLAS STORAGE</span>
         </div>
       </header>
 
       {/* Main Form Card */}
-      <main className="max-w-md w-full mx-auto px-4 py-8 relative z-10 flex-1 flex flex-col justify-center">
+      <main id="main-content" className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8">
         <div className="bg-white text-slate-900 border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
           
           <div className="text-center space-y-1">
@@ -251,8 +235,9 @@ export default function SignupPage() {
         </div>
       </main>
 
-      <footer className="max-w-6xl mx-auto w-full px-6 py-6 text-center text-xs text-white/70 relative z-10 font-mono">
-        DevCommand &bull; Isolated Multi-Tenant Architecture &bull; MongoDB Atlas &bull; AES-256 Vault
+      <footer className="relative z-10 mx-auto w-full max-w-6xl px-6 py-6 text-center font-mono text-xs text-white/70">
+        <p className="text-balance">DevCommand &bull; Isolated Multi-Tenant Architecture</p>
+        <p className="mt-1 text-white/45">MongoDB Atlas &bull; AES-256 Vault</p>
       </footer>
     </div>
   );

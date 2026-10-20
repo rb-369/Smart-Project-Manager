@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { Navbar } from '@/components/Navbar';
+import { AppShell, PageContainer } from '@/components/AppShell';
 import {
   ChatMessage,
   QdrantStatus,
@@ -258,16 +259,12 @@ export default function ChatPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
-
+    <AppShell>
       {/* Floating Island Navigation Header */}
       <Navbar />
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-28 pb-12 flex-1 flex flex-col relative z-10">
+      <PageContainer className="flex flex-col pb-10">
         
         {/* Top Control Bar: Title + Telemetry + Project Scope */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
@@ -845,7 +842,7 @@ export default function ChatPage() {
             </span>
           </div>
         </div>
-      </main>
-    </div>
+      </PageContainer>
+    </AppShell>
   );
 }

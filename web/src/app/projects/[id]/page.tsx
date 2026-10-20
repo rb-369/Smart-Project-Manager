@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { ProjectDetail, Feature, FeaturePriority, FeatureStatus, SuggestedFeature } from '@/types';
 import { Navbar } from '@/components/Navbar';
+import { AppShell, PageContainer } from '@/components/AppShell';
 import { StaticLoader } from '@/components/StaticLoader';
 import {
   ArrowLeft,
@@ -199,7 +200,7 @@ function ProjectDetailContent() {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-blue-grid p-8 text-center text-rose-300 font-mono text-xs flex items-center justify-center">
+      <div className="surface-canvas flex min-h-screen items-center justify-center p-8 text-center font-mono text-xs text-rose-200">
         {error || 'Project not found.'}
       </div>
     );
@@ -218,16 +219,12 @@ function ProjectDetailContent() {
   const doneFeatures = project.features.filter((f) => f.status === 'DONE');
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
-
+    <AppShell>
       {/* Floating Island Navigation Header */}
       <Navbar />
 
       {/* Main Content: Full Blue Page with Compact Functional Header */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-32 pb-20 space-y-6 relative z-10 flex-1">
+      <PageContainer className="space-y-6">
         
         {/* Navigation Breadcrumb & Actions Bar */}
         <div className="flex items-center justify-between flex-wrap gap-3 pb-1">
@@ -661,7 +658,7 @@ function ProjectDetailContent() {
           </div>
 
         </div>
-      </main>
+      </PageContainer>
 
       {/* AI Feature Suggestions Modal */}
       {showAiModal && (
@@ -724,7 +721,7 @@ function ProjectDetailContent() {
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }
 

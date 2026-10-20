@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  RefreshCw, 
-  Search, 
-  LayoutDashboard, 
-  Lightbulb, 
+import {
+  RefreshCw,
+  Search,
+  LayoutDashboard,
+  Lightbulb,
   Settings,
   CheckCircle2,
   AlertCircle,
@@ -19,9 +19,12 @@ import {
   Users,
   Database,
   ChevronDown,
-  ShieldCheck
+  ShieldCheck,
+  Menu,
+  X,
 } from 'lucide-react';
 import { GithubIcon } from '@/components/GithubIcon';
+import { BrandLogo } from '@/components/ui/BrandLogo';
 
 interface NavbarProps {
   onSyncSuccess?: () => void;
@@ -29,36 +32,60 @@ interface NavbarProps {
   onSearchChange?: (val: string) => void;
 }
 
+const NAV_LINKS = [
+  { label: 'Command Center', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Copilot AI', href: '/chat', icon: Bot },
+  { label: 'Ideas', href: '/ideas', icon: Lightbulb },
+  { label: 'Settings', href: '/settings', icon: Settings },
+];
+
 export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
   const pathname = usePathname();
   const { user, isAuthenticated, logout, switchDemoAccount } = useAuth();
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<{ message: string; isError?: boolean } | null>(null);
+  const [syncStatus, setSyncStatus] = useState<{ message: string; isError?: boolean } | null>(
+    null,
+  );
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mongoStatus, setMongoStatus] = useState<{ configured: boolean; connected: boolean } | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mongoStatus, setMongoStatus] = useState<{
+    configured: boolean;
+    connected: boolean;
+  } | null>(null);
+  const [searchValue, setSearchValue] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const navLinks = [
-    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'Copilot AI', href: '/chat', icon: Bot },
-    { label: 'Project Ideas', href: '/ideas', icon: Lightbulb },
-    { label: 'Settings', href: '/settings', icon: Settings },
-  ];
+  // Close both menus whenever the route changes.
+  useEffect(() => {
+    setMenuOpen(false);
+    setMobileOpen(false);
+  }, [pathname]);
 
-  // Close dropdown on outside click
+  // Close the account dropdown on outside click or Escape.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     }
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+        setMobileOpen(false);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, []);
 
   // Fetch MongoDB connection status
   useEffect(() => {
-    api.get<{ configured: boolean; connected: boolean }>('/mongodb/status')
+    api
+      .get<{ configured: boolean; connected: boolean }>('/mongodb/status')
       .then(setMongoStatus)
       .catch(() => setMongoStatus({ configured: false, connected: false }));
   }, []);
@@ -86,220 +113,327 @@ export function Navbar({ onSyncSuccess, onSearchChange }: NavbarProps) {
     }
   };
 
+  const handleSearch = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+      onSearchChange?.(value);
+    },
+    [onSearchChange],
+  );
+
+  const isActive = (href: string) =>
+    href === '/dashboard'
+      ? pathname === '/dashboard' || pathname.startsWith('/projects')
+      : pathname === href || pathname.startsWith(`${href}/`);
+
+  const navLinkClass = (active: boolean) =>
+    `flex items-center gap-2 rounded-full px-3.5 py-2 font-mono text-[0.6875rem] font-bold transition-colors duration-150 ${
+      active
+        ? 'bg-brand-lime-400 text-black shadow-lime'
+        : 'text-white/80 hover:bg-white/10 hover:text-white'
+    }`;
+
   return (
-    <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[94%] max-w-6xl z-50 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-between shadow-2xl">
-      {/* Brand & Monogram Badge */}
-      <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative p-1 shrink-0">
-            <svg viewBox="0 0 512 512" fill="none" className="w-full h-full drop-shadow">
-              <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
-              <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="hidden sm:flex flex-col">
-            <span className="font-black text-sm tracking-tight text-white leading-none">
-              DevCommand
-            </span>
-            <span className="text-[9px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
-              AUTONOMOUS ENGINE
-            </span>
-          </div>
-        </Link>
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4">
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="surface-glass flex items-center gap-2 rounded-2xl px-3 py-2.5 sm:gap-3 sm:rounded-full sm:px-4">
+          {/* Brand */}
+          <Link href="/" className="shrink-0" aria-label="DevCommand home">
+            <BrandLogo size={30} tagline="Autonomous Engine" />
+          </Link>
 
-        {/* Database Telemetry Indicator */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-black/25 border border-white/10 text-[10px] font-mono text-white/90">
-          <span className={`w-2 h-2 rounded-full ${mongoStatus?.connected ? 'bg-[#C6FF20]' : 'bg-amber-400'}`} />
-          <span className="text-[#C6FF20] font-black">
-            {mongoStatus?.connected ? 'ATLAS LIVE' : 'MONGODB READY'}
-          </span>
-          <span className="opacity-40">|</span>
-          <span className="text-white/80 font-bold">ISOLATED TENANT</span>
-        </div>
-      </div>
+          {/* Desktop navigation */}
+          <nav className="ml-2 hidden items-center gap-0.5 lg:flex" aria-label="Primary">
+            {NAV_LINKS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  className={navLinkClass(isActive(item.href))}
+                >
+                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-      {/* Center Navigation Pills */}
-      <nav className="flex items-center gap-1 bg-black/20 p-1 rounded-full border border-white/15">
-        {navLinks.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
-                isActive
-                  ? 'bg-[#C6FF20] text-black shadow-md'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
+          <div className="flex-1" />
+
+          {/* Storage telemetry — one chip instead of two competing badges */}
+          <div
+            className="telemetry-pill hidden xl:inline-flex"
+            title="Isolated tenant storage status"
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                mongoStatus?.connected ? 'bg-brand-lime-400' : 'bg-amber-400'
+              }`}
+              aria-hidden="true"
+            />
+            <span className={mongoStatus?.connected ? 'text-brand-lime-400' : 'text-amber-300'}>
+              {mongoStatus?.connected ? 'Atlas Live' : 'MongoDB Ready'}
+            </span>
+            <span className="text-white/35">|</span>
+            <span className="text-white/70">Isolated Tenant</span>
+          </div>
+
+          {/* Search — reachable on every breakpoint */}
+          <div className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white transition-colors focus-within:border-white/40 focus-within:bg-white/20 md:flex">
+            <Search className="h-3.5 w-3.5 shrink-0 text-white/60" aria-hidden="true" />
+            <label htmlFor="global-search" className="sr-only">
+              Search repositories
+            </label>
+            <input
+              id="global-search"
+              type="search"
+              placeholder="Search repos..."
+              value={searchValue}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-28 bg-transparent text-xs text-white outline-none placeholder:text-white/50 focus:w-44 transition-all font-mono lg:w-36 xl:w-44"
+            />
+          </div>
+
+          {/* Sync status badge */}
+          {syncStatus && (
+            <div
+              role="status"
+              aria-live="polite"
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[0.625rem] font-bold transition ${
+                syncStatus.isError
+                  ? 'border-rose-300/50 bg-rose-500/20 text-rose-100'
+                  : 'border-brand-lime-400/50 bg-brand-lime-400/15 text-brand-lime-300'
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-black' : 'text-white/70'}`} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Right Tools & User Profile */}
-      <div className="flex items-center gap-2.5">
-        {/* Search Input */}
-        <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs text-white placeholder-white/50 focus-within:bg-white/20 focus-within:border-white/40 transition">
-          <Search className="w-3.5 h-3.5 text-white/60" />
-          <input
-            type="text"
-            placeholder="Search..."
-            onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-            className="bg-transparent border-none outline-none text-xs text-white placeholder-white/60 w-20 focus:w-32 transition-all font-mono"
-          />
-        </div>
-
-        {/* Sync Status Badge */}
-        {syncStatus && (
-          <div
-            className={`text-xs px-2.5 py-1 rounded-full border font-mono flex items-center gap-1.5 transition ${
-              syncStatus.isError
-                ? 'bg-rose-500/20 border-rose-300 text-rose-200'
-                : 'bg-[#C6FF20]/20 border-[#C6FF20] text-[#C6FF20] font-bold'
-            }`}
-          >
-            {syncStatus.isError ? (
-              <AlertCircle className="w-3 h-3 text-rose-300" />
-            ) : (
-              <CheckCircle2 className="w-3 h-3 text-[#C6FF20]" />
-            )}
-            <span className="text-[10px]">{syncStatus.message}</span>
-          </div>
-        )}
-
-        {/* Sync Trigger (Only when authenticated) */}
-        {isAuthenticated && (
-          <button
-            onClick={handleSync}
-            disabled={isSyncing}
-            className="py-1.5 px-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
-            title="Sync with GitHub"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-[#C6FF20]' : 'text-white'}`} />
-            <span className="hidden sm:inline font-mono text-[11px] font-bold text-white">
-              {isSyncing ? 'Syncing' : 'Sync'}
-            </span>
-          </button>
-        )}
-
-        {/* User Identity or Sign In CTA */}
-        {isAuthenticated && user ? (
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-md transition cursor-pointer text-left"
-            >
-              {user.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.avatar_url}
-                  alt={user.full_name || user.email}
-                  className="w-7 h-7 rounded-full object-cover border border-white/40"
-                />
+              {syncStatus.isError ? (
+                <AlertCircle className="h-3 w-3" aria-hidden="true" />
               ) : (
-                <div className="w-7 h-7 rounded-full bg-white text-[#0038FF] font-black text-xs flex items-center justify-center border border-white/40 shadow">
-                  {(user.full_name || user.email).charAt(0).toUpperCase()}
+                <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+              )}
+              <span>{syncStatus.message}</span>
+            </div>
+          )}
+
+          {/* Sync trigger */}
+          {isAuthenticated && (
+            <button
+              onClick={handleSync}
+              disabled={isSyncing}
+              className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 font-mono text-[0.6875rem] font-bold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+              title="Sync repositories from GitHub"
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin text-brand-lime-400' : ''}`}
+                aria-hidden="true"
+              />
+              <span className="hidden sm:inline">{isSyncing ? 'Syncing' : 'Sync'}</span>
+              <span className="sr-only sm:hidden">Sync repositories</span>
+            </button>
+          )}
+
+          {/* Account */}
+          {isAuthenticated && user ? (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                className="flex items-center gap-2 rounded-full border border-white/25 bg-white/10 p-1 pl-1.5 pr-2.5 transition-colors hover:bg-white/20"
+              >
+                {user.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    className="h-7 w-7 rounded-full border border-white/40 object-cover"
+                  />
+                ) : (
+                  <span className="grid h-7 w-7 place-items-center rounded-full border border-white/40 bg-white text-[0.6875rem] font-black text-brand-blue-600">
+                    {(user.full_name || user.email).charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span className="hidden max-w-[90px] truncate font-mono text-[0.6875rem] font-bold text-white sm:inline">
+                  {user.github_username ? `@${user.github_username}` : user.email.split('@')[0]}
+                </span>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 text-white/70 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-50 mt-3 w-72 animate-fade-in-up space-y-3 rounded-2xl border border-brand-blue-500/12 bg-white p-3 font-sans text-ink-900 shadow-e3"
+                >
+                  <div className="space-y-1 rounded-xl bg-brand-blue-50 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-xs font-bold text-ink-900">
+                        {user.full_name || 'Developer'}
+                      </span>
+                      <span className="rounded-full border border-emerald-200 bg-emerald-100 px-2 py-0.5 font-mono text-[0.625rem] font-bold text-emerald-700">
+                        ISOLATED
+                      </span>
+                    </div>
+                    <div className="truncate font-mono text-[0.6875rem] text-ink-500">
+                      {user.email}
+                    </div>
+                    {user.github_username && (
+                      <div className="flex items-center gap-1 pt-0.5 font-mono text-[0.6875rem] text-brand-blue-600">
+                        <GithubIcon className="h-3 w-3" />
+                        <span className="truncate">github.com/{user.github_username}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-0.5 rounded-xl border border-brand-blue-500/10 bg-brand-blue-50/70 px-3 py-2 text-[0.6875rem] text-ink-700">
+                    <div className="flex items-center gap-1 font-bold">
+                      <ShieldCheck className="h-3.5 w-3.5 text-brand-blue-600" aria-hidden="true" />
+                      <span>Private Workspace</span>
+                    </div>
+                    <p className="text-[0.625rem] leading-relaxed text-ink-500">
+                      All repos, roadmap metrics, and incubator ideas are isolated to your MongoDB
+                      Atlas tenant.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5 border-t border-ink-200/80 pt-3">
+                    <div className="flex items-center gap-1 px-1 font-mono text-[0.625rem] font-bold uppercase tracking-wider text-ink-400">
+                      <Users className="h-3 w-3" aria-hidden="true" />
+                      <span>Switch Test User</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 font-mono text-xs">
+                      <button
+                        onClick={() => {
+                          switchDemoAccount('alice');
+                          setMenuOpen(false);
+                        }}
+                        className="rounded-lg border border-ink-200 p-1.5 text-left transition hover:border-brand-blue-500 hover:bg-white"
+                      >
+                        <div className="text-[0.6875rem] font-bold text-ink-800">Alice Smith</div>
+                        <div className="text-[0.5625rem] text-ink-400">Frontend</div>
+                      </button>
+                      <button
+                        onClick={() => {
+                          switchDemoAccount('bob');
+                          setMenuOpen(false);
+                        }}
+                        className="rounded-lg border border-ink-200 p-1.5 text-left transition hover:border-brand-blue-500 hover:bg-white"
+                      >
+                        <div className="text-[0.6875rem] font-bold text-ink-800">Bob Chen</div>
+                        <div className="text-[0.5625rem] text-ink-400">Backend</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 border-t border-ink-200/80 pt-2">
+                    <Link
+                      href="/settings"
+                      onClick={() => setMenuOpen(false)}
+                      role="menuitem"
+                      className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-700 transition hover:bg-ink-100"
+                    >
+                      <Settings className="h-3.5 w-3.5 text-ink-500" aria-hidden="true" />
+                      <span>Settings &amp; MongoDB Atlas</span>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMenuOpen(false);
+                      }}
+                      role="menuitem"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-bold text-rose-600 transition hover:bg-rose-50"
+                    >
+                      <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
                 </div>
               )}
-              <span className="hidden sm:inline text-xs font-bold font-mono text-white max-w-[90px] truncate">
-                {user.github_username ? `@${user.github_username}` : user.email.split('@')[0]}
-              </span>
-              <ChevronDown className={`w-3.5 h-3.5 text-white/70 transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
-            </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden items-center gap-1.5 rounded-full border border-black/10 bg-brand-lime-400 px-3.5 py-1.5 font-mono text-[0.6875rem] font-black text-black shadow-lime transition-colors hover:bg-brand-lime-300 sm:flex"
+            >
+              <GithubIcon className="h-3.5 w-3.5" />
+              <span>Sign In</span>
+            </Link>
+          )}
 
-            {/* Dropdown Menu */}
-            {menuOpen && (
-              <div className="absolute right-0 mt-3 w-72 rounded-2xl bg-white text-slate-900 border border-slate-200 shadow-2xl p-3 z-50 space-y-3 font-sans animate-in fade-in zoom-in-95 duration-100">
-                {/* User Header */}
-                <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-900 truncate">
-                      {user.full_name || 'Developer'}
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">
-                      ISOLATED
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-mono text-slate-500 truncate">
-                    {user.email}
-                  </div>
-                  {user.github_username && (
-                    <div className="flex items-center gap-1 text-[11px] text-[#0038FF] font-mono pt-0.5">
-                      <GithubIcon className="w-3 h-3" />
-                      <span>github.com/{user.github_username}</span>
-                    </div>
-                  )}
-                </div>
+          {/* Mobile menu toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/20 lg:hidden"
+          >
+            {mobileOpen ? (
+              <X className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Menu className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
+        </div>
 
-                {/* Account Isolation Notice */}
-                <div className="px-3 py-2 rounded-xl bg-blue-50/70 border border-blue-100 text-[11px] text-blue-900 space-y-0.5">
-                  <div className="flex items-center gap-1 font-bold">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#0038FF]" />
-                    <span>Private Workspace</span>
-                  </div>
-                  <p className="text-[10px] text-slate-500">
-                    All repos, roadmap metrics, and incubator ideas are isolated to your MongoDB Atlas tenant.
-                  </p>
-                </div>
+        {/* Mobile panel */}
+        {mobileOpen && (
+          <div
+            id="mobile-nav"
+            className="surface-glass mt-2 animate-fade-in-up space-y-3 rounded-2xl p-3 lg:hidden"
+          >
+            <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs text-white focus-within:border-white/40 focus-within:bg-white/20">
+              <Search className="h-3.5 w-3.5 shrink-0 text-white/60" aria-hidden="true" />
+              <label htmlFor="mobile-search" className="sr-only">
+                Search repositories
+              </label>
+              <input
+                id="mobile-search"
+                type="search"
+                placeholder="Search repos..."
+                value={searchValue}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full bg-transparent font-mono text-xs text-white outline-none placeholder:text-white/50"
+              />
+            </div>
 
-                {/* Multi-User Switcher Test Bar */}
-                <div className="space-y-1.5 pt-1 border-t border-slate-100">
-                  <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider px-1 flex items-center gap-1">
-                    <Users className="w-3 h-3" />
-                    <span>Switch Test User</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
-                    <button
-                      onClick={() => { switchDemoAccount('alice'); setMenuOpen(false); }}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-[#0038FF] hover:bg-slate-50 text-left transition"
-                    >
-                      <div className="font-bold text-[11px] text-slate-800">Alice Smith</div>
-                      <div className="text-[9px] text-slate-400">Frontend</div>
-                    </button>
-                    <button
-                      onClick={() => { switchDemoAccount('bob'); setMenuOpen(false); }}
-                      className="p-1.5 rounded-lg border border-slate-200 hover:border-[#0038FF] hover:bg-slate-50 text-left transition"
-                    >
-                      <div className="font-bold text-[11px] text-slate-800">Bob Chen</div>
-                      <div className="text-[9px] text-slate-400">Backend</div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Links */}
-                <div className="pt-1 border-t border-slate-100 space-y-1">
+            <nav className="grid grid-cols-2 gap-1.5" aria-label="Primary mobile">
+              {NAV_LINKS.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+                return (
                   <Link
-                    href="/settings"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 text-xs font-medium text-slate-700 transition"
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 font-mono text-[0.6875rem] font-bold transition-colors ${
+                      active
+                        ? 'border-transparent bg-brand-lime-400 text-black'
+                        : 'border-white/15 bg-white/5 text-white/85'
+                    }`}
                   >
-                    <Settings className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Settings &amp; MongoDB Atlas</span>
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="truncate">{item.label}</span>
                   </Link>
+                );
+              })}
+            </nav>
 
-                  <button
-                    onClick={() => { logout(); setMenuOpen(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-rose-50 text-xs font-bold text-rose-600 transition text-left cursor-pointer"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>
+            {!isAuthenticated && (
+              <Link
+                href="/login"
+                className="flex items-center justify-center gap-2 rounded-full border border-black/10 bg-brand-lime-400 px-4 py-2.5 font-mono text-[0.6875rem] font-black text-black shadow-lime"
+              >
+                <GithubIcon className="h-3.5 w-3.5" />
+                <span>Sign In with GitHub</span>
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
             )}
           </div>
-        ) : (
-          <Link
-            href="/login"
-            className="btn-lime !py-1.5 !px-3.5 text-xs font-black flex items-center gap-1.5 shadow-md"
-          >
-            <GithubIcon className="w-3.5 h-3.5" />
-            <span>Sign In</span>
-          </Link>
         )}
       </div>
     </header>

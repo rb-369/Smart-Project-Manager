@@ -50,16 +50,16 @@ export default function Home() {
         <div className="absolute -bottom-20 left-10 w-96 h-96 bg-[#C6FF20]/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Floating Top Navigation Header */}
-        <header className="max-w-6xl mx-auto w-full z-40 px-4 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-between shadow-xl mb-12 sm:mb-16">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative p-1 shrink-0">
+        <header className="relative z-40 mx-auto mb-10 flex w-full max-w-6xl items-center justify-between gap-3 rounded-2xl border border-white/20 bg-white/10 px-3 py-2.5 shadow-xl backdrop-blur-xl sm:mb-16 sm:rounded-full sm:px-4 sm:py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/" className="group flex items-center gap-2.5">
+              <div className="w-8 h-8 shrink-0 overflow-hidden rounded-xl border border-white/30 bg-gradient-to-br from-[#0051FF] to-[#002AD4] shadow-lg transition-transform group-hover:scale-105 relative p-1">
                 <svg viewBox="0 0 512 512" fill="none" className="w-full h-full drop-shadow">
                   <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
                   <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
                 </svg>
               </div>
-              <div className="flex flex-col">
+              <div className="hidden min-w-0 flex-col sm:flex">
                 <span className="font-black text-sm tracking-tight text-white leading-none">
                   DevCommand
                 </span>
@@ -69,7 +69,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 border border-white/10 text-[10px] font-mono text-white/90">
+            <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[10px] font-mono text-white/90 md:flex">
               <span className="w-2 h-2 rounded-full bg-[#C6FF20] animate-pulse" />
               <span className="font-bold text-[#C6FF20]">ONLINE</span>
               <span className="opacity-40">|</span>
@@ -77,7 +77,7 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-medium text-white/90">
+          <nav className="hidden items-center gap-6 text-xs font-medium text-white/90 lg:flex">
             <Link href="/dashboard" className="hover:text-white transition-colors">Command Center</Link>
             <Link href="/ideas" className="hover:text-white transition-colors">Incubator</Link>
             <Link href="/settings" className="hover:text-white transition-colors">API Keys</Link>
@@ -87,22 +87,24 @@ export default function Home() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             {isAuthenticated ? (
               <Link
                 href="/dashboard"
                 className="btn-lime !py-1.5 !px-4 text-xs font-black flex items-center gap-1.5 shadow-md"
               >
-                <span>Command Center</span>
+                <span className="hidden sm:inline">Command Center</span>
+                <span className="sm:hidden">Open</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="btn-lime !py-1.5 !px-4 text-xs font-black flex items-center gap-1.5 shadow-md"
+                className="btn-lime !py-1.5 !px-3.5 text-xs font-black flex items-center gap-1.5 shadow-md sm:!px-4"
               >
                 <GithubIcon className="w-3.5 h-3.5" />
-                <span>Sign In with GitHub</span>
+                <span className="hidden sm:inline">Sign In with GitHub</span>
+                <span className="sm:hidden">Sign In</span>
               </Link>
             )}
           </div>
@@ -119,12 +121,12 @@ export default function Home() {
           </div>
 
           {/* Massive Stacked White Headline (Matching Reference) */}
-          <div className="relative inline-block max-w-5xl mx-auto px-4">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white uppercase leading-[0.95]">
+          <div className="relative mx-auto max-w-5xl px-1 sm:px-4">
+            <h1 className="text-4xl font-black uppercase leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
               <div className="tracking-tight mb-2">CHEERFUL WITH</div>
-              <div className="flex items-center justify-center flex-wrap gap-3 mt-1 sm:mt-2">
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:mt-2 sm:gap-3">
                 <span className="tracking-tight">CREATIVE</span>
-                <span className="inline-block bg-[#C6FF20] text-black px-4 py-1 sm:py-2 rounded-2xl sm:rounded-3xl text-2xl sm:text-4xl md:text-5xl font-black shadow-[0_8px_30px_rgba(198,255,32,0.6)] -rotate-1 hover:rotate-0 transition-transform">
+                <span className="inline-block max-w-full rounded-2xl bg-[#C6FF20] px-3 py-1 text-2xl font-black text-black shadow-[0_8px_30px_rgba(198,255,32,0.6)] -rotate-1 transition-transform hover:rotate-0 sm:rounded-3xl sm:px-4 sm:py-2 sm:text-4xl md:text-5xl">
                   SMART DESIGN
                 </span>
               </div>
@@ -278,9 +280,9 @@ export default function Home() {
               </span>
             </div>
             
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-950 uppercase leading-none">
+            <h2 className="flex flex-wrap items-center gap-x-2.5 gap-y-2 text-2xl font-black uppercase leading-none tracking-tight text-slate-950 sm:gap-x-3 sm:text-4xl lg:text-5xl">
               <span>AUTONOMOUS</span>
-              <span className="violet-pill-badge mx-2.5 sm:mx-3 text-sm sm:text-xl align-middle shadow-md">
+              <span className="violet-pill-badge text-sm sm:text-xl">
                 SOLUTIONS
               </span>
               <span>JUST FOR YOU</span>

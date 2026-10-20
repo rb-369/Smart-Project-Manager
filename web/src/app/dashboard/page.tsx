@@ -7,6 +7,8 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { ProjectSummary, FutureProject, ParsedConcept, ProjectType, FutureProjectPriority } from '@/types';
 import { Navbar } from '@/components/Navbar';
+import { AppShell, PageContainer } from '@/components/AppShell';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ProjectCard } from '@/components/ProjectCard';
 import { TriageModal } from '@/components/TriageModal';
 import { StaticLoader } from '@/components/StaticLoader';
@@ -30,7 +32,8 @@ import {
   Loader2,
   Code,
   Trash2,
-  Check
+  Check,
+  LayoutDashboard
 } from 'lucide-react';
 
 type DashboardTab = 'ALL' | 'STARRED' | 'PRODUCTION' | 'IDEAS' | 'RESUME' | 'COLLEGE' | 'HIDDEN';
@@ -361,11 +364,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
-
+    <AppShell>
       {/* Floating Island Navigation Header */}
       <Navbar onSyncSuccess={fetchProjects} onSearchChange={setSearchQuery} />
 
@@ -378,7 +377,7 @@ export default function DashboardPage() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-32 pb-20 space-y-6 relative z-10 flex-1">
+      <PageContainer className="space-y-6">
         {/* Compact Header Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
           <div>
@@ -419,8 +418,8 @@ export default function DashboardPage() {
         {/* Bento Grid Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
           {/* Bento Card 1: Production Deployed Telemetry (4 cols) */}
-          <div className="lg:col-span-4 bg-[#0038FF] border border-white/20 shadow-2xl p-6 rounded-3xl flex flex-col justify-between text-white relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#C6FF20]/20 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
+          <div className="gridster-panel-deep relative flex flex-col justify-between overflow-hidden p-6 lg:col-span-4">
+            <div className="absolute -right-8 -top-10 h-40 w-40 rounded-full bg-brand-lime-400/20 blur-3xl transition-transform duration-500 group-hover:scale-125" />
 
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -615,60 +614,75 @@ export default function DashboardPage() {
         </div>
 
         {/* Filter Pills, Search Bar, and Manual Sorting Selector */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pt-2">
+        <div className="flex flex-col items-start justify-between gap-4 pt-2 lg:flex-row lg:items-center">
           {/* Segmented Filter Tabs */}
-          <div className="flex items-center gap-1.5 p-1.5 bg-black/25 border border-white/20 rounded-full shadow-md overflow-x-auto max-w-full backdrop-blur-md">
-            {[
-              { id: 'ALL' as DashboardTab, label: 'All Repos', count: nonHiddenProjects.length },
-              { id: 'STARRED' as DashboardTab, label: '⭐ Starred', count: starredProjects.length },
-              { id: 'PRODUCTION' as DashboardTab, label: '🚀 Production', count: productionProjects.length },
-              { id: 'IDEAS' as DashboardTab, label: '💡 Project Ideas', count: unpromotedIdeas.length },
-              { id: 'RESUME' as DashboardTab, label: 'Resume', count: nonHiddenProjects.filter((p) => p.project_type === 'RESUME').length },
-              { id: 'COLLEGE' as DashboardTab, label: 'College', count: nonHiddenProjects.filter((p) => p.project_type === 'COLLEGE').length },
-              { id: 'HIDDEN' as DashboardTab, label: '👁️‍🗨️ Hidden', count: hiddenProjects.length },
-            ].map((tab) => {
-              const isSelected = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-mono transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                    isSelected
-                      ? 'bg-[#C6FF20] text-black font-black shadow-sm'
-                      : 'text-white/80 hover:text-white hover:bg-white/10 font-bold'
-                  }`}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                      isSelected
-                        ? 'bg-black/15 text-black font-black'
-                        : 'bg-white/20 text-white font-bold'
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <SegmentedControl
+            ariaLabel="Filter repositories"
+            value={activeTab}
+            onChange={setActiveTab}
+            items={[
+              {
+                id: 'ALL' as DashboardTab,
+                label: 'All Repos',
+                count: nonHiddenProjects.length,
+                icon: <LayoutDashboard className="h-3 w-3" aria-hidden="true" />,
+              },
+              {
+                id: 'STARRED' as DashboardTab,
+                label: 'Starred',
+                count: starredProjects.length,
+                icon: <Star className="h-3 w-3" aria-hidden="true" />,
+              },
+              {
+                id: 'PRODUCTION' as DashboardTab,
+                label: 'Production',
+                count: productionProjects.length,
+                icon: <Globe className="h-3 w-3" aria-hidden="true" />,
+              },
+              {
+                id: 'IDEAS' as DashboardTab,
+                label: 'Ideas',
+                count: unpromotedIdeas.length,
+                icon: <Lightbulb className="h-3 w-3" aria-hidden="true" />,
+              },
+              {
+                id: 'RESUME' as DashboardTab,
+                label: 'Resume',
+                count: nonHiddenProjects.filter((p) => p.project_type === 'RESUME').length,
+              },
+              {
+                id: 'COLLEGE' as DashboardTab,
+                label: 'College',
+                count: nonHiddenProjects.filter((p) => p.project_type === 'COLLEGE').length,
+              },
+              {
+                id: 'HIDDEN' as DashboardTab,
+                label: 'Hidden',
+                count: hiddenProjects.length,
+                icon: <EyeOff className="h-3 w-3" aria-hidden="true" />,
+              },
+            ]}
+          />
 
           {/* Sort Selector & Repo Count */}
-          <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
+          <div className="flex w-full items-center justify-between gap-3 lg:w-auto lg:justify-end">
             {activeTab !== 'IDEAS' && (
-              <div className="flex items-center gap-1.5 bg-black/30 border border-white/20 px-3 py-1.5 rounded-2xl backdrop-blur-md text-xs font-mono">
-                <ArrowDownUp className="w-3.5 h-3.5 text-[#C6FF20]" />
-                <span className="text-white/60 text-[11px]">Sort:</span>
+              <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-950/25 px-3 py-1.5 font-mono text-xs backdrop-blur-md">
+                <ArrowDownUp className="h-3.5 w-3.5 text-[#C6FF20]" aria-hidden="true" />
+                <label htmlFor="dashboard-sort" className="text-[0.6875rem] text-white/60">
+                  Sort:
+                </label>
                 <select
+                  id="dashboard-sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="bg-transparent text-white font-bold outline-none cursor-pointer text-xs"
+                  className="cursor-pointer bg-transparent text-xs font-bold text-white outline-none [&>option]:bg-ink-900 [&>option]:text-white"
                 >
-                  <option value="DEFAULT" className="bg-slate-900 text-white">⭐ Starred First</option>
-                  <option value="ORDER" className="bg-slate-900 text-white">Custom Priority Order</option>
-                  <option value="PROGRESS" className="bg-slate-900 text-white">Velocity Progress %</option>
-                  <option value="RECENT" className="bg-slate-900 text-white">Recently Updated</option>
-                  <option value="NAME" className="bg-slate-900 text-white">Alphabetical (A-Z)</option>
+                  <option value="DEFAULT">Starred First</option>
+                  <option value="ORDER">Custom Priority Order</option>
+                  <option value="PROGRESS">Velocity Progress %</option>
+                  <option value="RECENT">Recently Updated</option>
+                  <option value="NAME">Alphabetical (A-Z)</option>
                 </select>
               </div>
             )}
@@ -899,7 +913,7 @@ export default function DashboardPage() {
             )}
           </>
         )}
-      </main>
+      </PageContainer>
 
       {/* Triage Modal */}
       {activeTriageProject && (
@@ -1114,6 +1128,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }

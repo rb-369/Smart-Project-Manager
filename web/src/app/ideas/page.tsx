@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { FutureProject, FutureProjectPriority, ProjectType, SuggestedProject, ParsedConcept } from '@/types';
 import { Navbar } from '@/components/Navbar';
+import { AppShell, PageContainer } from '@/components/AppShell';
 import {
   Plus,
   ArrowRight,
@@ -285,11 +286,7 @@ export default function IdeasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
-
+    <AppShell>
       {/* Floating Island Navigation Header */}
       <Navbar />
 
@@ -302,7 +299,7 @@ export default function IdeasPage() {
       )}
 
       {/* Main Content: Full Blue Page with Functional Header */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-32 pb-20 space-y-6 relative z-10 flex-1">
+      <PageContainer className="space-y-6">
         
         {/* Compact Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
@@ -465,7 +462,7 @@ export default function IdeasPage() {
             );
           })}
         </div>
-      </main>
+      </PageContainer>
 
       {/* Smart Concept / WhatsApp Text Import Modal */}
       {showImportModal && (
@@ -842,6 +839,6 @@ export default function IdeasPage() {
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }
