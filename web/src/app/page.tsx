@@ -1,646 +1,836 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { 
   ArrowRight, 
+  ArrowUpRight, 
+  Check, 
+  ShieldCheck, 
   GitBranch, 
-  Cpu, 
   Layers, 
-  CheckCircle2, 
-  Terminal,
-  Lightbulb,
-  Bot,
-  ExternalLink,
-  ShieldCheck,
+  Cpu, 
+  Terminal, 
+  Lock, 
   Zap,
-  Clock,
-  ArrowUpRight,
-  Database
+  Smartphone,
+  CheckCircle2
 } from 'lucide-react';
-import { GithubIcon } from '@/components/GithubIcon';
+
+/* Reusable weighted deceleration scroll reveal component (Landing Page Design Rule B7) */
+function Reveal({
+  children,
+  className = '',
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          if (ref.current) observer.unobserve(ref.current);
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none ${
+        isVisible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-8 pointer-events-none'
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'velocity' | 'triaged'>('all');
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [activeConsoleTab, setActiveConsoleTab] = useState<'repo' | 'velocity' | 'ai'>('repo');
 
-  const tickerItems = [
-    '⚡ AUTONOMOUS REPO INGESTION',
-    '⚡ GITHUB OAUTH & SEPARATE TENANTS',
-    '⚡ MONGODB ATLAS CLUSTER PERSISTENCE',
-    '⚡ AI ROADMAP DECOMPOSITION',
-    '⚡ MATHEMATICAL VELOCITY PHYSICS',
-    '⚡ MULTI-TIER AI INFERENCE',
-    '⚡ AES-256 VAULT SECURITY',
-    '⚡ HIGH-VELOCITY DEPLOYS'
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const faqs = [
+    {
+      q: 'How does DevCommand connect to my GitHub account?',
+      a: 'DevCommand uses official GitHub OAuth 2.0 or an optional Personal Access Token with fine grained permissions. It reads repository metadata, commit timestamps, and branch activity. We never modify your code or branch history without explicit user confirmation.'
+    },
+    {
+      q: 'Will my code or repository data remain private?',
+      a: 'Yes. All personal tokens and repository metadata are secured with AES 256 encryption. Database queries strictly enforce tenant user isolation, meaning no other user or organization can ever view your repositories or idea backlogs.'
+    },
+    {
+      q: 'What is the multi tier AI cascade and how does it work?',
+      a: 'Rather than relying on a single slow or expensive model, DevCommand routes requests through an intelligent cascade: OpenRouter, Google Gemini, and NVIDIA NIM. This ensures instantaneous responses, zero hallucinated steps, and continuous uptime.'
+    },
+    {
+      q: 'Can I access DevCommand from my phone?',
+      a: 'Yes. DevCommand features a native Flutter mobile client for Android alongside our Next.js desktop web app. You can log ideas during your commute and review roadmaps on your computer during deep work.'
+    },
+    {
+      q: 'What happens when my 14 day trial concludes?',
+      a: 'You can continue using the community tier for your primary repositories or subscribe to the developer plan for unlimited AI triage and automated branch tracking. No credit card is required to begin.'
+    },
+    {
+      q: 'How does idea graduation work?',
+      a: 'The incubator lets you jot down raw project concepts and rate feasibility. Once you are ready to build, one click generates a brand new GitHub repository pre populated with an actionable feature backlog.'
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col justify-between relative overflow-hidden selection:bg-[#C6FF20] selection:text-black">
+    <div className="min-h-screen bg-[#F6F3EC] text-black font-sans selection:bg-[#DFFF4F] selection:text-black">
       
       {/* ====================================================================
-          1. TOP HERO SECTION: VIBRANT ELECTRIC BLUE CANVAS (Reference Style)
+          1. TOP NAVIGATION HEADER (Color-Blocked Swiss Nav)
           ==================================================================== */}
-      <section className="bg-blue-grid text-white pt-6 pb-28 px-4 sm:px-6 relative overflow-hidden">
-        
-        {/* Subtle Ambient Vignettes on Blue */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 left-10 w-96 h-96 bg-[#C6FF20]/15 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Floating Top Navigation Header */}
-        <header className="max-w-6xl mx-auto w-full z-40 px-4 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-between shadow-xl mb-12 sm:mb-16">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative p-1 shrink-0">
-                <svg viewBox="0 0 512 512" fill="none" className="w-full h-full drop-shadow">
-                  <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
-                  <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
-                </svg>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-black text-sm tracking-tight text-white leading-none">
-                  DevCommand
-                </span>
-                <span className="text-[9px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
-                  AUTONOMOUS ENGINE
-                </span>
-              </div>
-            </Link>
-
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 border border-white/10 text-[10px] font-mono text-white/90">
-              <span className="w-2 h-2 rounded-full bg-[#C6FF20] animate-pulse" />
-              <span className="font-bold text-[#C6FF20]">ONLINE</span>
-              <span className="opacity-40">|</span>
-              <span>BLUE &bull; LIME &bull; WHITE &bull; VIOLET</span>
+      <header className="w-full border-b-2 border-black bg-[#F6F3EC] px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-50">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-7 h-7 bg-black text-[#DFFF4F] font-mono text-xs font-bold flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000000] group-hover:bg-[#0047FF] group-hover:text-white transition-colors">
+              DC
             </div>
-          </div>
-
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-medium text-white/90">
-            <Link href="/dashboard" className="hover:text-white transition-colors">Command Center</Link>
-            <Link href="/ideas" className="hover:text-white transition-colors">Incubator</Link>
-            <Link href="/settings" className="hover:text-white transition-colors">API Keys</Link>
-            <a href="https://github.com/rb-369/Smart-Project-Manager" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
-              <span>GitHub</span>
-              <ArrowUpRight className="w-3 h-3 opacity-70" />
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <Link
-                href="/dashboard"
-                className="btn-lime !py-1.5 !px-4 text-xs font-black flex items-center gap-1.5 shadow-md"
-              >
-                <span>Command Center</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="btn-lime !py-1.5 !px-4 text-xs font-black flex items-center gap-1.5 shadow-md"
-              >
-                <GithubIcon className="w-3.5 h-3.5" />
-                <span>Sign In with GitHub</span>
-              </Link>
-            )}
-          </div>
-        </header>
-
-        {/* Hero Content Block */}
-        <div className="max-w-6xl mx-auto text-center relative z-10 pt-4 pb-16">
-          
-          {/* Top Neon Badge Pill (Matching Reference) */}
-          <div className="flex justify-center mb-6">
-            <span className="lime-sticker text-xs font-black shadow-[0_4px_16px_rgba(198,255,32,0.4)]">
-              ⚡ AUTONOMOUS REPO ROADMAPS
+            <span className="font-mono text-xs font-black uppercase tracking-widest text-black">
+              DevCommand
             </span>
-          </div>
-
-          {/* Massive Stacked White Headline (Matching Reference) */}
-          <div className="relative inline-block max-w-5xl mx-auto px-4">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white uppercase leading-[0.95]">
-              <div className="tracking-tight mb-2">CHEERFUL WITH</div>
-              <div className="flex items-center justify-center flex-wrap gap-3 mt-1 sm:mt-2">
-                <span className="tracking-tight">CREATIVE</span>
-                <span className="inline-block bg-[#C6FF20] text-black px-4 py-1 sm:py-2 rounded-2xl sm:rounded-3xl text-2xl sm:text-4xl md:text-5xl font-black shadow-[0_8px_30px_rgba(198,255,32,0.6)] -rotate-1 hover:rotate-0 transition-transform">
-                  SMART DESIGN
-                </span>
-              </div>
-            </h1>
-
-            {/* Hand-Drawn SVG Neon Lime Arrow (Matching Reference 2) */}
-            <div className="hidden md:block absolute -top-8 -right-12 text-[#C6FF20]">
-              <svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="rotate-12">
-                <path d="M20 70 C 35 30, 65 30, 75 40" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" />
-                <path d="M60 28 L 78 40 L 70 58" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            
-            <div className="hidden md:block absolute -bottom-6 -left-12 text-[#C6FF20]">
-              <svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="-rotate-12">
-                <path d="M80 70 C 65 30, 35 30, 25 40" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" />
-                <path d="M40 28 L 22 40 L 30 58" stroke="#C6FF20" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Subtext */}
-          <p className="text-white/85 text-sm sm:text-base md:text-lg max-w-2xl mx-auto mt-6 leading-relaxed font-normal">
-            Automated GitHub ingestion, multi-tier AI feature decomposition, and mathematical velocity physics for ambitious software engineers.
-          </p>
-
-          {/* Action CTAs & Neon Stamp */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="btn-lime !py-3.5 !px-8 text-sm font-black flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(198,255,32,0.5)] hover:scale-105 transition-all"
-                >
-                  <span>OPEN COMMAND CENTER</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                
-                <Link
-                  href="/ideas"
-                  className="py-3.5 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-2 backdrop-blur-md"
-                >
-                  <Lightbulb className="w-4 h-4 text-[#C6FF20]" />
-                  <span>INCUBATOR IDEAS</span>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="btn-lime !py-3.5 !px-8 text-sm font-black flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(198,255,32,0.5)] hover:scale-105 transition-all"
-                >
-                  <GithubIcon className="w-4 h-4" />
-                  <span>CONTINUE WITH GITHUB</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                
-                <Link
-                  href="/login"
-                  className="py-3.5 px-6 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-mono text-xs font-bold transition flex items-center gap-2 backdrop-blur-md"
-                >
-                  <Terminal className="w-4 h-4 text-[#C6FF20]" />
-                  <span>SIGN IN / DEMO ACCOUNTS</span>
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Floating 3D Repository Cards & Circular Stamp (Reference 2 style) */}
-          <div className="mt-14 relative max-w-4xl mx-auto flex items-center justify-center gap-6 flex-wrap sm:flex-nowrap">
-            
-            {/* Left Tilted Card: Smart Project Manager */}
-            <div className="animate-tilt-left w-64 p-4 rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 text-left shadow-2xl hover:scale-105 transition-all cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-7 h-7 rounded-lg bg-[#C6FF20] text-black flex items-center justify-center font-bold text-xs">
-                  ⚡
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-bold">
-                  LIVE REPO
-                </span>
-              </div>
-              <p className="font-bold text-sm text-white truncate">Smart-Project-Manager</p>
-              <p className="text-[11px] text-white/80 mt-1">Autonomous triage & feature matrix</p>
-              <div className="mt-3 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] font-mono text-[#C6FF20] font-bold">
-                <span>VELOCITY: 94%</span>
-                <span className="text-white">P0: 0 CRITICAL</span>
-              </div>
-            </div>
-
-            {/* Center Circular Stamp Badge (Matching Reference 2 "GET STARTED OF FREE") */}
-            <div className="relative group shrink-0">
-              <div className="w-28 h-28 rounded-full bg-[#C6FF20] text-black border-2 border-black/10 flex flex-col items-center justify-center text-center p-2 shadow-2xl rotate-6 group-hover:rotate-12 transition-transform select-none">
-                <div className="text-[9px] font-mono font-black uppercase tracking-tight leading-tight">
-                  GET STARTED
-                </div>
-                <div className="text-xl font-black">&rarr;</div>
-                <div className="text-[9px] font-mono font-black uppercase tracking-tight leading-tight">
-                  FOR FREE
-                </div>
-              </div>
-            </div>
-
-            {/* Right Tilted Card: AI Inference Matrix */}
-            <div className="animate-tilt-right w-64 p-4 rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 text-left shadow-2xl hover:scale-105 transition-all cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-7 h-7 rounded-lg bg-[#7020DD] text-white flex items-center justify-center font-bold text-xs">
-                  AI
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-bold">
-                  TIER-1
-                </span>
-              </div>
-              <p className="font-bold text-sm text-white truncate">Gemini 2.5 Inference</p>
-              <p className="text-[11px] text-white/80 mt-1">Sub-second architecture extraction</p>
-              <div className="mt-3 pt-2 border-t border-white/15 flex items-center justify-between text-[10px] font-mono text-white font-bold">
-                <span className="text-[#C6FF20]">LATENCY &lt; 420MS</span>
-                <span>SYNCED</span>
-              </div>
-            </div>
-
-          </div>
-
+          </Link>
+          <span className="hidden md:inline-flex items-center gap-2 font-mono text-[11px] text-[#555555] border-l-2 border-black/20 pl-4">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+            <span>PROJECT COMMAND STUDIO · EST. 2026</span>
+          </span>
         </div>
-      </section>
 
-      {/* ====================================================================
-          2. ACID LIME TICKER MARQUEE TAPE (Direct Signature from Reference 1)
-          ==================================================================== */}
-      <div className="w-full bg-[#C6FF20] text-black font-mono font-black text-xs sm:text-sm uppercase py-3.5 tracking-wider border-y-2 border-black/15 overflow-hidden select-none relative z-30 shadow-lg">
-        <div className="animate-marquee gap-8">
-          {[...tickerItems, ...tickerItems, ...tickerItems].map((item, i) => (
-            <span key={i} className="flex items-center gap-6 whitespace-nowrap">
-              <span>{item}</span>
-              <span className="text-black/30 font-bold text-lg">&bull;</span>
-            </span>
-          ))}
-        </div>
-      </div>
+        <nav className="hidden lg:flex items-center gap-8 font-mono text-xs font-bold tracking-wider text-black">
+          <a href="#workflows" className="hover:text-[#0047FF] transition-colors duration-200">
+            01 / WORKFLOWS
+          </a>
+          <a href="#capabilities" className="hover:text-[#0047FF] transition-colors duration-200">
+            02 / CAPABILITIES
+          </a>
+          <a href="#privacy" className="hover:text-[#0047FF] transition-colors duration-200">
+            03 / PRIVACY VAULT
+          </a>
+          <a href="#faq" className="hover:text-[#0047FF] transition-colors duration-200">
+            04 / FAQ
+          </a>
+        </nav>
 
-      {/* ====================================================================
-          3. CLEAN BRIGHT WHITE CURVED SHEET (Direct Signature from Reference 1 & 2)
-          ==================================================================== */}
-      <section className="bg-white text-slate-900 rounded-t-[44px] sm:rounded-t-[60px] -mt-6 relative z-20 shadow-2xl pt-20 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        
-        {/* Section Header: CREATIVE [SOLUTIONS] JUST FOR YOU */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 mb-3">
-              <span className="text-[11px] font-mono font-black text-[#0038FF] uppercase tracking-widest">
-                ARCHITECTURAL CAPABILITIES
-              </span>
-            </div>
-            
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-950 uppercase leading-none">
-              <span>AUTONOMOUS</span>
-              <span className="violet-pill-badge mx-2.5 sm:mx-3 text-sm sm:text-xl align-middle shadow-md">
-                SOLUTIONS
-              </span>
-              <span>JUST FOR YOU</span>
-            </h2>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 max-w-md">
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Every repository ingested into DevCommand is enriched with multi-tiered AI decomposition, mathematical milestone weighting, and zero-leak security.
-            </p>
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
             <Link
               href="/dashboard"
-              className="btn-lime !py-2 !px-4 text-xs font-black shrink-0 self-start sm:self-auto border border-black/10 shadow-xs"
+              className="font-mono text-xs font-bold uppercase tracking-wider px-4 py-2 bg-black text-white border-2 border-black shadow-[3px_3px_0px_#000000] hover:bg-[#0047FF] hover:border-[#0047FF] transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center gap-1.5"
             >
-              <span>VIEW ALL</span>
+              <span>COMMAND CENTER</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
-        </div>
-
-        {/* 3 Signature Feature Cards (Directly Matching Reference 1) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          {/* Card 1: BEST UI/UX & TELEMETRY DESIGN */}
-          <div className="gridster-panel p-6 bg-white border border-slate-200/90 shadow-md hover:shadow-xl transition-all rounded-3xl flex flex-col justify-between">
-            <div>
-              <div className="text-center mb-5">
-                <span className="text-xs font-mono font-extrabold text-slate-400 uppercase tracking-widest">
-                  MODULE 01
-                </span>
-                <h3 className="text-lg font-black text-slate-950 uppercase mt-0.5 tracking-tight">
-                  BEST CODE INTELLIGENCE
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Full AST decomposition and continuous GitHub synchronization.
-                </p>
-              </div>
-
-              {/* Electric Blue Inner Box (Reference 1 Card Preview) */}
-              <div className="bg-[#0038FF] text-white rounded-2xl p-5 shadow-inner flex flex-col justify-between min-h-[170px] relative overflow-hidden group">
-                <div className="flex items-center justify-between">
-                  <GitBranch className="w-5 h-5 text-[#C6FF20]" />
-                  <span className="text-[10px] font-mono bg-white/20 px-2 py-0.5 rounded-full font-bold">
-                    AES-256
-                  </span>
-                </div>
-                <div className="space-y-1 my-2">
-                  <div className="text-xs font-mono text-white/80">Repository Vault</div>
-                  <div className="text-xl font-black text-white">100% Ingested</div>
-                </div>
-                <div className="flex items-center justify-between text-[10px] font-mono text-white/70 pt-2 border-t border-white/20">
-                  <span>Zero-leak Auth</span>
-                  <span className="text-[#C6FF20] font-bold">ACTIVE</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-xs font-mono text-slate-500 font-bold">Pipeline Sync</span>
-              <Link href="/dashboard" className="text-xs font-bold text-[#0038FF] hover:underline flex items-center gap-1">
-                <span>Explore</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Card 2: 3D ILLUSTRATION / AI DECOMPOSITION */}
-          <div className="gridster-panel p-6 bg-white border border-slate-200/90 shadow-md hover:shadow-xl transition-all rounded-3xl flex flex-col justify-between">
-            <div>
-              <div className="text-center mb-5">
-                <span className="text-xs font-mono font-extrabold text-slate-400 uppercase tracking-widest">
-                  MODULE 02
-                </span>
-                <h3 className="text-lg font-black text-slate-950 uppercase mt-0.5 tracking-tight">
-                  AI ROADMAP DECOMPOSER
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Multi-tier model cascade: Gemini 2.5 Pro & Claude 3.5.
-                </p>
-              </div>
-
-              {/* Electric Blue Inner Box (Reference 1 Card Preview) */}
-              <div className="bg-[#0038FF] text-white rounded-2xl p-5 shadow-inner flex flex-col justify-between min-h-[170px] relative overflow-hidden group">
-                <div className="flex items-center justify-between">
-                  <Bot className="w-5 h-5 text-[#C6FF20]" />
-                  <span className="text-[10px] font-mono bg-[#7020DD] px-2 py-0.5 rounded-full font-bold">
-                    CASCADE
-                  </span>
-                </div>
-                <div className="space-y-1 my-2">
-                  <div className="text-xs font-mono text-white/80">Inference Speed</div>
-                  <div className="text-xl font-black text-white">&lt; 420ms Latency</div>
-                </div>
-                <div className="flex items-center justify-between text-[10px] font-mono text-white/70 pt-2 border-t border-white/20">
-                  <span>Precision Triage</span>
-                  <span className="text-[#C6FF20] font-bold">OPTIMIZED</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-xs font-mono text-slate-500 font-bold">AI Strategist</span>
-              <Link href="/ideas" className="text-xs font-bold text-[#0038FF] hover:underline flex items-center gap-1">
-                <span>Incubate</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Card 3: VIBRANT ACID-LIME CARD (Reference 1 Feature Card 3) */}
-          <div className="rounded-3xl p-6 bg-[#C6FF20] text-black border-2 border-black/15 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between">
-            <div>
-              <div className="text-center mb-5">
-                <span className="text-xs font-mono font-black text-black/60 uppercase tracking-widest">
-                  MODULE 03
-                </span>
-                <h3 className="text-lg font-black text-black uppercase mt-0.5 tracking-tight">
-                  MATHEMATICAL VELOCITY
-                </h3>
-                <p className="text-xs text-black/80 mt-1 font-medium">
-                  Physics weight formula: P0 (4x), P1 (3x), P2 (2x), P3 (1x).
-                </p>
-              </div>
-
-              {/* White Inner Box on Lime Card */}
-              <div className="bg-white text-slate-900 rounded-2xl p-5 border border-black/10 shadow-sm flex flex-col justify-between min-h-[170px]">
-                <div className="flex items-center justify-between">
-                  <Zap className="w-5 h-5 text-[#0038FF]" />
-                  <span className="text-[10px] font-mono bg-black/10 px-2 py-0.5 rounded-full font-black text-black">
-                    WEIGHTED
-                  </span>
-                </div>
-                <div className="space-y-1 my-2">
-                  <div className="text-xs font-mono text-slate-500">Milestone Accuracy</div>
-                  <div className="text-2xl font-black text-slate-950">99.4% Projected</div>
-                </div>
-                <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-2 border-t border-slate-100">
-                  <span>Zero Lag Delivery</span>
-                  <span className="text-[#0038FF] font-black">UNLOCKED</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-black/10 flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-black/80">Velocity Telemetry</span>
-              <Link href="/dashboard" className="text-xs font-black text-black hover:underline flex items-center gap-1">
-                <span>View Waveform</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-          </div>
-
-        </div>
-
-        {/* ==================================================================
-            4. ELECTRIC BLUE QUOTE & STATEMENT BANNER (Reference 1 Middle Banner)
-            ================================================================== */}
-        <div className="mt-16 bg-[#0038FF] text-white rounded-3xl p-8 sm:p-14 text-center relative overflow-hidden shadow-2xl">
-          
-          {/* Subtle Grid texture */}
-          <div className="absolute inset-0 bg-blue-grid opacity-30 pointer-events-none" />
-
-          <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-            
-            {/* Collaboration Partners Bar */}
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-mono text-white/70 uppercase tracking-widest font-semibold border-b border-white/20 pb-5">
-              <span>IN COLLABORATION WITH</span>
-              <span className="text-white font-bold">GITHUB</span>
-              <span className="text-[#C6FF20]">&bull;</span>
-              <span className="text-white font-bold">VERCEL</span>
-              <span className="text-[#C6FF20]">&bull;</span>
-              <span className="text-white font-bold">FASTAPI</span>
-              <span className="text-[#C6FF20]">&bull;</span>
-              <span className="text-white font-bold">GEMINI 2.5</span>
-            </div>
-
-            {/* Big Impact Statement */}
-            <h3 className="text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-              OUR AUTONOMOUS ENGINE TRANSFORMS YOUR CONCEPTS TO{' '}
-              <span className="inline-flex items-center gap-2 bg-[#C6FF20] text-black px-3.5 py-1 rounded-full text-xl sm:text-3xl font-black shadow-lg mx-1 my-1">
-                <span className="w-3 h-3 rounded-full bg-black animate-pulse" />
-                STUNNING ROADMAPS
-              </span>{' '}
-              THAT ENGAGE &amp; SHIP.
-            </h3>
-
-            <div className="pt-2">
+          ) : (
+            <>
               <Link
-                href="/dashboard"
-                className="btn-lime !py-3 !px-8 text-sm font-black inline-flex items-center gap-2 shadow-xl hover:scale-105 transition-all"
+                href="/login"
+                className="font-mono text-xs font-bold px-3 py-1.5 text-black hover:text-[#0047FF] transition-colors duration-200"
               >
-                <span>OPEN COMMAND CENTER</span>
-                <ArrowRight className="w-4 h-4" />
+                SIGN IN
               </Link>
-            </div>
-          </div>
+              <Link
+                href="/signup"
+                className="font-mono text-xs font-black uppercase tracking-wider px-4 py-2 bg-black text-white border-2 border-black shadow-[3px_3px_0px_#000000] hover:bg-[#0047FF] hover:border-[#0047FF] transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center gap-1"
+              >
+                <span>START FREE TRIAL</span>
+                <span className="text-[#DFFF4F]">↗</span>
+              </Link>
+            </>
+          )}
         </div>
+      </header>
 
-        {/* ==================================================================
-            5. "OUR BEST WORK" SHOWCASE & WORKSPACES (Reference 1 & 2 Bottom Section)
-            ================================================================== */}
-        <div className="mt-16 space-y-8">
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <span className="text-xs font-mono font-extrabold text-[#0038FF] uppercase tracking-wider">
-                WORKSPACE RADAR
+      {/* ====================================================================
+          2. SECTION 1: HERO (Split Color-Block Canvas from design-ref.mp4)
+          ==================================================================== */}
+      <section className="w-full grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-65px)] border-b-2 border-black">
+        {/* Left Column (Warm Parchment #F6F3EC) */}
+        <div className="lg:col-span-7 p-6 sm:p-12 lg:p-16 flex flex-col justify-between border-b-2 lg:border-b-0 lg:border-r-2 border-black bg-[#F6F3EC]">
+          <div>
+            {/* Live Indicator Pill */}
+            <div className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider px-3 py-1 bg-white border-2 border-black shadow-[2px_2px_0px_#000000] text-[#FF5533] mb-8">
+              <span className="w-2 h-2 rounded-full bg-[#FF5533] animate-pulse" />
+              <span>AUTONOMOUS REPO TRACKING · GITHUB SYNC</span>
+            </div>
+
+            {/* Giant Stacked Typographic Treatment */}
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.88] text-black">
+              WE MAKE<br />
+              <span className="text-[#0047FF]">PROJECTS</span><br />
+              <span className="inline-block mt-3 px-5 py-2 bg-white text-black border-2 border-black shadow-[5px_5px_0px_#000000]">
+                SHIP.
               </span>
-              <h3 className="text-3xl font-black text-slate-950 uppercase tracking-tight">
-                OUR BEST WORK
-              </h3>
+            </h1>
+
+            {/* Subheadline (Max width, no hyphens, balanced wrapping) */}
+            <p className="mt-8 max-w-[540px] text-lg sm:text-xl font-medium text-[#222222] leading-relaxed [text-wrap:pretty]">
+              Connect your GitHub repositories in ten seconds. Organize feature backlogs with senior level engineering triage, and graduate raw ideas into shipped software.
+            </p>
+
+            {/* Action Group */}
+            <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <Link
+                href={isAuthenticated ? "/dashboard" : "/signup"}
+                className="font-mono text-sm font-black uppercase tracking-wider px-7 py-3.5 bg-black text-white border-2 border-black shadow-[4px_4px_0px_#000000] hover:bg-[#0047FF] hover:border-[#0047FF] transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-center flex items-center justify-center gap-2"
+              >
+                <span>START 14 DAY FREE TRIAL</span>
+                <span className="text-[#DFFF4F]">↗</span>
+              </Link>
+              <a
+                href="#workflows"
+                className="font-mono text-sm font-bold uppercase tracking-wider px-6 py-3.5 bg-white text-black border-2 border-black shadow-[4px_4px_0px_#000000] hover:bg-[#EFECE6] transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none text-center"
+              >
+                EXPLORE WORKFLOWS
+              </a>
             </div>
 
-            {/* Filter Pills (Reference 1 style) */}
-            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-full border border-slate-200">
-              <button
-                onClick={() => setSelectedFilter('all')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
-                  selectedFilter === 'all'
-                    ? 'bg-[#C6FF20] text-black shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                ALL
-              </button>
-              <button
-                onClick={() => setSelectedFilter('velocity')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
-                  selectedFilter === 'velocity'
-                    ? 'bg-[#C6FF20] text-black shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                HIGH VELOCITY
-              </button>
-              <button
-                onClick={() => setSelectedFilter('triaged')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
-                  selectedFilter === 'triaged'
-                    ? 'bg-[#C6FF20] text-black shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                AI TRIAGED
-              </button>
+            {/* Reversal of Objections */}
+            <div className="mt-6 flex flex-wrap items-center gap-y-2 gap-x-5 font-mono text-xs font-semibold text-[#444444]">
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-[#0047FF]" /> No credit card required
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-[#0047FF]" /> 100% private repo encryption
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-[#0047FF]" /> Zero manual backlog setup
+              </span>
             </div>
           </div>
 
-          {/* 3 Bottom Summary Cards (Matching Reference 2 Bottom Cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Card 1: Subscribe / Connect to Repos */}
-            <div className="gridster-panel p-6 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col justify-between">
-              <div>
-                <h4 className="font-black text-sm text-slate-950 uppercase tracking-wide">
-                  SUBSCRIBE TO WORKSPACES
-                </h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  Continuous webhook ingestion and branch status polling.
-                </p>
-
-                <div className="mt-5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-[#0038FF] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                      DC
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">devcommand.core</div>
-                      <div className="text-[10px] text-slate-500 font-mono">14 contributors</div>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-mono font-black px-2.5 py-1 rounded-full bg-[#C6FF20] text-black border border-black/10">
-                    20.24 DEV
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-mono">Webhook Polling</span>
-                <span className="text-[#0038FF] font-bold">Every 60s</span>
-              </div>
-            </div>
-
-            {/* Card 2: Choose High Priority Rewards / Triage */}
-            <div className="gridster-panel p-6 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col justify-between">
-              <div>
-                <h4 className="font-black text-sm text-slate-950 uppercase tracking-wide">
-                  CHOOSE HIGH PRIORITY ROADMAPS
-                </h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  Each repository is categorized with weighted backlog physics.
-                </p>
-
-                <div className="mt-5 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-slate-800">
-                    P0: Critical 4x
-                  </span>
-                  <div className="w-7 h-7 rounded-full bg-[#C6FF20] text-black flex items-center justify-center font-bold text-sm border border-black/10">
-                    &rarr;
-                  </div>
-                  <span className="text-xs font-mono font-bold text-[#0038FF]">
-                    P3: Low 1x
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-mono">Backlog Health</span>
-                <span className="text-emerald-600 font-bold">Optimal</span>
-              </div>
-            </div>
-
-            {/* Card 3: Stake Velocity for Teams */}
-            <div className="gridster-panel p-6 bg-white border border-slate-200 shadow-sm rounded-3xl flex flex-col justify-between">
-              <div>
-                <h4 className="font-black text-sm text-slate-950 uppercase tracking-wide">
-                  STAKE VELOCITY FOR CREATORS
-                </h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  Accurate release velocity projections computed every milestone.
-                </p>
-
-                <div className="mt-5 p-3 rounded-2xl bg-[#C6FF20] text-black border border-black/10 flex flex-col items-center justify-center text-center">
-                  <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/70">
-                    EST. MONTHLY VELOCITY
-                  </div>
-                  <div className="text-2xl font-black text-black num-tabular mt-0.5">
-                    94.84257%
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-mono">Milestone Target</span>
-                <span className="text-[#0038FF] font-bold">On Schedule</span>
-              </div>
-            </div>
-
+          {/* Bottom Left Status Bar */}
+          <div className="mt-12 pt-6 border-t-2 border-black flex flex-wrap items-center justify-between gap-4 font-mono text-xs text-[#333333]">
+            <span className="font-bold">K-01 / COMMAND CONSOLE</span>
+            <span>BUILT FOR AMBITIOUS DEVELOPERS WORLDWIDE</span>
           </div>
-
         </div>
 
+        {/* Right Column (Royal Cobalt Blue #0047FF Panel with Geometric Rotating Symbol & Live Terminal) */}
+        <div className="lg:col-span-5 bg-[#0047FF] p-6 sm:p-10 flex flex-col justify-between text-white relative overflow-hidden">
+          {/* Top Panel Header */}
+          <div className="flex items-center justify-between font-mono text-xs font-bold text-white/90 pb-4 border-b-2 border-white/20">
+            <span>VELOCITY ENGINE · v1.0</span>
+            <span className="px-2 py-0.5 bg-[#DFFF4F] text-black border border-black font-mono text-[10px] font-black">
+              LIVE TELEMETRY
+            </span>
+          </div>
+
+          {/* Central Rotating Geometric Graphic (Scaled, Centered, and Mathematically True Circle - design-ref.mp4) */}
+          <div className="flex-1 flex flex-col items-center justify-center my-6 sm:my-8 relative w-full">
+            <svg 
+              viewBox="0 0 400 400" 
+              className="w-72 h-72 sm:w-80 sm:h-80 lg:w-[380px] lg:h-[380px] shrink-0 aspect-square select-none pointer-events-none"
+            >
+              {/* Outer Static Circular Orbit Ring */}
+              <circle cx="200" cy="200" r="192" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" fill="none" />
+              
+              {/* Concentric Dashed Rotating Orbit */}
+              <circle 
+                cx="200" 
+                cy="200" 
+                r="178" 
+                stroke="rgba(255,255,255,0.35)" 
+                strokeWidth="1.5" 
+                strokeDasharray="8 8" 
+                fill="none" 
+                className="animate-[spin_60s_linear_infinite] origin-center" 
+              />
+
+              {/* Rotating 8-Spoke Gear / Sun Emblem */}
+              <g className="animate-[spin_35s_linear_infinite] origin-center">
+                {/* 8 Radial Spokes */}
+                <rect x="40" y="168" width="320" height="64" rx="4" fill="#FF5533" stroke="#000000" strokeWidth="3" />
+                <rect x="40" y="168" width="320" height="64" rx="4" fill="#FF5533" stroke="#000000" strokeWidth="3" transform="rotate(45 200 200)" />
+                <rect x="40" y="168" width="320" height="64" rx="4" fill="#FF5533" stroke="#000000" strokeWidth="3" transform="rotate(90 200 200)" />
+                <rect x="40" y="168" width="320" height="64" rx="4" fill="#FF5533" stroke="#000000" strokeWidth="3" transform="rotate(135 200 200)" />
+
+                {/* 100% Mathematically Circular Black Center Hub */}
+                <circle cx="200" cy="200" r="66" fill="#000000" stroke="#000000" strokeWidth="3" />
+
+                {/* Concentric Inner Circular Layers */}
+                <circle cx="200" cy="200" r="44" fill="#0047FF" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
+                <circle cx="200" cy="200" r="18" fill="#DFFF4F" stroke="#000000" strokeWidth="2" />
+                <circle cx="200" cy="200" r="6" fill="#000000" />
+              </g>
+            </svg>
+          </div>
+
+          {/* Hard-Bordered High-Density Interactive Deck */}
+          <div className="w-full bg-[#FAF7EE] text-black border-2 border-black shadow-[6px_6px_0px_#000000]">
+            {/* Deck Tabs */}
+            <div className="grid grid-cols-3 border-b-2 border-black font-mono text-xs font-bold">
+              <button
+                onClick={() => setActiveConsoleTab('repo')}
+                className={`py-2 px-1 text-center border-r-2 border-black transition-colors ${
+                  activeConsoleTab === 'repo' ? 'bg-[#DFFF4F] text-black' : 'bg-white hover:bg-[#F6F3EC]'
+                }`}
+              >
+                REPO SYNC
+              </button>
+              <button
+                onClick={() => setActiveConsoleTab('velocity')}
+                className={`py-2 px-1 text-center border-r-2 border-black transition-colors ${
+                  activeConsoleTab === 'velocity' ? 'bg-[#DFFF4F] text-black' : 'bg-white hover:bg-[#F6F3EC]'
+                }`}
+              >
+                SPRINT
+              </button>
+              <button
+                onClick={() => setActiveConsoleTab('ai')}
+                className={`py-2 px-1 text-center transition-colors ${
+                  activeConsoleTab === 'ai' ? 'bg-[#DFFF4F] text-black' : 'bg-white hover:bg-[#F6F3EC]'
+                }`}
+              >
+                AI TRIAGE
+              </button>
+            </div>
+
+            {/* Tab Content 1: Repositories */}
+            {activeConsoleTab === 'repo' && (
+              <div className="p-4 space-y-3 font-mono text-xs">
+                <div className="flex items-center justify-between pb-2 border-b border-black/10">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <GitBranch className="w-3.5 h-3.5 text-[#0047FF]" />
+                    <span>smart-project-manager</span>
+                  </span>
+                  <span className="px-2 py-0.5 bg-[#BBF7D0] border border-black font-bold text-[10px]">
+                    MAIN · 8 COMMITS AHEAD
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-[#555555]">
+                  <span>PURPOSE: PRODUCTION SAAS</span>
+                  <span>AUTOMATIC WEBHOOK: ACTIVE</span>
+                </div>
+                <div className="p-2.5 bg-white border border-black font-mono text-[11px] text-black leading-relaxed">
+                  <span className="font-bold text-[#0047FF]">AUTO STATUS:</span> Ingested fullstack monorepo with FastAPI backend, Next.js web client, and Flutter mobile.
+                </div>
+              </div>
+            )}
+
+            {/* Tab Content 2: Sprint Velocity */}
+            {activeConsoleTab === 'velocity' && (
+              <div className="p-4 space-y-2.5 font-mono text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold">EXECUTION VELOCITY</span>
+                  <span className="font-bold text-[#0047FF]">94.2%</span>
+                </div>
+                <div className="w-full h-3 bg-white border border-black overflow-hidden p-0.5">
+                  <div className="h-full bg-[#0047FF] w-[94%]" />
+                </div>
+                <div className="space-y-1.5 pt-1 text-[11px]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                    <span>GitHub OAuth 2.0 and PAT login</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                    <span>Multi tenant user database isolation</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#555555]">
+                    <span className="w-3.5 h-3.5 rounded-full border border-black inline-block" />
+                    <span>Repository webhook sync</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab Content 3: AI Triage */}
+            {activeConsoleTab === 'ai' && (
+              <div className="p-4 space-y-2.5 font-mono text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[#FF5533]">ARCHITECT TRIAGE</span>
+                  <span className="px-1.5 py-0.5 bg-[#FF5533] text-white font-bold text-[10px]">P0 PRIORITY</span>
+                </div>
+                <p className="text-[11px] text-black leading-relaxed bg-white p-2.5 border border-black">
+                  Prioritize repository webhook synchronization before scaling mobile client polling to preserve GitHub rate limits.
+                </p>
+                <div className="flex items-center justify-between text-[11px] text-[#555555] pt-1 border-t border-black/10">
+                  <span>CASCADE: GEMINI → NVIDIA</span>
+                  <span className="font-bold text-black">LATENCY: 84ms</span>
+                </div>
+              </div>
+            )}
+
+            {/* Deck Footer */}
+            <div className="px-4 py-2.5 bg-black text-white font-mono text-[11px] flex items-center justify-between border-t-2 border-black">
+              <span>DATABASE MIRROR</span>
+              <span className="text-[#DFFF4F]">MONGODB ATLAS · CONNECTED</span>
+            </div>
+          </div>
+
+          {/* Bottom Panel Metadata */}
+          <div className="pt-4 border-t-2 border-white/20 flex items-center justify-between font-mono text-xs text-white/90">
+            <span>DATA SEGREGATION: STRICT</span>
+            <span>AES 256 VAULT</span>
+          </div>
+        </div>
       </section>
 
-      {/* Clean Footer */}
-      <footer className="bg-slate-50 border-t border-slate-200 py-8 px-4 text-center text-xs font-mono text-slate-500">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-black/10 flex items-center justify-center p-0.5 shrink-0 shadow-sm">
-              <svg viewBox="0 0 512 512" fill="none" className="w-full h-full">
-                <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
-                <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
-              </svg>
+      {/* ====================================================================
+          3. SECTION 2: MANDATORY TAGLINE REVEAL (Rule B11)
+          ==================================================================== */}
+      <section className="w-full bg-black text-white py-14 px-6 sm:px-12 border-b-2 border-black">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+              <div>
+                <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#DFFF4F] block mb-2">
+                  02 / THE CORE THESIS
+                </span>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight [text-wrap:balance]">
+                  TOO MANY REPOSITORIES DIE IN SILENCE.<br />
+                  <span className="text-[#DFFF4F]">DEVCOMMAND GIVES EVERY REPO A WORKING ROADMAP.</span>
+                </h2>
+              </div>
+              <div className="shrink-0 font-mono text-xs text-white/80 max-w-xs border-l-2 border-[#DFFF4F] pl-5 space-y-1.5">
+                <p>Zero abandoned ideas.</p>
+                <p>Real GitHub commit velocity.</p>
+                <p className="text-[#DFFF4F]">Structured progression from raw spark to public release.</p>
+              </div>
             </div>
-            <span className="font-bold text-slate-800">DevCommand</span>
-            <span>&bull; Autonomous Repository Intelligence</span>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          4. SECTION 3: SELECTED WORKFLOWS (Outline Typography - frame_02_256.jpg)
+          ==================================================================== */}
+      <section id="workflows" className="w-full bg-[#FAF7EE] border-b-2 border-black py-16 px-6 sm:px-12">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Row */}
+          <Reveal>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 pb-4 border-b-2 border-black gap-4">
+              <div>
+                <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#0047FF] block mb-1">
+                  02 / WORKFLOW ARCHITECTURE
+                </span>
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-black">
+                  SELECTED <span className="text-[#0047FF]">WORKFLOWS</span>
+                </h2>
+              </div>
+              <div className="font-mono text-xs font-bold text-[#555555] uppercase tracking-wider">
+                SIX REPOSITORY AUTOMATIONS · ZERO TEMPLATES
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Three Tactile Bento Cards with Staggered Scroll Reveals */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Bento Card 1: Repositories */}
+            <Reveal delay={100}>
+              <div className="border-2 border-black bg-white p-6 shadow-[4px_4px_0px_#000000] flex flex-col justify-between h-full hover:shadow-[6px_6px_0px_#000000] transition-shadow duration-300">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b-2 border-black font-mono text-xs font-bold text-black mb-4">
+                    <span>SUB / 01</span>
+                    <span className="text-[#0047FF]">0.0% / 100%</span>
+                  </div>
+                  <div className="w-12 h-12 bg-[#DFFF4F] border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center mb-4">
+                    <GitBranch className="w-6 h-6 text-black" />
+                  </div>
+                  <h3 className="text-xl font-bold text-black mb-2">
+                    Autonomous Repo Ingestion
+                  </h3>
+                  <p className="font-mono text-xs text-[#555555] leading-relaxed">
+                    As soon as you create or fork a repository on GitHub, DevCommand detects it via webhooks and populates your workspace with branch telemetry.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t-2 border-black font-mono text-[11px] font-bold text-[#0047FF] flex items-center gap-1">
+                  <span>NO MANUAL DATA ENTRY</span>
+                  <span>→</span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Bento Card 2: AI Triage */}
+            <Reveal delay={200}>
+              <div className="border-2 border-black bg-white p-6 shadow-[4px_4px_0px_#000000] flex flex-col justify-between h-full hover:shadow-[6px_6px_0px_#000000] transition-shadow duration-300">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b-2 border-black font-mono text-xs font-bold text-black mb-4">
+                    <span>SUB / 02</span>
+                    <span className="text-[#FF5533]">MULTI TIER</span>
+                  </div>
+                  <div className="w-12 h-12 bg-[#FF5533] border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center mb-4">
+                    <Cpu className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-black mb-2">
+                    Tiered AI Engineering Mentor
+                  </h3>
+                  <p className="font-mono text-xs text-[#555555] leading-relaxed">
+                    Queries route across OpenRouter, Gemini, and NVIDIA NIM to break complex feature requests into prioritized checklists with zero hallucination.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t-2 border-black font-mono text-[11px] font-bold text-[#FF5533] flex items-center gap-1">
+                  <span>SENIOR ARCHITECT TRIAGE</span>
+                  <span>→</span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Bento Card 3: Dual Client */}
+            <Reveal delay={300}>
+              <div className="border-2 border-black bg-white p-6 shadow-[4px_4px_0px_#000000] flex flex-col justify-between h-full hover:shadow-[6px_6px_0px_#000000] transition-shadow duration-300">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b-2 border-black font-mono text-xs font-bold text-black mb-4">
+                    <span>SUB / 03</span>
+                    <span className="text-black">MOBILE AND WEB</span>
+                  </div>
+                  <div className="w-12 h-12 bg-[#0047FF] border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center mb-4">
+                    <Smartphone className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-black mb-2">
+                    Cross Platform Ergonomics
+                  </h3>
+                  <p className="font-mono text-xs text-[#555555] leading-relaxed">
+                    Flutter Android app for logging project ideas and checking off tasks on the move; Next.js 16 desktop interface for deep workspace execution.
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t-2 border-black font-mono text-[11px] font-bold text-black flex items-center gap-1">
+                  <span>SEAMLESS STATE SYNC</span>
+                  <span>→</span>
+                </div>
+              </div>
+            </Reveal>
           </div>
-          <div>
-            <span>SPECTRUM: BLUE (#0038FF) &bull; LIME (#C6FF20) &bull; WHITE (#FFFFFF) &bull; VIOLET (#7020DD)</span>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          5. SECTION 4: CAPABILITIES (Proportional & Sleek Electric Coral Canvas)
+          ==================================================================== */}
+      <section id="capabilities" className="w-full bg-[#FF5533] text-black border-b-2 border-black py-14 px-6 sm:px-12">
+        <div className="max-w-6xl mx-auto">
+          {/* Header row */}
+          <Reveal>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b-2 border-black mb-8 gap-3">
+              <span className="font-mono text-xs font-black uppercase tracking-widest text-black">
+                03 / CAPABILITIES
+              </span>
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-black/80">
+                FROM RAW COMMIT TO PRODUCTION DEPLOY
+              </span>
+            </div>
+
+            {/* Compact Heading Block */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-4">
+              <div>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-none text-black">
+                  WHAT WE BRING TO{' '}
+                  <span className="inline-block px-3.5 py-1 bg-white text-black border-2 border-black shadow-[3px_3px_0px_#000000]">
+                    THE TABLE.
+                  </span>
+                </h2>
+              </div>
+              <p className="font-mono text-xs sm:text-sm font-bold text-black max-w-md leading-relaxed">
+                One integrated system from first thought to full expression. No handoffs into a void.
+              </p>
+            </div>
+          </Reveal>
+
+          {/* Streamlined Numbered Rows with Cascading Scroll Reveal */}
+          <div className="space-y-0 border-t-2 border-black">
+            {/* Capability 1 */}
+            <Reveal delay={80}>
+              <div className="py-4 sm:py-5 border-b-2 border-black flex flex-col md:flex-row md:items-center justify-between gap-3 group hover:bg-black/5 transition-all duration-200 cursor-pointer">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <span className="font-mono text-sm sm:text-base font-black text-black">(01)</span>
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight text-black">
+                    REPOSITORY INGESTION
+                  </h3>
+                </div>
+                <div className="flex items-center gap-6">
+                  <p className="font-mono text-xs text-black/90 max-w-md font-medium">
+                    Automatic webhook ingestion of your GitHub repositories with live commit velocity, branch ahead counters, and metadata sync.
+                  </p>
+                  <span className="font-mono text-2xl font-black group-hover:translate-x-1.5 group-hover:-translate-y-0.5 transition-transform">
+                    ↗
+                  </span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Capability 2 */}
+            <Reveal delay={160}>
+              <div className="py-4 sm:py-5 border-b-2 border-black flex flex-col md:flex-row md:items-center justify-between gap-3 group hover:bg-black/5 transition-all duration-200 cursor-pointer">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <span className="font-mono text-sm sm:text-base font-black text-black">(02)</span>
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight text-black">
+                    TIERED AI MENTORSHIP
+                  </h3>
+                </div>
+                <div className="flex items-center gap-6">
+                  <p className="font-mono text-xs text-black/90 max-w-md font-medium">
+                    Autonomous inference routed across OpenRouter, Gemini, and NVIDIA to generate concrete roadmaps and eliminate blockers.
+                  </p>
+                  <span className="font-mono text-2xl font-black group-hover:translate-x-1.5 group-hover:-translate-y-0.5 transition-transform">
+                    ↗
+                  </span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Capability 3 */}
+            <Reveal delay={240}>
+              <div className="py-4 sm:py-5 border-b-2 border-black flex flex-col md:flex-row md:items-center justify-between gap-3 group hover:bg-black/5 transition-all duration-200 cursor-pointer">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <span className="font-mono text-sm sm:text-base font-black text-black">(03)</span>
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight text-black">
+                    IDEA INCUBATOR
+                  </h3>
+                </div>
+                <div className="flex items-center gap-6">
+                  <p className="font-mono text-xs text-black/90 max-w-md font-medium">
+                    Log sparks on mobile. Calculate feasibility scores and graduate ready concepts directly into tracked GitHub repos.
+                  </p>
+                  <span className="font-mono text-2xl font-black group-hover:translate-x-1.5 group-hover:-translate-y-0.5 transition-transform">
+                    ↗
+                  </span>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Capability 4 */}
+            <Reveal delay={320}>
+              <div className="py-4 sm:py-5 border-b-2 border-black flex flex-col md:flex-row md:items-center justify-between gap-3 group hover:bg-black/5 transition-all duration-200 cursor-pointer">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <span className="font-mono text-sm sm:text-base font-black text-black">(04)</span>
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tight text-black">
+                    STRICT TENANT PRIVACY
+                  </h3>
+                </div>
+                <div className="flex items-center gap-6">
+                  <p className="font-mono text-xs text-black/90 max-w-md font-medium">
+                    Hardware level AES 256 encryption for GitHub credentials. Tenant isolated database querying guarantees your ideas remain private.
+                  </p>
+                  <span className="font-mono text-2xl font-black group-hover:translate-x-1.5 group-hover:-translate-y-0.5 transition-transform">
+                    ↗
+                  </span>
+                </div>
+              </div>
+            </Reveal>
           </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          6. SECTION 5: PRIVACY VAULT & SECURITY ARCHITECTURE
+          ==================================================================== */}
+      <section id="privacy" className="w-full bg-[#111111] text-white border-b-2 border-black py-16 px-6 sm:px-12">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-white/20 mb-12 gap-4">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#DFFF4F]">
+                04 / SECURITY AND PRIVACY GUARANTEE
+              </span>
+              <span className="font-mono text-xs font-bold text-white/60">
+                ZERO SOURCE CODE RETENTION · 100% PRIVATE
+              </span>
+            </div>
+          </Reveal>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-7">
+              <Reveal delay={100}>
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight text-white mb-6">
+                  YOUR CODE AND IDEAS BELONG TO YOU ALONE.
+                </h2>
+                <p className="font-mono text-sm text-[#CCCCCC] leading-relaxed max-w-xl">
+                  We believe developers should never have to sacrifice repository privacy for roadmap intelligence. DevCommand enforces strict tenant database isolation and client token encryption from day one.
+                </p>
+
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
+                  <div className="p-4 bg-[#1F1F1F] border-2 border-[#333333] shadow-[3px_3px_0px_#000000]">
+                    <div className="flex items-center gap-2 text-[#DFFF4F] font-bold mb-1.5">
+                      <Lock className="w-4 h-4" />
+                      <span>AES 256 VAULT</span>
+                    </div>
+                    <p className="text-white/70 leading-relaxed">
+                      Personal Access Tokens and OAuth secrets are encrypted at rest with hardware backed encryption keys.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-[#1F1F1F] border-2 border-[#333333] shadow-[3px_3px_0px_#000000]">
+                    <div className="flex items-center gap-2 text-[#DFFF4F] font-bold mb-1.5">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>STRICT MULTI TENANCY</span>
+                    </div>
+                    <p className="text-white/70 leading-relaxed">
+                      Database filters enforce user ID boundaries on every single query. No cross account data leakage.
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+
+            <div className="lg:col-span-5">
+              <Reveal delay={200}>
+                <div className="bg-[#1F1F1F] border-2 border-white/20 p-6 shadow-2xl font-mono text-xs">
+                  <div className="pb-3 border-b border-white/10 flex items-center justify-between text-white/60">
+                    <span>SECURITY_AUDIT_LOG</span>
+                    <span className="text-[#BBF7D0] font-bold">PASSED</span>
+                  </div>
+                  <div className="py-4 space-y-2 text-[#BBF7D0]">
+                    <div>&gt; GITHUB_TOKEN_STATUS: ENCRYPTED_AES256</div>
+                    <div>&gt; TENANT_SEPARATION: ENFORCED</div>
+                    <div>&gt; MONGODB_ATLAS_CLUSTER: CONNECTED</div>
+                    <div>&gt; THIRD_PARTY_AI_TRAINING: DISABLED</div>
+                    <div>&gt; ACCESS_EXPIRATION: AUTOMATIC_INTERCEPT</div>
+                  </div>
+                  <div className="pt-3 border-t border-white/10 text-white/50 text-[11px]">
+                    DevCommand never trains AI models on your private repository code or commits.
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          7. SECTION 6: FREQUENTLY ASKED QUESTIONS (FAQ)
+          ==================================================================== */}
+      <section id="faq" className="w-full bg-[#FAF7EE] border-b-2 border-black py-16 px-6 sm:px-12">
+        <div className="max-w-4xl mx-auto">
+          <Reveal>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b-2 border-black mb-10 gap-4">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#0047FF]">
+                05 / FREQUENTLY ASKED QUESTIONS
+              </span>
+              <span className="font-mono text-xs font-bold text-[#555555]">
+                TRANSPARENT REPO ANSWERS
+              </span>
+            </div>
+
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-black mb-10">
+              EVERYTHING YOU NEED TO KNOW.
+            </h2>
+          </Reveal>
+
+          <Reveal delay={120}>
+            <div className="divide-y-2 divide-black border-y-2 border-black">
+              {faqs.map((faq, idx) => (
+                <div key={idx} className="py-5">
+                  <button
+                    onClick={() => toggleFaq(idx)}
+                    className="w-full flex items-center justify-between text-left group"
+                  >
+                    <span className="text-lg sm:text-xl font-bold text-black group-hover:text-[#0047FF] transition-colors">
+                      {faq.q}
+                    </span>
+                    <span className="font-mono text-base font-bold ml-4">
+                      {openFaq === idx ? '−' : '+'}
+                    </span>
+                  </button>
+                  {openFaq === idx && (
+                    <p className="mt-3 font-mono text-xs sm:text-sm text-[#444444] leading-relaxed [text-wrap:pretty]">
+                      {faq.a}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          8. SECTION 7: FINAL CTA & RISK REVERSAL
+          ==================================================================== */}
+      <section className="w-full bg-[#0047FF] text-white py-20 px-6 sm:px-12 border-b-2 border-black">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+          <Reveal>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest px-3 py-1 bg-black text-[#DFFF4F] border-2 border-black mb-6 shadow-[2px_2px_0px_#000000] inline-block">
+              READY TO SHIP
+            </span>
+            <h2 className="text-5xl sm:text-6xl font-black tracking-tight leading-tight [text-wrap:balance]">
+              STOP LOSING MOMENTUM ON GOOD IDEAS.
+            </h2>
+            <p className="mt-6 font-mono text-sm sm:text-base text-white/90 max-w-xl leading-relaxed mx-auto">
+              Connect your repositories in ten seconds. Triage your feature backlogs with AI clarity, and start shipping today.
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href={isAuthenticated ? "/dashboard" : "/signup"}
+                className="font-mono text-sm font-black uppercase tracking-wider px-8 py-4 bg-black text-white border-2 border-black hover:bg-[#DFFF4F] hover:text-black transition-all duration-200 active:translate-x-[2px] active:translate-y-[2px] shadow-[5px_5px_0px_#000000] flex items-center gap-2"
+              >
+                <span>START 14 DAY FREE TRIAL</span>
+                <span className="text-[#DFFF4F]">↗</span>
+              </Link>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 font-mono text-xs font-semibold text-white/90">
+              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> 14 day trial</span>
+              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> No credit card required</span>
+              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Cancel anytime</span>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          9. FOOTER
+          ==================================================================== */}
+      <footer className="w-full bg-[#F6F3EC] px-6 sm:px-12 py-10 font-mono text-xs text-black">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b-2 border-black">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-black text-[#DFFF4F] font-mono text-xs font-bold flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000000]">
+              DC
+            </div>
+            <span className="font-bold uppercase tracking-widest text-black">
+              DEVCOMMAND · EST. 2026
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-6 text-[#555555] font-bold">
+            <a href="#workflows" className="hover:text-black transition-colors">WORKFLOWS</a>
+            <a href="#capabilities" className="hover:text-black transition-colors">CAPABILITIES</a>
+            <a href="#privacy" className="hover:text-black transition-colors">PRIVACY</a>
+            <a href="#faq" className="hover:text-black transition-colors">FAQ</a>
+            <a 
+              href="https://github.com/rb-369/Smart-Project-Manager" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:text-black transition-colors flex items-center gap-1"
+            >
+              <span>GITHUB</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          <div className="text-[#555555]">
+            © 2026 DevCommand. All rights reserved.
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[#777777] text-[11px]">
+          <span>Designed with high density Neo-Brutalist &amp; Swiss editorial engineering principles.</span>
+          <span>Zero third party code training · Strict tenant database separation.</span>
         </div>
       </footer>
 

@@ -57,3 +57,13 @@ mobile/.metadata
 *~
 .DS_Store
 Thumbs.db
+
+# Agent skills & Local design system docs
+.agents/
+DESIGN_SYSTEM.md
+
+# Video & Large Media (User references - Do not push to git)
+*.mp4
+*.mov
+*.avi
+design-ref.mp4
