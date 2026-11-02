@@ -53,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-slate-900">
+      <body className="min-h-full flex flex-col bg-[#F6F3EC] text-black selection:bg-[#DFFF4F] selection:text-black">
         <AuthProvider>
           {children}
           <Suspense fallback={null}>

@@ -13,8 +13,6 @@ import {
   ShieldCheck,
   AlertCircle,
   Database,
-  CheckCircle2,
-  ExternalLink
 } from 'lucide-react';
 
 export default function SignupPage() {
@@ -78,65 +76,58 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col justify-between selection:bg-[#C6FF20] selection:text-black font-sans">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-[500px] h-[500px] bg-[#C6FF20]/15 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen bg-[#F6F3EC] text-black relative flex flex-col justify-between selection:bg-[#DFFF4F] selection:text-black font-sans">
       {/* Header Monogram */}
-      <header className="max-w-6xl mx-auto w-full px-6 pt-8 pb-4 flex items-center justify-between relative z-10">
+      <header className="max-w-6xl mx-auto w-full px-6 pt-8 pb-4 flex items-center justify-between relative z-10 border-b-2 border-black">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative p-1 shrink-0">
-            <svg viewBox="0 0 512 512" fill="none" className="w-full h-full drop-shadow">
-              <path d="M208 116 L288 116 L226 232 L286 232 L150 408 L184 274 L140 274 Z" fill="#C6FF20" />
-              <path d="M306 132 L394 256 L306 380 L254 380 L336 264 L336 248 L254 132 Z" fill="#FFFFFF" />
-            </svg>
+          <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-mono font-black text-lg border-2 border-black shadow-[2px_2px_0px_#000000]">
+            DC
           </div>
           <div className="flex flex-col">
-            <span className="font-black text-base tracking-tight text-white leading-none">
+            <span className="font-black text-base tracking-tight text-black uppercase leading-none">
               DevCommand
             </span>
-            <span className="text-[9px] font-mono text-[#C6FF20] uppercase tracking-widest font-black">
+            <span className="text-[9px] font-mono text-[#0047FF] uppercase tracking-widest font-black">
               AUTONOMOUS ENGINE
             </span>
           </div>
         </Link>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-mono text-white/90">
-          <Database className="w-3.5 h-3.5 text-[#C6FF20]" />
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black text-xs font-mono font-black text-black shadow-[2px_2px_0px_#000000] uppercase">
+          <Database className="w-3.5 h-3.5 text-[#0047FF]" />
           <span>MONGODB ATLAS STORAGE</span>
         </div>
       </header>
 
       {/* Main Form Card */}
       <main className="max-w-md w-full mx-auto px-4 py-8 relative z-10 flex-1 flex flex-col justify-center">
-        <div className="bg-white text-slate-900 border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+        <div className="bg-white text-black border-3 border-black p-6 sm:p-8 shadow-[8px_8px_0px_#000000] space-y-5">
           
           <div className="text-center space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0038FF]/10 text-[#0038FF] border border-[#0038FF]/20 text-[11px] font-mono font-bold uppercase tracking-wider mb-1">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAF7EE] text-black border-2 border-black text-[11px] font-mono font-black uppercase tracking-wider mb-1 shadow-[2px_2px_0px_#000000]">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#0047FF]" />
               <span>Isolated Environment</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-black uppercase tracking-tight">
               Create Account
             </h1>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+            <p className="text-xs text-neutral-600 max-w-xs mx-auto font-mono">
               Get an isolated workspace with autonomous GitHub repo ingestion &amp; AI triage.
             </p>
           </div>
 
           {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
+            <div className="p-3.5 bg-rose-50 border-2 border-black text-rose-800 text-xs flex items-start gap-2.5 font-mono">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {oauthNotice && (
-            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+            <div className="p-3.5 bg-amber-50 border-2 border-black text-amber-900 text-xs flex items-start gap-2.5 font-mono">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-700 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-semibold">Notice</p>
+                <p className="font-black uppercase">Notice</p>
                 <p>{oauthNotice}</p>
               </div>
             </div>
@@ -147,62 +138,62 @@ export default function SignupPage() {
             type="button"
             onClick={handleGitHubOAuth}
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-[#24292F] hover:bg-black text-white font-bold text-sm flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all cursor-pointer group"
+            className="w-full py-3.5 px-4 bg-black hover:bg-[#111] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-black shadow-[4px_4px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-3 transition-all cursor-pointer group"
           >
-            <GithubIcon className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+            <GithubIcon className="w-5 h-5 text-white" />
             <span>{loading ? 'Connecting...' : 'Sign up with GitHub'}</span>
-            <ArrowRight className="w-4 h-4 ml-auto text-white/60 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 ml-auto text-neutral-400 group-hover:translate-x-1 transition-transform" />
           </button>
 
           <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-slate-200" />
-            <span className="flex-shrink mx-3 text-[11px] font-mono text-slate-400 font-bold uppercase">
+            <div className="flex-grow border-t-2 border-black" />
+            <span className="flex-shrink mx-3 text-[11px] font-mono text-neutral-600 font-black uppercase">
               Or with email
             </span>
-            <div className="flex-grow border-t border-slate-200" />
+            <div className="flex-grow border-t-2 border-black" />
           </div>
 
           {/* Email Registration Form */}
           <form onSubmit={handleRegister} className="space-y-3">
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-black text-black uppercase tracking-wider mb-1">
                 Full Name
               </label>
               <div className="relative">
-                <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <UserIcon className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Jane Doe"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0038FF] transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-black text-xs font-mono bg-[#FAF7EE] focus:bg-white focus:outline-none transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-black text-black uppercase tracking-wider mb-1">
                 Email Address *
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jane@example.com"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0038FF] transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-black text-xs font-mono bg-[#FAF7EE] focus:bg-white focus:outline-none transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-black text-black uppercase tracking-wider mb-1">
                 Password *
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   required
@@ -210,23 +201,23 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0038FF] transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-black text-xs font-mono bg-[#FAF7EE] focus:bg-white focus:outline-none transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-black text-black uppercase tracking-wider mb-1">
                 GitHub Username (Optional)
               </label>
               <div className="relative">
-                <GithubIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <GithubIcon className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={githubUsername}
                   onChange={(e) => setGithubUsername(e.target.value)}
                   placeholder="janedoe"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0038FF] transition"
+                  className="w-full pl-10 pr-4 py-2 border-2 border-black text-xs font-mono bg-[#FAF7EE] focus:bg-white focus:outline-none transition"
                 />
               </div>
             </div>
@@ -234,7 +225,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-[#0038FF] hover:bg-[#002AD4] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition cursor-pointer mt-1"
+              className="w-full py-2.5 bg-[#DFFF4F] hover:bg-black hover:text-[#DFFF4F] text-black border-2 border-black font-mono font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[4px_4px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition cursor-pointer mt-1"
             >
               <span>{loading ? 'Creating Account...' : 'Create Account'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -242,16 +233,16 @@ export default function SignupPage() {
           </form>
 
           {/* Footer inside card */}
-          <div className="text-center pt-2 text-xs text-slate-500">
+          <div className="text-center pt-2 text-xs text-neutral-600 font-mono">
             <span>Already have an account? </span>
-            <Link href="/login" className="font-bold text-[#0038FF] hover:underline">
+            <Link href="/login" className="font-black text-[#0047FF] hover:underline uppercase">
               Sign in
             </Link>
           </div>
         </div>
       </main>
 
-      <footer className="max-w-6xl mx-auto w-full px-6 py-6 text-center text-xs text-white/70 relative z-10 font-mono">
+      <footer className="max-w-6xl mx-auto w-full px-6 py-6 text-center text-xs text-neutral-600 border-t-2 border-black relative z-10 font-mono uppercase font-bold">
         DevCommand &bull; Isolated Multi-Tenant Architecture &bull; MongoDB Atlas &bull; AES-256 Vault
       </footer>
     </div>

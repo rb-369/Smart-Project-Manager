@@ -10,20 +10,11 @@ import {
 } from '@/types';
 import {
   Bot,
-  Layers,
-  Search,
-  Scale,
   Send,
   Loader2,
   X,
   Maximize2,
-  Database,
-  AlertTriangle,
-  Zap,
-  Check,
-  Plus,
   Trash2,
-  Target,
 } from 'lucide-react';
 
 function ChatLauncherContent() {
@@ -164,34 +155,34 @@ function ChatLauncherContent() {
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-[#0051FF] via-[#0038b8] to-[#1e1b4b] text-white font-bold text-xs shadow-2xl border border-white/30 hover:scale-105 transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,81,255,0.6)] cursor-pointer"
+            className="group flex items-center gap-2.5 px-4 py-3 bg-[#DFFF4F] text-black font-mono font-black text-xs border-2 border-black shadow-[4px_4px_0px_#000000] hover:shadow-[6px_6px_0px_#000000] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
           >
-            <div className="w-6 h-6 rounded-lg bg-black/30 border border-white/20 flex items-center justify-center p-0.5">
-              <Bot className="w-3.5 h-3.5 text-[#C6FF20]" />
+            <div className="w-6 h-6 bg-black text-[#DFFF4F] border border-black flex items-center justify-center p-0.5">
+              <Bot className="w-3.5 h-3.5" />
             </div>
-            <span className="tracking-wide">AI Copilot & Sub-Agents</span>
-            <span className="w-2 h-2 rounded-full bg-[#C6FF20] pulse-lime" />
+            <span className="uppercase tracking-wider">AI COPILOT &amp; SUB-AGENTS</span>
+            <span className="w-2 h-2 rounded-full bg-black border border-black" />
           </button>
         )}
       </div>
 
       {/* Floating Flyout Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[94vw] sm:w-[480px] h-[620px] max-h-[85vh] rounded-3xl bg-[#090b11]/95 text-white border border-white/20 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 w-[94vw] sm:w-[480px] h-[620px] max-h-[85vh] bg-[#F6F3EC] text-black border-3 border-black shadow-[12px_12px_0px_#000000] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
           
           {/* Header */}
-          <div className="px-4 py-3 bg-white/[0.04] border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#0051FF] to-[#002AD4] border border-white/30 flex items-center justify-center p-1">
-                <Bot className="w-3.5 h-3.5 text-[#C6FF20]" />
+          <div className="px-4 py-3 bg-white border-b-2 border-black flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-[#0047FF] text-[#DFFF4F] border-2 border-black flex items-center justify-center p-1 shadow-[2px_2px_0px_#000000]">
+                <Bot className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-bold text-xs tracking-tight flex items-center gap-1.5">
-                  <span>DevCommand Copilot</span>
+                <h3 className="font-black text-xs uppercase tracking-tight flex items-center gap-1.5">
+                  <span>DEVCOMMAND COPILOT</span>
                 </h3>
-                <div className="flex items-center gap-1.5 text-[10px] font-mono text-white/60">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C6FF20]" />
-                  <span>3 Sub-Agents Active • Qdrant RAG</span>
+                <div className="flex items-center gap-1.5 text-[10px] font-mono text-neutral-600 font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0047FF]" />
+                  <span>3 SUB-AGENTS &bull; QDRANT RAG</span>
                 </div>
               </div>
             </div>
@@ -200,7 +191,7 @@ function ChatLauncherContent() {
               {messages.length > 0 && (
                 <button
                   onClick={handleClearHistory}
-                  className="p-1.5 rounded-lg text-white/50 hover:text-rose-400 hover:bg-white/10 transition-colors"
+                  className="p-1.5 bg-[#FAF7EE] border border-black hover:bg-rose-50 text-neutral-700 hover:text-rose-700 transition"
                   title="Clear Chat History"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -211,44 +202,44 @@ function ChatLauncherContent() {
                   setIsOpen(false);
                   router.push('/chat');
                 }}
-                className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 bg-[#FAF7EE] border border-black hover:bg-neutral-200 text-black transition"
                 title="Expand to Full Page"
               >
-                <Maximize2 className="w-4 h-4" />
+                <Maximize2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 bg-[#FAF7EE] border border-black hover:bg-black hover:text-white transition"
                 title="Close"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs bg-[#F6F3EC]">
             {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-white/60 space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-[#C6FF20]" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-neutral-600 space-y-3">
+                <div className="w-12 h-12 bg-white border-2 border-black flex items-center justify-center shadow-[3px_3px_0px_#000000]">
+                  <Bot className="w-6 h-6 text-[#0047FF]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-white">Ask Anything or Pitch an Idea</h4>
-                  <p className="text-[11px] text-white/60 mt-1 max-w-xs">
+                  <h4 className="font-black text-sm text-black uppercase tracking-tight">PITCH AN IDEA OR QUERY REPOS</h4>
+                  <p className="text-[11px] text-neutral-600 mt-1 max-w-xs font-mono">
                     Our 3 sub-agents automatically research competitors, judge viability, and draft blueprints.
                   </p>
                 </div>
-                <div className="w-full space-y-1.5 pt-2">
+                <div className="w-full space-y-2 pt-2">
                   <button
                     onClick={() => handleSendMessage('Should we add biometric authentication to our application?')}
-                    className="w-full text-left p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-white/80 transition-colors"
+                    className="w-full text-left p-2.5 bg-white hover:bg-[#DFFF4F] border-2 border-black text-[11px] font-mono font-bold text-black transition shadow-[2px_2px_0px_#000000] cursor-pointer"
                   >
                     💡 Should we add biometric authentication?
                   </button>
                   <button
                     onClick={() => handleSendMessage('Evaluate building an automated subscription billing system')}
-                    className="w-full text-left p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-white/80 transition-colors"
+                    className="w-full text-left p-2.5 bg-white hover:bg-[#DFFF4F] border-2 border-black text-[11px] font-mono font-bold text-black transition shadow-[2px_2px_0px_#000000] cursor-pointer"
                   >
                     💳 Evaluate automated subscription billing
                   </button>
@@ -265,38 +256,38 @@ function ChatLauncherContent() {
                     key={msg.id}
                     className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-1`}
                   >
-                    <div className="text-[10px] font-mono text-white/40 px-1">
-                      {msg.role === 'user' ? 'You' : 'DevCommand AI'}
+                    <div className="text-[10px] font-mono text-neutral-600 uppercase font-black px-1">
+                      {msg.role === 'user' ? 'YOU' : 'DEVCOMMAND AI'}
                     </div>
 
                     <div
-                      className={`rounded-2xl p-3.5 max-w-[92%] leading-relaxed ${
+                      className={`p-3.5 max-w-[92%] leading-relaxed border-2 border-black ${
                         msg.role === 'user'
-                          ? 'bg-blue-600 text-white border border-blue-400/40'
-                          : 'bg-white text-slate-900 border border-white/30 shadow-xl'
+                          ? 'bg-[#0047FF] text-white shadow-[3px_3px_0px_#000000]'
+                          : 'bg-white text-black shadow-[4px_4px_0px_#000000]'
                       }`}
                     >
                       {msg.role === 'user' ? (
-                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                        <div className="whitespace-pre-wrap font-sans">{msg.content}</div>
                       ) : (
                         <div className="space-y-3">
                           {/* If Sub-Agents executed */}
                           {isPipeline && sub.judge && (
                             <div className="space-y-2.5">
                               {/* Executive Score Header */}
-                              <div className="p-3 rounded-xl bg-slate-950 text-white border border-slate-800 space-y-1.5">
+                              <div className="p-3 bg-black text-white border-2 border-black shadow-[2px_2px_0px_#000000] space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                  <span className="font-mono text-[10px] text-slate-400 uppercase font-bold">
-                                    THE JUDGE
+                                  <span className="font-mono text-[10px] text-[#DFFF4F] uppercase font-black">
+                                    THE JUDGE VERDICT
                                   </span>
                                   <div className="flex items-center gap-1.5">
                                     <span className="font-mono font-black text-sm text-white">
                                       {sub.judge.score}/100
                                     </span>
                                     <span
-                                      className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+                                      className={`px-1.5 py-0.5 text-[9px] font-mono font-black border border-black uppercase ${
                                         sub.judge.verdict_signal === 'BUILD_NOW'
-                                          ? 'bg-emerald-500 text-black'
+                                          ? 'bg-[#DFFF4F] text-black'
                                           : sub.judge.verdict_signal === 'PROCEED_WITH_CAUTION'
                                           ? 'bg-amber-400 text-black'
                                           : 'bg-rose-500 text-white'
@@ -306,33 +297,33 @@ function ChatLauncherContent() {
                                     </span>
                                   </div>
                                 </div>
-                                <p className="text-[11px] text-slate-300 leading-normal">
+                                <p className="text-[11px] text-neutral-200 leading-normal font-mono">
                                   {sub.judge.summary_verdict}
                                 </p>
                               </div>
 
                               {/* Sub-Agent Tabs */}
-                              <div className="flex items-center gap-1 border-b border-slate-200 pb-1.5 text-[11px] font-mono">
+                              <div className="flex items-center gap-1 border-b-2 border-black pb-1.5 text-[11px] font-mono font-black">
                                 <button
                                   onClick={() => setActiveTabPerMessage((p) => ({ ...p, [msg.id]: 'judge' }))}
-                                  className={`px-2 py-1 rounded-lg font-bold ${
-                                    tab === 'judge' ? 'bg-rose-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                                  className={`px-2 py-1 border-2 border-black uppercase cursor-pointer ${
+                                    tab === 'judge' ? 'bg-[#FF5533] text-black shadow-[2px_2px_0px_#000000]' : 'bg-[#FAF7EE] text-black hover:bg-neutral-200'
                                   }`}
                                 >
                                   Judge
                                 </button>
                                 <button
                                   onClick={() => setActiveTabPerMessage((p) => ({ ...p, [msg.id]: 'researcher' }))}
-                                  className={`px-2 py-1 rounded-lg font-bold ${
-                                    tab === 'researcher' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                                  className={`px-2 py-1 border-2 border-black uppercase cursor-pointer ${
+                                    tab === 'researcher' ? 'bg-[#0047FF] text-white shadow-[2px_2px_0px_#000000]' : 'bg-[#FAF7EE] text-black hover:bg-neutral-200'
                                   }`}
                                 >
                                   Researcher
                                 </button>
                                 <button
                                   onClick={() => setActiveTabPerMessage((p) => ({ ...p, [msg.id]: 'planner' }))}
-                                  className={`px-2 py-1 rounded-lg font-bold ${
-                                    tab === 'planner' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                                  className={`px-2 py-1 border-2 border-black uppercase cursor-pointer ${
+                                    tab === 'planner' ? 'bg-[#DFFF4F] text-black shadow-[2px_2px_0px_#000000]' : 'bg-[#FAF7EE] text-black hover:bg-neutral-200'
                                   }`}
                                 >
                                   Planner
@@ -341,28 +332,28 @@ function ChatLauncherContent() {
 
                               {/* Tab Content */}
                               {tab === 'judge' && (
-                                <div className="space-y-2 text-[11px] text-slate-700">
-                                  <p className="leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                <div className="space-y-2 text-[11px] text-neutral-800">
+                                  <p className="leading-relaxed bg-[#FAF7EE] p-2.5 border-2 border-black font-mono">
                                     {sub.judge.brutal_critique}
                                   </p>
                                   {sub.judge.what_to_build_instead && (
-                                    <div className="p-2.5 rounded-lg bg-purple-50 border border-purple-200 text-purple-900 space-y-0.5">
-                                      <div className="font-bold font-mono text-[10px] text-purple-700">ALTERNATIVE:</div>
-                                      <div>{sub.judge.what_to_build_instead}</div>
+                                    <div className="p-2.5 bg-amber-50 border-2 border-black text-black space-y-0.5">
+                                      <div className="font-mono text-[10px] text-[#0047FF] font-black uppercase">ALTERNATIVE PROPOSAL:</div>
+                                      <div className="font-mono">{sub.judge.what_to_build_instead}</div>
                                     </div>
                                   )}
                                 </div>
                               )}
 
                               {tab === 'researcher' && sub.researcher && (
-                                <div className="text-[11px] text-slate-700 bg-sky-50/50 p-2.5 rounded-lg border border-sky-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto">
+                                <div className="text-[11px] text-black bg-[#FAF7EE] p-2.5 border-2 border-black whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto font-mono">
                                   {sub.researcher.content}
                                 </div>
                               )}
 
                               {tab === 'planner' && sub.planner && (
-                                <div className="text-[11px] text-slate-700 space-y-2">
-                                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto">
+                                <div className="text-[11px] text-black space-y-2">
+                                  <div className="bg-[#FAF7EE] p-2.5 border-2 border-black whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto font-mono">
                                     {sub.pivot_plan ? sub.pivot_plan.content : sub.planner.content}
                                   </div>
                                 </div>
@@ -372,17 +363,17 @@ function ChatLauncherContent() {
 
                           {/* Conversational content if no subagent pipeline */}
                           {(!isPipeline || !sub?.judge) && (
-                            <div className="whitespace-pre-wrap text-slate-900 leading-relaxed text-xs">
+                            <div className="whitespace-pre-wrap text-black leading-relaxed text-xs">
                               {msg.content}
                             </div>
                           )}
 
                           {/* Citations */}
                           {msg.citations && msg.citations.length > 0 && (
-                            <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap text-[10px] font-mono text-slate-500">
-                              <span className="font-bold text-slate-700">Qdrant Context:</span>
+                            <div className="pt-2 border-t-2 border-black flex items-center gap-1.5 flex-wrap text-[10px] font-mono text-neutral-600 font-bold">
+                              <span className="text-black uppercase">QDRANT CONTEXT:</span>
                               {msg.citations.slice(0, 2).map((c, idx) => (
-                                <span key={idx} className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">
+                                <span key={idx} className="px-1.5 py-0.5 bg-[#FAF7EE] border border-black text-black">
                                   {c.title}
                                 </span>
                               ))}
@@ -398,20 +389,20 @@ function ChatLauncherContent() {
 
             {/* Submitting Stepper */}
             {isSubmitting && (
-              <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white space-y-2 text-xs font-mono">
-                <div className="flex items-center gap-2 text-[#C6FF20]">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span className="font-bold">Coordinating 3 Sub-Agents...</span>
+              <div className="p-3 bg-white border-2 border-black shadow-[3px_3px_0px_#000000] text-black space-y-2 text-xs font-mono">
+                <div className="flex items-center gap-2 text-black font-black uppercase">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0047FF]" />
+                  <span>COORDINATING 3 SUB-AGENTS...</span>
                 </div>
-                <div className="grid grid-cols-3 gap-1 text-[10px]">
-                  <div className={`p-1.5 rounded-lg border ${activeStep >= 2 ? 'bg-sky-950/60 border-sky-400 text-sky-200' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-                    1. Researcher
+                <div className="grid grid-cols-3 gap-1 text-[10px] font-black uppercase">
+                  <div className={`p-1.5 border-2 border-black ${activeStep >= 2 ? 'bg-[#0047FF] text-white' : 'bg-[#FAF7EE] text-neutral-400'}`}>
+                    1. RESEARCH
                   </div>
-                  <div className={`p-1.5 rounded-lg border ${activeStep >= 3 ? 'bg-rose-950/60 border-rose-400 text-rose-200' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-                    2. Judge
+                  <div className={`p-1.5 border-2 border-black ${activeStep >= 3 ? 'bg-[#FF5533] text-black' : 'bg-[#FAF7EE] text-neutral-400'}`}>
+                    2. JUDGE
                   </div>
-                  <div className={`p-1.5 rounded-lg border ${activeStep >= 4 ? 'bg-blue-950/60 border-blue-400 text-blue-200' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
-                    3. Planner
+                  <div className={`p-1.5 border-2 border-black ${activeStep >= 4 ? 'bg-[#DFFF4F] text-black' : 'bg-[#FAF7EE] text-neutral-400'}`}>
+                    3. PLAN
                   </div>
                 </div>
               </div>
@@ -421,7 +412,7 @@ function ChatLauncherContent() {
           </div>
 
           {/* Footer Input */}
-          <div className="p-3 bg-white/[0.03] border-t border-white/10 space-y-2">
+          <div className="p-3 bg-white border-t-2 border-black space-y-2">
             <div className="flex items-end gap-2">
               <textarea
                 rows={2}
@@ -429,12 +420,12 @@ function ChatLauncherContent() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Pitch a feature idea or ask a codebase question..."
-                className="flex-1 bg-black/40 border border-white/20 text-white placeholder-white/40 text-xs rounded-xl p-2.5 outline-none focus:border-[#C6FF20] resize-none"
+                className="flex-1 bg-[#FAF7EE] border-2 border-black text-black placeholder-neutral-500 text-xs font-mono p-2.5 outline-none focus:bg-white resize-none"
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={isSubmitting || !inputValue.trim()}
-                className="w-10 h-10 rounded-xl bg-[#C6FF20] hover:bg-[#b2ee13] text-black font-bold flex items-center justify-center shrink-0 disabled:opacity-40 transition-all cursor-pointer"
+                className="w-10 h-10 bg-[#DFFF4F] hover:bg-black hover:text-[#DFFF4F] text-black font-black border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none flex items-center justify-center shrink-0 disabled:opacity-40 transition-all cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

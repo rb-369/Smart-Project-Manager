@@ -12,22 +12,14 @@ import {
   ExternalLink,
   Plus,
   CheckCircle2,
-  Circle,
   Trash2,
   Loader2,
   Cpu,
-  Target,
   X,
-  Layers,
-  ShieldCheck,
-  Zap,
-  Clock,
-  MoreVertical,
   Star,
   Globe,
   EyeOff,
   RotateCcw,
-  Edit3,
   Check
 } from 'lucide-react';
 
@@ -121,40 +113,46 @@ function ProjectDetailContent() {
   const handleAddFeature = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    setIsAdding(true);
+
     try {
+      setIsAdding(true);
       await api.post(`/projects/${projectId}/features`, {
         title: newTitle.trim(),
         priority: newPriority,
         description: newDescription.trim() || undefined,
         status: 'BACKLOG',
       });
+      fetchProject();
       setNewTitle('');
       setNewDescription('');
-      fetchProject();
+      setNewPriority('P1');
     } catch (err: any) {
-      console.warn('Unable to add feature:', err?.message || err);
+      alert(`Failed to add feature: ${err.message}`);
     } finally {
       setIsAdding(false);
     }
   };
 
   const handleToggleStatus = async (feature: Feature) => {
-    const nextStatus: FeatureStatus = feature.status === 'DONE' ? 'BACKLOG' : 'DONE';
+    const nextStatus: FeatureStatus =
+      feature.status === 'DONE' ? 'BACKLOG' : feature.status === 'BACKLOG' ? 'IN_PROGRESS' : 'DONE';
+
     try {
       await api.patch(`/features/${feature.id}`, { status: nextStatus });
       fetchProject();
     } catch (err: any) {
-      console.warn('Unable to toggle feature status:', err?.message || err);
+      alert(`Failed to update status: ${err.message}`);
     }
   };
 
   const handleDeleteFeature = async (featureId: string) => {
+    if (!confirm('Are you sure you want to remove this feature?')) return;
+
     try {
       await api.delete(`/features/${featureId}`);
       fetchProject();
     } catch (err: any) {
-      console.warn('Unable to delete feature:', err?.message || err);
+      alert(`Failed to delete feature: ${err.message}`);
     }
   };
 
@@ -166,32 +164,39 @@ function ProjectDetailContent() {
       setAiSuggestions(res.features || []);
       setAiProvider(res.provider_used || 'ai');
     } catch (err: any) {
-      console.warn('Unable to fetch AI suggestions:', err?.message || err);
+      alert(`Failed to fetch AI suggestions: ${err.message}`);
     } finally {
       setAiLoading(false);
     }
   };
 
-  const handleAddAiFeature = async (s: SuggestedFeature) => {
+  const handleAddAiFeature = async (feature: SuggestedFeature) => {
     try {
       await api.post(`/projects/${projectId}/features`, {
-        title: s.title,
-        priority: s.priority,
-        description: s.description,
+        title: feature.title,
+        priority: feature.priority,
+        description: feature.description,
         status: 'BACKLOG',
       });
-      setAiSuggestions((prev) => prev.filter((item) => item.title !== s.title));
+      setAiSuggestions((prev) => prev.filter((f) => f.title !== feature.title));
       fetchProject();
     } catch (err: any) {
-      console.warn('Unable to add AI feature:', err?.message || err);
+      alert(`Failed to add feature: ${err.message}`);
     }
+  };
+
+  const priorityBadges: Record<FeaturePriority, { bg: string; dot: string; label: string }> = {
+    P0: { bg: 'bg-[#FF5533] text-black border-2 border-black', dot: 'bg-black', label: 'P0 IMMEDIATE' },
+    P1: { bg: 'bg-amber-300 text-black border-2 border-black', dot: 'bg-black', label: 'P1 HIGH' },
+    P2: { bg: 'bg-[#BBF7D0] text-black border-2 border-black', dot: 'bg-black', label: 'P2 MEDIUM' },
+    P3: { bg: 'bg-white text-black border-2 border-black', dot: 'bg-black', label: 'P3 LOW' },
   };
 
   if (loading) {
     return (
       <StaticLoader
-        label="Decompiling Repository Blueprint"
-        sublabel="Hydrating features, status physics, and milestone matrix..."
+        label="HYDRATING PROJECT ROADMAP"
+        sublabel="Connecting to isolated repository matrix..."
         fullScreen={true}
       />
     );
@@ -199,53 +204,51 @@ function ProjectDetailContent() {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-blue-grid p-8 text-center text-rose-300 font-mono text-xs flex items-center justify-center">
-        {error || 'Project not found.'}
+      <div className="min-h-screen bg-[#F6F3EC] text-black flex flex-col justify-center items-center p-4">
+        <div className="bg-white border-3 border-black p-8 text-center max-w-md shadow-[8px_8px_0px_#000000] space-y-4">
+          <p className="text-black text-sm font-mono font-black uppercase">
+            {error || 'Project not found.'}
+          </p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-5 py-2.5 bg-[#DFFF4F] text-black border-2 border-black font-mono font-black text-xs uppercase shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] transition cursor-pointer"
+          >
+            &larr; Return to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
 
-  const priorityBadges: Record<string, { label: string; bg: string; dot: string }> = {
-    P0: { label: 'CRITICAL', bg: 'bg-rose-50 border-rose-200 text-rose-700', dot: 'bg-rose-500' },
-    P1: { label: 'HIGH', bg: 'bg-amber-50 border-amber-200 text-amber-700', dot: 'bg-amber-500' },
-    P2: { label: 'MEDIUM', bg: 'bg-blue-50 border-blue-200 text-blue-700', dot: 'bg-blue-600' },
-    P3: { label: 'LOW', bg: 'bg-emerald-50 border-emerald-200 text-emerald-700', dot: 'bg-emerald-500' },
-  };
-
-  // Group features into Kanban categories
-  const backlogFeatures = project.features.filter((f) => f.status === 'BACKLOG' || !f.status);
+  const backlogFeatures = project.features.filter((f) => f.status === 'BACKLOG');
   const inProgressFeatures = project.features.filter((f) => f.status === 'IN_PROGRESS');
   const doneFeatures = project.features.filter((f) => f.status === 'DONE');
 
   return (
-    <div className="min-h-screen bg-blue-grid text-white relative overflow-hidden flex flex-col font-sans selection:bg-[#C6FF20] selection:text-black">
-      {/* Subtle Ambient Vignettes on Blue */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-[#C6FF20]/10 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Floating Island Navigation Header */}
+    <div className="min-h-screen bg-[#F6F3EC] text-black relative flex flex-col font-sans selection:bg-[#DFFF4F] selection:text-black">
+      {/* Navigation Header */}
       <Navbar />
 
-      {/* Main Content: Full Blue Page with Compact Functional Header */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-32 pb-20 space-y-6 relative z-10 flex-1">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-28 pb-20 space-y-6 relative z-10 flex-1">
         
         {/* Navigation Breadcrumb & Actions Bar */}
-        <div className="flex items-center justify-between flex-wrap gap-3 pb-1">
+        <div className="flex items-center justify-between flex-wrap gap-3 pb-2 border-b-2 border-black">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-xs font-mono font-bold text-white/80 hover:text-white transition-colors cursor-pointer bg-white/10 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-md"
+            className="flex items-center gap-2 text-xs font-mono font-black uppercase text-black bg-white px-3.5 py-1.5 border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-[#FAF7EE] transition cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Command Center
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Mission Control
           </button>
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Star / Main Button */}
             <button
               onClick={handleToggleStar}
-              className={`inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-bold border rounded-full transition backdrop-blur-md cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-black uppercase border-2 border-black transition cursor-pointer ${
                 project.is_starred
-                  ? 'bg-amber-400 text-black border-amber-300 font-black shadow-md'
-                  : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                  ? 'bg-[#DFFF4F] text-black shadow-[2px_2px_0px_#000000]'
+                  : 'bg-white text-black shadow-[2px_2px_0px_#000000] hover:bg-[#FAF7EE]'
               }`}
               title={project.is_starred ? 'Unstar (unpin)' : 'Star (pin to top)'}
             >
@@ -259,7 +262,7 @@ function ProjectDetailContent() {
                 href={project.live_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-black border border-emerald-400 bg-emerald-500/20 text-[#C6FF20] hover:bg-emerald-500/30 rounded-full transition backdrop-blur-md shadow-xs"
+                className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-black uppercase border-2 border-black bg-[#BBF7D0] text-black hover:bg-black hover:text-[#DFFF4F] transition shadow-[2px_2px_0px_#000000]"
               >
                 <Globe className="w-3.5 h-3.5" />
                 <span>Launch App</span>
@@ -273,7 +276,7 @@ function ProjectDetailContent() {
                 href={project.html_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-bold border border-white/25 bg-white/10 hover:bg-white/20 text-white rounded-full transition backdrop-blur-md"
+                className="inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-black uppercase border-2 border-black bg-white hover:bg-black hover:text-white text-black transition shadow-[2px_2px_0px_#000000]"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>GitHub</span>
@@ -283,10 +286,10 @@ function ProjectDetailContent() {
             {/* Soft-Hide / Restore Button */}
             <button
               onClick={handleToggleHide}
-              className={`inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-bold border rounded-full transition backdrop-blur-md cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-mono font-black uppercase border-2 border-black transition cursor-pointer shadow-[2px_2px_0px_#000000] ${
                 project.is_hidden
-                  ? 'bg-blue-600/30 text-blue-200 border-blue-400'
-                  : 'bg-white/10 hover:bg-rose-500/20 text-white/70 hover:text-rose-300 border-white/20'
+                  ? 'bg-[#0047FF] text-white hover:bg-black'
+                  : 'bg-white text-black hover:bg-rose-50 hover:text-rose-700'
               }`}
               title={project.is_hidden ? 'Restore to active dashboard' : 'Hide from default view'}
             >
@@ -306,7 +309,7 @@ function ProjectDetailContent() {
             {/* AI Strategist Button */}
             <button
               onClick={handleFetchAiSuggestions}
-              className="btn-lime !py-1.5 !px-4 text-xs font-black shadow-md cursor-pointer flex items-center gap-1.5"
+              className="py-1.5 px-4 bg-[#DFFF4F] text-black border-2 border-black font-mono text-xs font-black uppercase shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] cursor-pointer flex items-center gap-1.5 transition"
             >
               <Cpu className="w-3.5 h-3.5 text-black" />
               <span>AI Strategist</span>
@@ -315,30 +318,30 @@ function ProjectDetailContent() {
         </div>
 
         {/* Project Header Card */}
-        <div className="bg-white text-slate-900 border border-white/20 shadow-2xl p-6 sm:p-8 rounded-3xl">
+        <div className="bg-white text-black border-2 border-black shadow-[6px_6px_0px_#000000] p-6 sm:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="w-2 h-2 rounded-full bg-[#0038FF] pulse-blue" />
-                <span className="text-[11px] font-mono text-[#0038FF] uppercase tracking-widest font-black">
-                  AI CODE INTELLIGENCE &amp; REVIEW MATRIX
+                <span className="w-2.5 h-2.5 bg-[#0047FF] border border-black inline-block" />
+                <span className="text-[11px] font-mono text-neutral-700 uppercase tracking-widest font-black">
+                  AI CODE INTELLIGENCE &bull; ROADMAP MATRIX
                 </span>
                 {project.is_starred && (
-                  <span className="text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1">
-                    <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                  <span className="text-[9px] font-mono font-black uppercase px-2 py-0.5 bg-[#DFFF4F] text-black border border-black flex items-center gap-1">
+                    <Star className="w-2.5 h-2.5 fill-black text-black" />
                     <span>MAIN</span>
                   </span>
                 )}
                 {project.is_hidden && (
-                  <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                  <span className="text-[9px] font-mono font-black uppercase px-2 py-0.5 bg-black text-white border border-black">
                     HIDDEN
                   </span>
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-4xl font-black text-black uppercase tracking-tight flex items-center gap-3 flex-wrap">
                 <span>{project.name}</span>
-                <span className="text-xs font-mono px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-200 font-bold">
+                <span className="text-xs font-mono px-3 py-1 bg-black text-[#DFFF4F] border border-black font-black uppercase">
                   {project.project_type}
                 </span>
               </h1>
@@ -346,8 +349,8 @@ function ProjectDetailContent() {
               {/* Live URL Bar */}
               <div className="mt-3 flex items-center gap-2 flex-wrap">
                 {project.live_url ? (
-                  <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-emerald-800 px-3 py-1 rounded-full text-xs font-mono font-bold">
-                    <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="flex items-center gap-2 bg-[#BBF7D0] border-2 border-black text-black px-3 py-1 text-xs font-mono font-black shadow-[2px_2px_0px_#000000]">
+                    <Globe className="w-3.5 h-3.5 text-black" />
                     <a
                       href={project.live_url}
                       target="_blank"
@@ -359,7 +362,7 @@ function ProjectDetailContent() {
                     </a>
                     <button
                       onClick={() => setIsEditingUrl(!isEditingUrl)}
-                      className="text-emerald-700 hover:text-emerald-950 ml-1 underline cursor-pointer text-[10px]"
+                      className="text-black ml-1 uppercase underline cursor-pointer text-[10px]"
                     >
                       Edit
                     </button>
@@ -367,7 +370,7 @@ function ProjectDetailContent() {
                 ) : (
                   <button
                     onClick={() => setIsEditingUrl(!isEditingUrl)}
-                    className="flex items-center gap-1 text-xs font-mono text-[#0038FF] hover:underline cursor-pointer bg-blue-50 px-3 py-1 rounded-full border border-blue-200 font-bold"
+                    className="flex items-center gap-1 text-xs font-mono text-[#0047FF] hover:underline cursor-pointer bg-[#FAF7EE] px-3 py-1 border-2 border-black font-black uppercase shadow-[2px_2px_0px_#000000]"
                   >
                     <Globe className="w-3.5 h-3.5" />
                     <span>+ Add Live Deployed URL (Vercel)</span>
@@ -375,26 +378,26 @@ function ProjectDetailContent() {
                 )}
 
                 {isEditingUrl && (
-                  <form onSubmit={handleSaveLiveUrl} className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-300">
+                  <form onSubmit={handleSaveLiveUrl} className="flex items-center gap-1.5 bg-[#FAF7EE] p-1 border-2 border-black shadow-[2px_2px_0px_#000000]">
                     <input
                       type="url"
                       value={liveUrlInput}
                       onChange={(e) => setLiveUrlInput(e.target.value)}
                       placeholder="https://my-app.vercel.app"
-                      className="bg-white border border-slate-300 text-slate-900 text-xs rounded-lg px-2 py-1 outline-none focus:border-[#0038FF]"
+                      className="bg-white border-2 border-black text-black text-xs font-mono px-2 py-1 outline-none"
                       autoFocus
                     />
                     <button
                       type="submit"
                       disabled={liveUrlSaving}
-                      className="px-2.5 py-1 rounded-lg bg-[#0038FF] text-white text-xs font-bold hover:bg-blue-700 transition cursor-pointer"
+                      className="px-2.5 py-1 bg-[#0047FF] text-white text-xs font-black border-2 border-black hover:bg-black transition cursor-pointer"
                     >
                       {liveUrlSaving ? '...' : <Check className="w-3 h-3" />}
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsEditingUrl(false)}
-                      className="p-1 rounded-lg text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                      className="p-1 bg-white border-2 border-black text-black hover:bg-neutral-200 transition cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -403,55 +406,55 @@ function ProjectDetailContent() {
               </div>
 
               {project.goal && (
-                <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed font-normal">
-                  <span className="text-[#0038FF] font-mono text-xs mr-1.5 font-bold">Target:</span>
+                <p className="text-xs sm:text-sm text-neutral-800 mt-2 max-w-2xl leading-relaxed font-mono">
+                  <span className="text-[#0047FF] font-black uppercase mr-1.5">Target:</span>
                   {project.goal}
                 </p>
               )}
             </div>
 
             {/* Review Telemetry Badges */}
-            <div className="grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-6">
+            <div className="grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l-2 border-black pt-4 md:pt-0 md:pl-6 font-mono">
               <div>
-                <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">Critical Issues</div>
-                <div className="text-2xl font-black text-slate-950 num-tabular mt-0.5">0</div>
-                <div className="text-[10px] text-emerald-600 font-mono font-bold flex items-center gap-1 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <div className="text-[10px] text-neutral-500 uppercase font-black">Critical Issues</div>
+                <div className="text-2xl font-black text-black num-tabular mt-0.5">0</div>
+                <div className="text-[10px] text-black font-black uppercase flex items-center gap-1 mt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-[#DFFF4F] border border-black" />
                   Clean
                 </div>
               </div>
 
               <div>
-                <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">Suggestions</div>
-                <div className="text-2xl font-black text-[#0038FF] num-tabular mt-0.5">
+                <div className="text-[10px] text-neutral-500 uppercase font-black">Suggestions</div>
+                <div className="text-2xl font-black text-[#0047FF] num-tabular mt-0.5">
                   {aiSuggestions.length || 4}
                 </div>
-                <div className="text-[10px] text-slate-500 font-mono mt-0.5">Optimizations</div>
+                <div className="text-[10px] text-neutral-600 font-bold uppercase mt-0.5">Optimizations</div>
               </div>
 
               <div>
-                <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">Velocity</div>
-                <div className="text-2xl font-black text-[#7020DD] num-tabular mt-0.5">
+                <div className="text-[10px] text-neutral-500 uppercase font-black">Velocity</div>
+                <div className="text-2xl font-black text-black num-tabular mt-0.5">
                   {project.progress_percentage}%
                 </div>
-                <div className="text-[10px] text-slate-500 font-mono mt-0.5">Weighted</div>
+                <div className="text-[10px] text-neutral-600 font-bold uppercase mt-0.5">Weighted</div>
               </div>
             </div>
           </div>
 
           {/* Velocity Progress Track */}
-          <div className="mt-6 pt-4 border-t border-slate-100">
+          <div className="mt-6 pt-4 border-t-2 border-black">
             <div className="flex justify-between items-center text-xs mb-1.5 font-mono">
-              <span className="text-slate-500 text-[11px] font-bold">
+              <span className="text-neutral-700 text-[11px] font-black uppercase tracking-wider">
                 Delivery Velocity ({project.completed_features}/{project.total_features} features completed)
               </span>
-              <span className="font-bold text-xs text-slate-950 num-tabular">
+              <span className="font-black text-xs text-black num-tabular bg-[#DFFF4F] px-1.5 py-0.2 border border-black">
                 {project.progress_percentage}%
               </span>
             </div>
-            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+            <div className="w-full h-3 bg-[#FAF7EE] border-2 border-black overflow-hidden p-0.5">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#0038FF] via-lime-500 to-[#7020DD] transition-all duration-700 shadow-md"
+                className="h-full bg-[#0047FF] border-r-2 border-black transition-all duration-700"
                 style={{ width: `${project.progress_percentage}%` }}
               />
             </div>
@@ -459,7 +462,7 @@ function ProjectDetailContent() {
         </div>
 
         {/* Quick Add Feature Bar */}
-        <div className="bg-white text-slate-900 border border-white/20 shadow-2xl p-4 rounded-2xl">
+        <div className="bg-white text-black border-2 border-black shadow-[4px_4px_0px_#000000] p-4">
           <form onSubmit={handleAddFeature}>
             <div className="flex flex-col sm:flex-row gap-3">
               <input
@@ -467,22 +470,22 @@ function ProjectDetailContent() {
                 placeholder="Register deliverable or task (e.g. Implement Webhook Dispatcher)..."
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                className="flex-1 bg-slate-50 border border-slate-200 focus:border-[#0038FF] focus:bg-white rounded-full px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none transition shadow-inner font-normal"
+                className="flex-1 bg-[#FAF7EE] border-2 border-black focus:border-[#0047FF] focus:bg-white px-4 py-2.5 text-xs text-black placeholder-neutral-400 focus:outline-none transition font-mono"
               />
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as FeaturePriority)}
-                className="bg-slate-50 border border-slate-200 focus:border-[#0038FF] rounded-full px-4 py-2 text-xs text-slate-700 focus:outline-none cursor-pointer font-mono font-bold"
+                className="bg-[#FAF7EE] border-2 border-black focus:border-[#0047FF] px-4 py-2 text-xs text-black focus:outline-none cursor-pointer font-mono font-black uppercase"
               >
-                <option value="P0" className="bg-white text-slate-900">P0 (Critical / 4x)</option>
-                <option value="P1" className="bg-white text-slate-900">P1 (High / 3x)</option>
-                <option value="P2" className="bg-white text-slate-900">P2 (Medium / 2x)</option>
-                <option value="P3" className="bg-white text-slate-900">P3 (Low / 1x)</option>
+                <option value="P0">P0 (Critical / 4x)</option>
+                <option value="P1">P1 (High / 3x)</option>
+                <option value="P2">P2 (Medium / 2x)</option>
+                <option value="P3">P3 (Low / 1x)</option>
               </select>
               <button
                 type="submit"
                 disabled={isAdding || !newTitle.trim()}
-                className="btn-lime !py-2.5 !px-6 text-xs font-black rounded-full flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer"
+                className="py-2.5 px-6 bg-[#DFFF4F] hover:bg-black hover:text-[#DFFF4F] text-black border-2 border-black font-mono font-black text-xs uppercase flex items-center justify-center gap-1.5 shrink-0 shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer transition"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Task</span>
@@ -498,43 +501,43 @@ function ProjectDetailContent() {
           <div className="space-y-3">
             <div className="flex items-center justify-between px-2 text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C6FF20] pulse-lime" />
-                <span className="font-black text-white uppercase tracking-wider">Backlog</span>
+                <span className="w-3 h-3 bg-amber-300 border border-black" />
+                <span className="font-black text-black uppercase tracking-wider">Backlog</span>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white border border-white/20 text-[10px] font-black font-mono">
+              <span className="px-2.5 py-0.5 bg-white text-black border-2 border-black text-[10px] font-black font-mono shadow-[2px_2px_0px_#000000]">
                 {backlogFeatures.length}
               </span>
             </div>
 
             <div className="space-y-3">
               {backlogFeatures.length === 0 ? (
-                <div className="bg-white/10 border border-white/15 p-8 text-center text-xs text-white/60 font-mono rounded-2xl backdrop-blur-md">
+                <div className="bg-white border-2 border-black p-8 text-center text-xs text-neutral-500 font-mono shadow-[2px_2px_0px_#000000]">
                   No tasks in backlog.
                 </div>
               ) : (
                 backlogFeatures.map((f) => {
                   const badge = priorityBadges[f.priority] || priorityBadges['P2'];
                   return (
-                    <div key={f.id} className="bg-white text-slate-900 border border-white/20 shadow-xl p-4 space-y-3 hover:translate-y-[-2px] transition-all rounded-2xl">
+                    <div key={f.id} className="bg-white text-black border-2 border-black shadow-[3px_3px_0px_#000000] p-4 space-y-3 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_#000000] transition-all">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-black text-slate-900 leading-snug">{f.title}</p>
+                        <p className="text-xs font-black text-black leading-snug">{f.title}</p>
                         <button
                           type="button"
                           onClick={() => handleDeleteFeature(f.id)}
-                          className="text-slate-400 hover:text-rose-500 transition p-1 cursor-pointer"
+                          className="text-neutral-400 hover:text-rose-600 transition p-1 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
                       {f.description && (
-                        <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2">
+                        <p className="text-[11px] text-neutral-600 leading-relaxed line-clamp-2 font-mono">
                           {f.description}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${badge.bg}`}>
+                      <div className="flex items-center justify-between pt-2 border-t-2 border-black">
+                        <span className={`text-[10px] font-mono font-black px-2 py-0.5 uppercase flex items-center gap-1.5 ${badge.bg}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                           {badge.label}
                         </span>
@@ -542,9 +545,9 @@ function ProjectDetailContent() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(f)}
-                          className="text-[11px] font-mono text-[#0038FF] hover:underline cursor-pointer font-bold transition flex items-center gap-1"
+                          className="text-[11px] font-mono text-[#0047FF] hover:underline cursor-pointer font-black uppercase transition flex items-center gap-1"
                         >
-                          <span>Mark Done</span>
+                          <span>Mark In Progress</span>
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -559,37 +562,37 @@ function ProjectDetailContent() {
           <div className="space-y-3">
             <div className="flex items-center justify-between px-2 text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C6FF20]" />
-                <span className="font-black text-white uppercase tracking-wider">In Progress</span>
+                <span className="w-3 h-3 bg-[#0047FF] border border-black" />
+                <span className="font-black text-black uppercase tracking-wider">In Progress</span>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white border border-white/20 text-[10px] font-black font-mono">
+              <span className="px-2.5 py-0.5 bg-white text-black border-2 border-black text-[10px] font-black font-mono shadow-[2px_2px_0px_#000000]">
                 {inProgressFeatures.length}
               </span>
             </div>
 
             <div className="space-y-3">
               {inProgressFeatures.length === 0 ? (
-                <div className="bg-white/10 border border-white/15 p-8 text-center text-xs text-white/60 font-mono rounded-2xl backdrop-blur-md">
+                <div className="bg-white border-2 border-black p-8 text-center text-xs text-neutral-500 font-mono shadow-[2px_2px_0px_#000000]">
                   Zero tasks active. Ready to pull from backlog.
                 </div>
               ) : (
                 inProgressFeatures.map((f) => {
                   const badge = priorityBadges[f.priority] || priorityBadges['P2'];
                   return (
-                    <div key={f.id} className="bg-white text-slate-900 border border-white/20 shadow-xl p-4 space-y-3 hover:translate-y-[-2px] transition-all rounded-2xl">
+                    <div key={f.id} className="bg-white text-black border-2 border-black shadow-[3px_3px_0px_#000000] p-4 space-y-3 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_#000000] transition-all">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-black text-slate-900 leading-snug">{f.title}</p>
+                        <p className="text-xs font-black text-black leading-snug">{f.title}</p>
                         <button
                           type="button"
                           onClick={() => handleDeleteFeature(f.id)}
-                          className="text-slate-400 hover:text-rose-500 transition p-1 cursor-pointer"
+                          className="text-neutral-400 hover:text-rose-600 transition p-1 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${badge.bg}`}>
+                      <div className="flex items-center justify-between pt-2 border-t-2 border-black">
+                        <span className={`text-[10px] font-mono font-black px-2 py-0.5 uppercase flex items-center gap-1.5 ${badge.bg}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
                           {badge.label}
                         </span>
@@ -597,7 +600,7 @@ function ProjectDetailContent() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(f)}
-                          className="text-[11px] font-mono text-[#0038FF] hover:underline cursor-pointer font-bold transition flex items-center gap-1"
+                          className="text-[11px] font-mono text-[#0047FF] hover:underline cursor-pointer font-black uppercase transition flex items-center gap-1"
                         >
                           <span>Mark Done</span>
                           <CheckCircle2 className="w-3.5 h-3.5" />
@@ -614,42 +617,44 @@ function ProjectDetailContent() {
           <div className="space-y-3">
             <div className="flex items-center justify-between px-2 text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-300" />
-                <span className="font-black text-white uppercase tracking-wider">Shipped / Merged</span>
+                <span className="w-3 h-3 bg-[#BBF7D0] border border-black" />
+                <span className="font-black text-black uppercase tracking-wider">Shipped / Merged</span>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white border border-white/20 text-[10px] font-black font-mono">
+              <span className="px-2.5 py-0.5 bg-white text-black border-2 border-black text-[10px] font-black font-mono shadow-[2px_2px_0px_#000000]">
                 {doneFeatures.length}
               </span>
             </div>
 
             <div className="space-y-3">
               {doneFeatures.length === 0 ? (
-                <div className="bg-white/10 border border-white/15 p-8 text-center text-xs text-white/60 font-mono rounded-2xl backdrop-blur-md">
+                <div className="bg-white border-2 border-black p-8 text-center text-xs text-neutral-500 font-mono shadow-[2px_2px_0px_#000000]">
                   Completed deliverables will appear here.
                 </div>
               ) : (
                 doneFeatures.map((f) => (
-                  <div key={f.id} className="bg-white/90 text-slate-900 border border-white/20 shadow-md p-4 space-y-2 rounded-2xl opacity-90">
+                  <div key={f.id} className="bg-[#FAF7EE] text-black border-2 border-black shadow-[2px_2px_0px_#000000] p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <p className="text-xs font-bold text-slate-500 line-through">{f.title}</p>
+                        <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
+                        <p className="text-xs font-black text-neutral-600 line-through">{f.title}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleDeleteFeature(f.id)}
-                        className="text-slate-400 hover:text-rose-500 transition p-1 cursor-pointer"
+                        className="text-neutral-400 hover:text-rose-600 transition p-1 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
-                      <span className="text-[10px] font-mono text-emerald-600 font-black">MERGED</span>
+                    <div className="flex items-center justify-between pt-2 border-t-2 border-black">
+                      <span className="text-[10px] font-mono text-black font-black uppercase bg-[#BBF7D0] px-1.5 py-0.5 border border-black">
+                        MERGED
+                      </span>
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(f)}
-                        className="text-[10px] font-mono text-slate-500 hover:text-slate-900 transition cursor-pointer font-bold"
+                        className="text-[10px] font-mono text-neutral-600 hover:text-black transition cursor-pointer font-black uppercase"
                       >
                         Reopen
                       </button>
@@ -665,17 +670,17 @@ function ProjectDetailContent() {
 
       {/* AI Feature Suggestions Modal */}
       {showAiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-md p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-xl max-h-[85vh] overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white border-3 border-black shadow-[10px_10px_0px_#000000] w-full max-w-xl max-h-[85vh] overflow-hidden text-black">
             <div className="p-6 max-h-[85vh] overflow-y-auto space-y-4">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center justify-between pb-4 border-b-2 border-black">
                 <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-[#0038FF]" />
-                  <h3 className="font-black text-sm text-slate-900 uppercase">AI Roadmap Feature Strategist</h3>
+                  <Cpu className="w-4 h-4 text-[#0047FF]" />
+                  <h3 className="font-black text-sm text-black uppercase tracking-tight">AI Roadmap Feature Strategist</h3>
                 </div>
                 <button
                   onClick={() => setShowAiModal(false)}
-                  className="text-slate-400 hover:text-slate-900 p-1 cursor-pointer"
+                  className="p-1 bg-[#FAF7EE] border border-black hover:bg-black hover:text-white transition cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -683,36 +688,36 @@ function ProjectDetailContent() {
 
               {aiLoading ? (
                 <div className="py-14 flex flex-col items-center justify-center text-center">
-                  <Loader2 className="w-6 h-6 animate-spin text-[#0038FF] mb-2" />
-                  <p className="text-xs text-slate-500 font-mono">Synthesizing project goals and codebase trajectory...</p>
+                  <Loader2 className="w-6 h-6 animate-spin text-[#0047FF] mb-2" />
+                  <p className="text-xs text-black font-mono font-black uppercase">Synthesizing project goals and codebase trajectory...</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {aiProvider && (
-                    <p className="text-[11px] font-mono text-slate-500 font-bold">
-                      Inference Cascade: <span className="text-[#0038FF] uppercase">{aiProvider}</span>
+                    <p className="text-[11px] font-mono text-neutral-600 font-black uppercase">
+                      Inference Cascade: <span className="text-[#0047FF]">{aiProvider}</span>
                     </p>
                   )}
                   {aiSuggestions.map((f, i) => (
                     <div
                       key={i}
-                      className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-start justify-between gap-3 hover:border-[#0038FF] transition-all"
+                      className="p-4 bg-[#FAF7EE] border-2 border-black flex items-start justify-between gap-3 shadow-[2px_2px_0px_#000000]"
                     >
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-full border bg-blue-50 border-blue-200 text-[#0038FF]">
+                          <span className="text-[10px] font-mono font-black px-2 py-0.5 border border-black bg-black text-[#DFFF4F] uppercase">
                             {f.priority}
                           </span>
-                          <p className="text-xs font-black text-slate-900">{f.title}</p>
+                          <p className="text-xs font-black text-black">{f.title}</p>
                         </div>
-                        <p className="text-[11px] text-slate-600 leading-relaxed font-normal">{f.description}</p>
+                        <p className="text-[11px] text-neutral-700 leading-relaxed font-mono">{f.description}</p>
                         {f.rationale && (
-                          <p className="text-[11px] text-purple-700 font-mono italic">&bull; {f.rationale}</p>
+                          <p className="text-[11px] text-[#0047FF] font-mono font-bold">&bull; {f.rationale}</p>
                         )}
                       </div>
                       <button
                         onClick={() => handleAddAiFeature(f)}
-                        className="btn-lime !py-1 !px-3 text-xs shrink-0 flex items-center gap-1 cursor-pointer shadow-xs"
+                        className="px-3 py-1 bg-[#DFFF4F] text-black border-2 border-black font-mono text-xs font-black uppercase shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] shrink-0 flex items-center gap-1 cursor-pointer transition"
                       >
                         <Plus className="w-3 h-3" /> Add
                       </button>
@@ -733,7 +738,7 @@ export default function ProjectDetailPage() {
     <Suspense
       fallback={
         <StaticLoader
-          label="Hydrating Project Matrix"
+          label="HYDRATING PROJECT ROADMAP"
           sublabel="Connecting to isolated workspace telemetry..."
           fullScreen={true}
         />

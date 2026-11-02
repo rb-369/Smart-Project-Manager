@@ -11,47 +11,47 @@ interface StaticLoaderProps {
 
 /**
  * StaticLoader provides a calm, eye-friendly loading state that remains completely static.
- * It eliminates harsh strobing, pulsing, or alternating blue-and-white flashing,
- * while maintaining the signature DevCommand electric blue and neon lime theme.
+ * It eliminates harsh strobing, pulsing, or alternating flashing,
+ * matching the signature Swiss Neo-Brutalist parchment, black borders, and color accents.
  */
 export function StaticLoader({
-  label = 'Hydrating Repository Telemetry',
+  label = 'HYDRATING REPOSITORY TELEMETRY',
   sublabel = 'Connecting to isolated workspace matrix...',
   fullScreen = true,
 }: StaticLoaderProps) {
   const content = (
-    <div className="bg-slate-950/90 text-white border border-white/15 rounded-3xl p-8 max-w-sm w-full mx-auto text-center shadow-2xl backdrop-blur-xl space-y-5">
-      {/* Static Brand Monogram with Electric Blue gradient & Lime Terminal Icon */}
-      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0038FF] to-[#0020A0] border border-white/20 flex items-center justify-center mx-auto shadow-lg shadow-[#0038FF]/20">
-        <Terminal className="w-6 h-6 text-[#C6FF20]" />
+    <div className="bg-white text-black border-3 border-black p-8 max-w-sm w-full mx-auto text-center shadow-[8px_8px_0px_#000000] space-y-5">
+      {/* Brand Monogram with Cobalt Blue & Lime Terminal Icon */}
+      <div className="w-12 h-12 bg-[#0047FF] border-2 border-black flex items-center justify-center mx-auto shadow-[3px_3px_0px_#000000]">
+        <Terminal className="w-6 h-6 text-[#DFFF4F]" />
       </div>
 
-      {/* Steady, Calm Typography - strictly non-pulsing and eye-friendly */}
+      {/* Steady, Calm Typography */}
       <div className="space-y-1.5">
-        <h3 className="text-sm font-black text-white tracking-tight uppercase font-mono">
+        <h3 className="text-sm font-black text-black tracking-tight uppercase font-mono">
           {label}
         </h3>
-        <p className="text-xs text-slate-400 font-mono leading-relaxed">
+        <p className="text-xs text-neutral-600 font-mono leading-relaxed">
           {sublabel}
         </p>
       </div>
 
-      {/* Static Calm Telemetry Pill - Completely steady, zero strobe */}
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono text-slate-300">
-        <span className="w-2 h-2 rounded-full bg-[#C6FF20]" />
-        <span className="font-bold text-white">INITIALIZING ENGINE</span>
-        <span className="text-white/40">&bull;</span>
-        <span className="text-slate-400">READY</span>
+      {/* Static Calm Telemetry Pill */}
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#FAF7EE] border-2 border-black text-[11px] font-mono text-black shadow-[2px_2px_0px_#000000]">
+        <span className="w-2 h-2 rounded-full bg-[#DFFF4F] border border-black" />
+        <span className="font-black text-black">INITIALIZING ENGINE</span>
+        <span className="text-black/40">&bull;</span>
+        <span className="text-neutral-600 font-bold">READY</span>
       </div>
 
-      {/* Steady Soothing Progress Indicator Track (Static) */}
-      <div className="w-48 h-1.5 bg-white/10 rounded-full mx-auto overflow-hidden">
-        <div className="w-3/5 h-full bg-[#C6FF20] rounded-full" />
+      {/* Steady Progress Track */}
+      <div className="w-48 h-3 bg-[#FAF7EE] border-2 border-black mx-auto overflow-hidden p-0.5">
+        <div className="w-3/5 h-full bg-[#DFFF4F] border-r-2 border-black" />
       </div>
 
       {/* Security Footprint Badge */}
-      <div className="pt-1 flex items-center justify-center gap-1.5 text-[10px] font-mono text-slate-500">
-        <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+      <div className="pt-1 flex items-center justify-center gap-1.5 text-[10px] font-mono text-neutral-600 uppercase font-bold">
+        <ShieldCheck className="w-3.5 h-3.5 text-black" />
         <span>AES-256 Vault &bull; Isolated Tenant</span>
       </div>
     </div>
@@ -59,7 +59,7 @@ export function StaticLoader({
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-blue-grid text-white flex items-center justify-center p-4 selection:bg-[#C6FF20] selection:text-black">
+      <div className="min-h-screen bg-[#F6F3EC] text-black flex items-center justify-center p-4 selection:bg-[#DFFF4F] selection:text-black font-sans">
         {content}
       </div>
     );
