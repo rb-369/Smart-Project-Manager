@@ -266,7 +266,7 @@ export default function ChatPage() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-28 pb-12 flex-1 flex flex-col relative z-10">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-6 sm:pt-8 pb-12 flex-1 flex flex-col relative z-10">
         
         {/* Top Control Bar: Title + Telemetry + Project Scope */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b-2 border-black">

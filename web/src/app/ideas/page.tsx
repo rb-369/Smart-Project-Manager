@@ -284,7 +284,7 @@ export default function IdeasPage() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-28 pb-20 space-y-6 relative z-10 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-6 sm:pt-8 pb-20 space-y-6 relative z-10 flex-1">
         {/* Compact Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-black">
           <div>

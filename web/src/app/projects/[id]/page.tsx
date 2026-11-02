@@ -230,7 +230,7 @@ function ProjectDetailContent() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-28 pb-20 space-y-6 relative z-10 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-6 sm:pt-8 pb-20 space-y-6 relative z-10 flex-1">
         
         {/* Navigation Breadcrumb & Actions Bar */}
         <div className="flex items-center justify-between flex-wrap gap-3 pb-2 border-b-2 border-black">
