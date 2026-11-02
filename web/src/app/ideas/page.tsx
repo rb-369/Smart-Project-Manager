@@ -310,21 +310,21 @@ export default function IdeasPage() {
                 setParsedPreview(null);
                 setExtractError(null);
               }}
-              className="px-4 py-2 bg-[#DFFF4F] text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] flex items-center gap-1.5 cursor-pointer transition"
+              className="px-4 py-2 bg-[#DFFF4F] text-black font-mono text-xs font-black uppercase border border-black hover:bg-black hover:text-[#DFFF4F] flex items-center gap-1.5 cursor-pointer transition shadow-sm"
             >
               <MessageSquareText className="w-4 h-4" />
               <span>Import Concept (WhatsApp)</span>
             </button>
             <button
               onClick={handleFetchAiProjects}
-              className="px-4 py-2 bg-[#0047FF] text-white font-mono text-xs font-black uppercase border-2 border-black shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-[#0047FF] text-white font-mono text-xs font-black uppercase border border-black hover:bg-black transition flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Cpu className="w-4 h-4 text-[#DFFF4F]" />
               <span>AI Suggestions</span>
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-white text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-[#FAF7EE] transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-white text-black font-mono text-xs font-black uppercase border border-neutral-300 hover:border-black hover:bg-[#FAF7EE] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Manual Add</span>
@@ -358,45 +358,44 @@ export default function IdeasPage() {
 
                 <div className="space-y-4">
                   {columnIdeas.length === 0 ? (
-                    <div className="bg-white border-2 border-black p-8 text-center text-xs text-neutral-500 font-mono shadow-[3px_3px_0px_#000000]">
+                    <div className="bg-white border-2 border-black p-8 text-center text-xs text-neutral-500 font-mono shadow-sm">
                       No concepts currently in this priority track.
                     </div>
                   ) : (
                     columnIdeas.map((idea) => {
                       const pConfig = priorityStyles[prio];
                       return (
-                        <div key={idea.id} className="bg-white text-black border-2 border-black shadow-[4px_4px_0px_#000000] hover:shadow-[7px_7px_0px_#000000] hover:-translate-y-1 p-5 space-y-3.5 transition-all flex flex-col justify-between">
+                        <div key={idea.id} className="bg-white text-black border-2 border-black hover:-translate-y-1 shadow-sm hover:shadow-md p-5 space-y-3.5 transition-all flex flex-col justify-between">
                           <div>
-                            {/* Cobalt Blue Header Box for Idea */}
-                            <div className="bg-[#0047FF] text-white border-2 border-black p-4 shadow-[2px_2px_0px_#000000] mb-3 flex items-start justify-between gap-2">
-                              <div>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-[10px] font-mono font-black px-2 py-0.5 bg-black text-[#DFFF4F] border border-black uppercase">
-                                    {idea.project_type}
-                                  </span>
-                                  <span className="text-[9px] font-mono font-black px-2 py-0.5 bg-white text-black border border-black uppercase">
-                                    NO REPO YET
-                                  </span>
-                                </div>
-                                <h2 className="font-black text-base text-white leading-snug mt-2">{idea.title}</h2>
+                            {/* Header Row */}
+                            <div className="flex items-center justify-between pb-3 border-b border-neutral-200 mb-3">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[10px] font-mono font-black px-2 py-0.5 bg-[#FAF7EE] text-black border border-neutral-300 uppercase">
+                                  {idea.project_type}
+                                </span>
+                                <span className="text-[9px] font-mono font-bold px-2 py-0.5 bg-neutral-100 text-neutral-600 border border-neutral-200 uppercase">
+                                  NO REPO YET
+                                </span>
                               </div>
                               <button
                                 onClick={() => handleDelete(idea.id)}
-                                className="text-white hover:text-[#FF5533] transition-colors p-1 cursor-pointer"
+                                className="text-neutral-400 hover:text-[#FF5533] transition-colors p-1 cursor-pointer"
                                 title="Delete concept"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
 
+                            <h2 className="font-black text-lg text-black leading-snug hover:text-[#0047FF] transition-colors">{idea.title}</h2>
+
                             {idea.elevator_pitch && (
-                              <p className="text-xs text-neutral-700 mt-2 leading-relaxed font-normal">
+                              <p className="text-xs text-neutral-600 mt-2 leading-relaxed font-normal">
                                 {idea.elevator_pitch}
                               </p>
                             )}
 
                             {idea.notes && (
-                              <div className="mt-2.5 p-2.5 bg-[#FAF7EE] border-2 border-black text-[11px] font-mono text-black whitespace-pre-wrap max-h-32 overflow-y-auto">
+                              <div className="mt-2.5 p-2.5 bg-[#FAF7EE] border-l-2 border-[#0047FF] text-[11px] font-mono text-neutral-800 whitespace-pre-wrap max-h-32 overflow-y-auto">
                                 <span className="font-black text-black block mb-1 uppercase">Notes / MVP Scope:</span>
                                 {idea.notes}
                               </div>
@@ -404,11 +403,11 @@ export default function IdeasPage() {
 
                             {idea.raw_message && (
                               <details className="mt-2 text-xs group">
-                                <summary className="cursor-pointer font-mono text-[10px] text-neutral-600 hover:text-black flex items-center gap-1 select-none font-black uppercase">
+                                <summary className="cursor-pointer font-mono text-[10px] text-neutral-600 hover:text-black flex items-center gap-1 select-none font-bold uppercase">
                                   <MessageSquareText className="w-3 h-3 text-[#0047FF]" />
                                   <span>View Original Message</span>
                                 </summary>
-                                <div className="mt-1.5 p-2 bg-[#FAF7EE] border border-black text-[11px] font-mono text-black whitespace-pre-wrap leading-relaxed max-h-28 overflow-y-auto">
+                                <div className="mt-1.5 p-2 bg-[#FAF7EE] border border-neutral-300 text-[11px] font-mono text-black whitespace-pre-wrap leading-relaxed max-h-28 overflow-y-auto">
                                   {idea.raw_message}
                                 </div>
                               </details>
@@ -416,13 +415,13 @@ export default function IdeasPage() {
                           </div>
 
                           {idea.target_tech_stack && (
-                            <div className="flex items-center gap-1.5 text-xs font-mono text-black bg-[#FAF7EE] p-2.5 border-2 border-black shadow-[1px_1px_0px_#000000]">
+                            <div className="flex items-center gap-1.5 text-xs font-mono text-black bg-[#FAF7EE] p-2 border border-neutral-300">
                               <Code className="w-3.5 h-3.5 text-[#0047FF] shrink-0" />
                               <span className="font-black truncate uppercase">{idea.target_tech_stack}</span>
                             </div>
                           )}
 
-                          <div className="pt-3 border-t-2 border-black flex items-center justify-between gap-2">
+                          <div className="pt-3 border-t border-neutral-200 flex items-center justify-between gap-2">
                             <span className={`text-[10px] font-mono font-black px-2 py-0.5 uppercase flex items-center gap-1.5 ${pConfig.badge}`}>
                               <span className={`w-1.5 h-1.5 rounded-full ${pConfig.dot}`} />
                               {pConfig.label}
@@ -430,7 +429,7 @@ export default function IdeasPage() {
 
                             <button
                               onClick={() => handlePromote(idea.id, idea.title)}
-                              className="px-3 py-1 bg-[#DFFF4F] text-black border-2 border-black shadow-[2px_2px_0px_#000000] hover:bg-black hover:text-[#DFFF4F] text-xs font-mono font-black uppercase flex items-center gap-1 transition cursor-pointer active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                              className="px-3 py-1 bg-[#DFFF4F] text-black border border-black hover:bg-black hover:text-[#DFFF4F] text-xs font-mono font-black uppercase flex items-center gap-1 transition cursor-pointer shadow-sm"
                               title="Convert to active repository in Mission Control"
                             >
                               <span>Start Building</span>

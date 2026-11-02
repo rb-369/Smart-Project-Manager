@@ -155,7 +155,7 @@ function ChatLauncherContent() {
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="group flex items-center gap-2.5 px-4 py-3 bg-[#DFFF4F] text-black font-mono font-black text-xs border-2 border-black shadow-[4px_4px_0px_#000000] hover:shadow-[6px_6px_0px_#000000] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+            className="group flex items-center gap-2.5 px-4 py-3 bg-[#DFFF4F] text-black font-mono font-black text-xs border-2 border-black shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
           >
             <div className="w-6 h-6 bg-black text-[#DFFF4F] border border-black flex items-center justify-center p-0.5">
               <Bot className="w-3.5 h-3.5" />
@@ -168,12 +168,12 @@ function ChatLauncherContent() {
 
       {/* Floating Flyout Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[94vw] sm:w-[480px] h-[620px] max-h-[85vh] bg-[#F6F3EC] text-black border-3 border-black shadow-[12px_12px_0px_#000000] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 w-[94vw] sm:w-[480px] h-[620px] max-h-[85vh] bg-[#F6F3EC] text-black border-2 border-black shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
           
           {/* Header */}
-          <div className="px-4 py-3 bg-white border-b-2 border-black flex items-center justify-between">
+          <div className="px-4 py-3 bg-white border-b border-neutral-300 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-[#0047FF] text-[#DFFF4F] border-2 border-black flex items-center justify-center p-1 shadow-[2px_2px_0px_#000000]">
+              <div className="w-8 h-8 bg-[#0047FF] text-[#DFFF4F] border border-black flex items-center justify-center p-1 shadow-sm">
                 <Bot className="w-4 h-4" />
               </div>
               <div>

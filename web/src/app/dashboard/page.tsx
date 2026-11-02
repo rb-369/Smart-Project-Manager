@@ -364,7 +364,7 @@ export default function DashboardPage() {
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 right-6 z-50 bg-[#DFFF4F] text-black font-mono text-xs font-black px-4 py-3 border-2 border-black shadow-[6px_6px_0px_#000000] flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-24 right-6 z-50 bg-[#DFFF4F] text-black font-mono text-xs font-black px-4 py-3 border-2 border-black shadow-md flex items-center gap-2 animate-in fade-in slide-in-from-top-4 duration-300">
           <CheckCircle2 className="w-4 h-4 text-black" />
           <span>{toastMessage}</span>
         </div>
@@ -384,7 +384,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-black tracking-tight text-black flex items-center gap-3">
               <span>MISSION CONTROL</span>
               {starredProjects.length > 0 && (
-                <span className="text-xs font-mono font-black px-2.5 py-1 bg-[#DFFF4F] text-black border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center gap-1">
+                <span className="text-xs font-mono font-black px-2.5 py-1 bg-[#DFFF4F] text-black border border-black flex items-center gap-1">
                   <Star className="w-3 h-3 fill-black text-black" />
                   <span>{starredProjects.length} PINNED</span>
                 </span>
@@ -393,7 +393,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-xs font-mono text-neutral-800 bg-white border-2 border-black px-3 py-1 shadow-[2px_2px_0px_#000000]">
+            <span className="text-xs font-mono text-neutral-800 bg-white border border-neutral-300 px-3 py-1.5 shadow-sm">
               ACTIVE: <strong className="text-[#0047FF] font-black">{nonHiddenProjects.length}</strong> REPOS
               {hiddenProjects.length > 0 && (
                 <span className="text-neutral-500 ml-1.5 font-bold">({hiddenProjects.length} hidden)</span>
@@ -401,7 +401,7 @@ export default function DashboardPage() {
             </span>
             <button
               onClick={() => setActiveTab('IDEAS')}
-              className="text-xs font-mono font-black px-3.5 py-1.5 bg-[#FAF7EE] hover:bg-[#DFFF4F] border-2 border-black text-black flex items-center gap-1.5 transition shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer"
+              className="text-xs font-mono font-black px-3.5 py-1.5 bg-[#FAF7EE] hover:bg-[#DFFF4F] border border-black text-black flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Lightbulb className="w-3.5 h-3.5 text-black" />
               <span>IDEAS BACKLOG: <strong className="text-black">{unpromotedIdeas.length}</strong></span>
@@ -412,7 +412,7 @@ export default function DashboardPage() {
         {/* Bento Grid Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
           {/* Bento Card 1: Production Deployed Telemetry (4 cols) */}
-          <div className="lg:col-span-4 bg-[#0047FF] border-2 border-black shadow-[6px_6px_0px_#000000] p-6 flex flex-col justify-between text-white relative overflow-hidden group">
+          <div className="lg:col-span-4 bg-[#0047FF] border-2 border-black shadow-sm hover:shadow-md p-6 flex flex-col justify-between text-white relative overflow-hidden group transition-all">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-mono uppercase tracking-wider text-[#DFFF4F] flex items-center gap-1.5 font-black">
@@ -443,7 +443,7 @@ export default function DashboardPage() {
             <div className="pt-4 border-t border-white/30 flex items-center justify-between text-xs font-mono">
               <button
                 onClick={() => setActiveTab('PRODUCTION')}
-                className="bg-[#DFFF4F] text-black px-3 py-1 border-2 border-black font-black uppercase tracking-wider flex items-center gap-1 shadow-[2px_2px_0px_#000000] hover:bg-white transition cursor-pointer"
+                className="bg-[#DFFF4F] text-black px-3.5 py-1.5 border border-black font-black uppercase tracking-wider flex items-center gap-1.5 hover:bg-white transition cursor-pointer"
               >
                 <span>VIEW APPS</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -453,13 +453,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Bento Card 2: Velocity & Sprint Gauges (5 cols) */}
-          <div className="lg:col-span-5 bg-white text-black border-2 border-black shadow-[6px_6px_0px_#000000] p-6 flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-white text-black border-2 border-black shadow-sm hover:shadow-md p-6 flex flex-col justify-between transition-all">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-mono text-black uppercase tracking-wider flex items-center gap-1.5 font-black">
                 <Activity className="w-4 h-4 text-[#0047FF]" />
                 SPRINT VELOCITY &bull; QUALITY
               </span>
-              <span className="text-[10px] font-mono text-black bg-[#BBF7D0] px-2 py-0.5 border border-black font-black uppercase tracking-wider">
+              <span className="text-[10px] font-mono text-emerald-900 bg-[#BBF7D0] px-2 py-0.5 border border-emerald-400 font-black uppercase tracking-wider">
                 HEURISTIC 100%
               </span>
             </div>
@@ -536,14 +536,14 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="text-[11px] font-mono text-neutral-700 pt-3 border-t-2 border-black flex items-center justify-between font-black uppercase">
+            <div className="text-[11px] font-mono text-neutral-700 pt-3 border-t border-neutral-200 flex items-center justify-between font-black uppercase">
               <span>Completed: {completedFeatures}/{totalFeatures}</span>
               <span className="text-[#0047FF]">{activeProjects.length} Active Repos</span>
             </div>
           </div>
 
           {/* Bento Card 3: AI Cascade Matrix & Triage (3 cols) */}
-          <div className="lg:col-span-3 bg-white text-black border-2 border-black shadow-[6px_6px_0px_#000000] p-6 flex flex-col justify-between">
+          <div className="lg:col-span-3 bg-white text-black border-2 border-black shadow-sm hover:shadow-md p-6 flex flex-col justify-between transition-all">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono text-black uppercase tracking-wider flex items-center gap-1.5 font-black">
@@ -556,21 +556,21 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between text-xs p-2 bg-[#FAF7EE] border border-black shadow-[1px_1px_0px_#000000]">
+                <div className="flex items-center justify-between text-xs p-2 bg-[#FAF7EE] border border-neutral-200">
                   <span className="text-black font-mono text-[11px] font-black uppercase">Gemini 2.5 Flash</span>
                   <span className="text-[10px] font-mono text-[#0047FF] font-black uppercase">
                     Fast Primary
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs p-2 bg-[#FAF7EE] border border-black shadow-[1px_1px_0px_#000000]">
+                <div className="flex items-center justify-between text-xs p-2 bg-[#FAF7EE] border border-neutral-200">
                   <span className="text-black font-mono text-[11px] font-black uppercase">Llama 3.2 11B</span>
                   <span className="text-[10px] font-mono text-purple-700 font-black uppercase">
                     NVIDIA NIM
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs p-2 bg-[#FAF7EE] border border-black shadow-[1px_1px_0px_#000000]">
+                <div className="flex items-center justify-between text-xs p-2 bg-[#FAF7EE] border border-neutral-200">
                   <span className="text-neutral-700 font-mono text-[11px] font-bold uppercase">Concept Extractor</span>
                   <span className="text-[10px] font-mono text-emerald-700 font-black uppercase">
                     WhatsApp Ingest
@@ -583,7 +583,7 @@ export default function DashboardPage() {
               {needsReviewProjects.length > 0 ? (
                 <button
                   onClick={() => setActiveTriageProject(needsReviewProjects[0])}
-                  className="w-full py-2.5 px-3 bg-[#FF5533] text-black border-2 border-black shadow-[3px_3px_0px_#000000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] flex items-center justify-between text-xs font-mono font-black transition cursor-pointer"
+                  className="w-full py-2.5 px-3 bg-[#FF5533] text-black border border-black hover:bg-black hover:text-[#DFFF4F] flex items-center justify-between text-xs font-mono font-black transition cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5 uppercase">
                     <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -594,8 +594,8 @@ export default function DashboardPage() {
                   </span>
                 </button>
               ) : (
-                <div className="text-[11px] font-mono text-black flex items-center justify-center gap-1.5 p-2 bg-[#BBF7D0] border-2 border-black font-black uppercase">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                <div className="text-[11px] font-mono text-emerald-900 flex items-center justify-center gap-1.5 p-2 bg-[#BBF7D0]/60 border border-emerald-400 font-black uppercase">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
                   <span>ALL REPOSITORIES SYNCED</span>
                 </div>
               )}
@@ -606,7 +606,7 @@ export default function DashboardPage() {
         {/* Filter Pills, Search Bar, and Manual Sorting Selector */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pt-2">
           {/* Segmented Filter Tabs */}
-          <div className="flex items-center gap-1.5 p-1.5 bg-white border-2 border-black shadow-[4px_4px_0px_#000000] overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 p-1 bg-white border-2 border-black shadow-sm overflow-x-auto max-w-full">
             {[
               { id: 'ALL' as DashboardTab, label: 'All Repos', count: nonHiddenProjects.length },
               { id: 'STARRED' as DashboardTab, label: '★ Starred', count: starredProjects.length },
@@ -621,10 +621,10 @@ export default function DashboardPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 border-2 ${
+                  className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-[#DFFF4F] text-black font-black border-black shadow-[2px_2px_0px_#000000]'
-                      : 'border-transparent text-neutral-700 hover:text-black hover:bg-[#FAF7EE] font-bold'
+                      ? 'bg-[#DFFF4F] text-black font-black border border-black'
+                      : 'border border-transparent text-neutral-700 hover:text-black hover:bg-[#FAF7EE] font-bold'
                   }`}
                 >
                   <span>{tab.label}</span>
@@ -632,7 +632,7 @@ export default function DashboardPage() {
                     className={`text-[10px] font-mono px-1.5 py-0.2 border ${
                       isSelected
                         ? 'bg-black text-[#DFFF4F] border-black font-black'
-                        : 'bg-[#FAF7EE] text-black border-black font-bold'
+                        : 'bg-[#FAF7EE] text-neutral-700 border-neutral-300 font-bold'
                     }`}
                   >
                     {tab.count}
@@ -645,7 +645,7 @@ export default function DashboardPage() {
           {/* Sort Selector & Repo Count */}
           <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
             {activeTab !== 'IDEAS' && (
-              <div className="flex items-center gap-1.5 bg-white border-2 border-black px-3 py-1.5 shadow-[2px_2px_0px_#000000] text-xs font-mono">
+              <div className="flex items-center gap-1.5 bg-white border border-neutral-300 px-3 py-1.5 shadow-sm text-xs font-mono">
                 <ArrowDownUp className="w-3.5 h-3.5 text-[#0047FF]" />
                 <span className="text-neutral-600 text-[11px] font-black uppercase">Sort:</span>
                 <select
@@ -662,7 +662,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <div className="text-xs font-mono text-black font-black uppercase whitespace-nowrap bg-[#FAF7EE] px-3 py-1.5 border-2 border-black shadow-[2px_2px_0px_#000000]">
+            <div className="text-xs font-mono text-black font-black uppercase whitespace-nowrap bg-[#FAF7EE] px-3 py-1.5 border border-neutral-300 shadow-sm">
               {activeTab === 'IDEAS' ? (
                 <>SHOWING <span className="text-[#0047FF] font-black">{filteredIdeas.length}</span> FUTURE IDEAS</>
               ) : (
@@ -674,7 +674,7 @@ export default function DashboardPage() {
 
         {/* Notice banner for Hidden tab */}
         {activeTab === 'HIDDEN' && (
-          <div className="p-4 bg-white border-2 border-black shadow-[4px_4px_0px_#000000] text-black flex items-center justify-between gap-3 text-xs font-mono">
+          <div className="p-4 bg-white border-2 border-black shadow-sm text-black flex items-center justify-between gap-3 text-xs font-mono">
             <div className="flex items-center gap-2">
               <EyeOff className="w-4 h-4 text-black" />
               <span>
@@ -683,7 +683,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={() => setActiveTab('ALL')}
-              className="bg-[#DFFF4F] text-black px-3 py-1 border-2 border-black font-black uppercase hover:bg-black hover:text-[#DFFF4F] transition cursor-pointer"
+              className="bg-[#DFFF4F] text-black px-3 py-1 border border-black font-black uppercase hover:bg-black hover:text-[#DFFF4F] transition cursor-pointer"
             >
               Back to Active Repos &rarr;
             </button>
@@ -694,7 +694,7 @@ export default function DashboardPage() {
         {activeTab === 'IDEAS' ? (
           <div className="space-y-6">
             {/* Quick Action Bar for Ideas Tab */}
-            <div className="p-4 bg-white border-2 border-black shadow-[4px_4px_0px_#000000] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 bg-white border-2 border-black shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-black text-black uppercase flex items-center gap-2">
                   <Lightbulb className="w-4 h-4 text-[#0047FF]" />
@@ -712,14 +712,14 @@ export default function DashboardPage() {
                     setRawText('');
                     setParsedPreview(null);
                   }}
-                  className="px-3.5 py-1.5 bg-[#DFFF4F] text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[2px_2px_0px_#000000] hover:bg-black hover:text-[#DFFF4F] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none flex items-center gap-1.5 cursor-pointer transition"
+                  className="px-3.5 py-1.5 bg-[#DFFF4F] text-black font-mono text-xs font-black uppercase border border-black hover:bg-black hover:text-[#DFFF4F] flex items-center gap-1.5 cursor-pointer transition shadow-sm"
                 >
                   <MessageSquareText className="w-3.5 h-3.5" />
                   <span>Import from WhatsApp</span>
                 </button>
                 <Link
                   href="/ideas"
-                  className="px-3.5 py-1.5 bg-[#FAF7EE] text-black border-2 border-black font-mono text-xs font-black uppercase shadow-[2px_2px_0px_#000000] hover:bg-white transition flex items-center gap-1"
+                  className="px-3.5 py-1.5 bg-[#FAF7EE] text-black border border-neutral-300 font-mono text-xs font-black uppercase shadow-sm hover:bg-white transition flex items-center gap-1"
                 >
                   <span>Radar Board</span>
                   <ArrowRight className="w-3 h-3 text-black" />
@@ -729,7 +729,7 @@ export default function DashboardPage() {
 
             {/* Ideas Grid */}
             {filteredIdeas.length === 0 ? (
-              <div className="bg-white text-black border-2 border-black p-16 text-center space-y-3 shadow-[6px_6px_0px_#000000]">
+              <div className="bg-white text-black border-2 border-black p-16 text-center space-y-3 shadow-sm">
                 <Lightbulb className="w-10 h-10 text-neutral-400 mx-auto" />
                 <h3 className="text-base font-black text-black uppercase tracking-tight">No future ideas queued</h3>
                 <p className="text-xs text-neutral-600 max-w-sm mx-auto leading-relaxed font-mono">
@@ -742,7 +742,7 @@ export default function DashboardPage() {
                       setRawText('');
                       setParsedPreview(null);
                     }}
-                    className="px-4 py-2 bg-[#DFFF4F] text-black font-mono text-xs font-black uppercase border-2 border-black shadow-[3px_3px_0px_#000000] hover:bg-black hover:text-[#DFFF4F] inline-flex items-center gap-1.5 transition cursor-pointer"
+                    className="px-4 py-2 bg-[#DFFF4F] text-black font-mono text-xs font-black uppercase border border-black hover:bg-black hover:text-[#DFFF4F] inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm"
                   >
                     <MessageSquareText className="w-3.5 h-3.5" />
                     <span>Import Concept from WhatsApp</span>
@@ -756,39 +756,38 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={idea.id}
-                      className="bg-white text-black border-2 border-black shadow-[4px_4px_0px_#000000] p-5 space-y-3.5 hover:-translate-y-1 hover:shadow-[7px_7px_0px_#000000] transition-all flex flex-col justify-between"
+                      className="bg-white text-black border-2 border-black p-5.5 space-y-3.5 hover:-translate-y-1 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
                     >
                       <div>
-                        {/* Header Box */}
-                        <div className="bg-[#0047FF] text-white border-2 border-black p-4 shadow-[2px_2px_0px_#000000] mb-3 flex items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] font-mono font-black px-2 py-0.5 bg-black text-[#DFFF4F] border border-black uppercase">
-                                {idea.project_type}
-                              </span>
-                              <span className="text-[9px] font-mono font-black px-2 py-0.5 bg-white text-black border border-black uppercase">
-                                NO REPO YET
-                              </span>
-                            </div>
-                            <h2 className="font-black text-base text-white leading-snug mt-2">{idea.title}</h2>
+                        {/* Header Row */}
+                        <div className="flex items-center justify-between pb-3 border-b border-neutral-200 mb-3">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-mono font-black px-2 py-0.5 bg-[#FAF7EE] text-black border border-neutral-300 uppercase">
+                              {idea.project_type}
+                            </span>
+                            <span className="text-[9px] font-mono font-bold px-2 py-0.5 bg-neutral-100 text-neutral-600 border border-neutral-200 uppercase">
+                              NO REPO YET
+                            </span>
                           </div>
                           <button
                             onClick={() => handleDeleteIdea(idea.id)}
-                            className="text-white hover:text-[#FF5533] transition-colors p-1 cursor-pointer"
+                            className="text-neutral-400 hover:text-[#FF5533] transition-colors p-1 cursor-pointer"
                             title="Delete idea"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
 
+                        <h2 className="font-black text-lg text-black leading-snug hover:text-[#0047FF] transition-colors">{idea.title}</h2>
+
                         {idea.elevator_pitch && (
-                          <p className="text-xs text-neutral-700 mt-2 leading-relaxed font-normal">
+                          <p className="text-xs text-neutral-600 mt-2 leading-relaxed font-normal">
                             {idea.elevator_pitch}
                           </p>
                         )}
 
                         {idea.notes && (
-                          <div className="mt-2.5 p-2.5 bg-[#FAF7EE] border-2 border-black text-[11px] font-mono text-black whitespace-pre-wrap max-h-28 overflow-y-auto">
+                          <div className="mt-2.5 p-2.5 bg-[#FAF7EE] border-l-2 border-[#0047FF] text-[11px] font-mono text-neutral-800 whitespace-pre-wrap max-h-28 overflow-y-auto">
                             <span className="font-black text-black block mb-0.5 uppercase">Notes &amp; Scope:</span>
                             {idea.notes}
                           </div>
@@ -800,7 +799,7 @@ export default function DashboardPage() {
                               <MessageSquareText className="w-3 h-3 text-[#0047FF]" />
                               <span>View Original Message</span>
                             </summary>
-                            <div className="mt-1.5 p-2 bg-[#FAF7EE] border border-black text-[11px] font-mono text-black whitespace-pre-wrap leading-relaxed max-h-28 overflow-y-auto">
+                            <div className="mt-1.5 p-2 bg-[#FAF7EE] border border-neutral-300 text-[11px] font-mono text-black whitespace-pre-wrap leading-relaxed max-h-28 overflow-y-auto">
                               {idea.raw_message}
                             </div>
                           </details>
@@ -808,13 +807,13 @@ export default function DashboardPage() {
                       </div>
 
                       {idea.target_tech_stack && (
-                        <div className="flex items-center gap-1.5 text-xs font-mono text-black bg-[#FAF7EE] p-2.5 border-2 border-black shadow-[1px_1px_0px_#000000]">
+                        <div className="flex items-center gap-1.5 text-xs font-mono text-black bg-[#FAF7EE] p-2 border border-neutral-300">
                           <Code className="w-3.5 h-3.5 text-[#0047FF] shrink-0" />
                           <span className="font-black truncate uppercase">{idea.target_tech_stack}</span>
                         </div>
                       )}
 
-                      <div className="pt-3 border-t-2 border-black flex items-center justify-between gap-2">
+                      <div className="pt-3 border-t border-neutral-200 flex items-center justify-between gap-2">
                         <span className={`text-[10px] font-mono font-black px-2 py-0.5 uppercase flex items-center gap-1.5 ${pConfig.badge}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${pConfig.dot}`} />
                           {pConfig.label}
@@ -822,7 +821,7 @@ export default function DashboardPage() {
 
                         <button
                           onClick={() => handlePromoteIdea(idea.id, idea.title)}
-                          className="px-3 py-1 bg-[#DFFF4F] text-black border-2 border-black shadow-[2px_2px_0px_#000000] hover:bg-black hover:text-[#DFFF4F] text-xs font-mono font-black uppercase flex items-center gap-1 transition cursor-pointer active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                          className="px-3 py-1 bg-[#DFFF4F] text-black border border-black hover:bg-black hover:text-[#DFFF4F] text-xs font-mono font-black uppercase flex items-center gap-1 transition cursor-pointer shadow-sm"
                           title="Convert to active repository on Mission Control"
                         >
                           <span>START BUILDING</span>
@@ -845,7 +844,7 @@ export default function DashboardPage() {
                 sublabel="Syncing AST, MongoDB Atlas records, and incubator backlog..."
               />
             ) : filteredProjects.length === 0 ? (
-              <div className="bg-white text-black border-2 border-black p-16 text-center space-y-3 shadow-[6px_6px_0px_#000000]">
+              <div className="bg-white text-black border-2 border-black p-16 text-center space-y-3 shadow-sm">
                 <GitBranch className="w-10 h-10 text-neutral-400 mx-auto" />
                 <h3 className="text-base font-black text-black uppercase tracking-tight">
                   {activeTab === 'HIDDEN'
@@ -903,10 +902,10 @@ export default function DashboardPage() {
       {/* Smart Concept / WhatsApp Text Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white border-3 border-black w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-[10px_10px_0px_#000000] p-6 space-y-4 text-black">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-black">
+          <div className="bg-white border-2 border-black w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-4 text-black">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-[#DFFF4F] text-black border-2 border-black shadow-[2px_2px_0px_#000000]">
+                <div className="p-2 bg-[#DFFF4F] text-black border border-black shadow-sm">
                   <MessageSquareText className="w-4 h-4" />
                 </div>
                 <div>
@@ -918,7 +917,7 @@ export default function DashboardPage() {
               </div>
               <button 
                 onClick={() => setShowImportModal(false)} 
-                className="p-1 bg-[#FAF7EE] border border-black hover:bg-black hover:text-white transition cursor-pointer"
+                className="p-1 bg-[#FAF7EE] border border-neutral-300 hover:bg-black hover:text-white transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -936,7 +935,7 @@ export default function DashboardPage() {
                     placeholder="e.g. bro what if we build a bot that automatically tweets git commits using python and fastapi, top priority asap. We could add discord alerts too."
                     value={rawText}
                     onChange={(e) => setRawText(e.target.value)}
-                    className="w-full bg-[#FAF7EE] border-2 border-black focus:border-[#0047FF] focus:bg-white p-3.5 text-xs text-black placeholder-neutral-400 focus:outline-none transition resize-none font-mono leading-relaxed"
+                    className="w-full bg-[#FAF7EE] border border-neutral-300 focus:border-[#0047FF] focus:bg-white p-3.5 text-xs text-black placeholder-neutral-400 focus:outline-none transition resize-none font-mono leading-relaxed"
                   />
                 </div>
 
@@ -944,7 +943,7 @@ export default function DashboardPage() {
                   <button
                     type="button"
                     onClick={() => setShowImportModal(false)}
-                    className="px-4 py-2 bg-[#FAF7EE] text-black border-2 border-black font-mono text-xs font-black uppercase hover:bg-neutral-200 transition cursor-pointer"
+                    className="px-4 py-2 bg-[#FAF7EE] text-black border border-neutral-300 font-mono text-xs font-black uppercase hover:bg-neutral-200 transition cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -952,7 +951,7 @@ export default function DashboardPage() {
                     type="button"
                     disabled={isExtracting || !rawText.trim()}
                     onClick={handleExtractConcept}
-                    className="px-5 py-2 bg-[#DFFF4F] text-black border-2 border-black font-mono text-xs font-black uppercase shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] transition disabled:opacity-40 flex items-center gap-1.5 cursor-pointer"
+                    className="px-5 py-2 bg-[#DFFF4F] text-black border border-black font-mono text-xs font-black uppercase shadow-sm hover:bg-black hover:text-[#DFFF4F] transition disabled:opacity-40 flex items-center gap-1.5 cursor-pointer"
                   >
                     {isExtracting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Cpu className="w-3.5 h-3.5" />}
                     <span>{isExtracting ? 'Extracting Concept...' : 'AI Extract Concept'}</span>
@@ -961,7 +960,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 bg-[#FAF7EE] border-2 border-black space-y-3 shadow-[2px_2px_0px_#000000]">
+                <div className="p-4 bg-[#FAF7EE] border border-neutral-300 space-y-3 shadow-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-mono px-2 py-0.5 bg-[#DFFF4F] text-black border border-black font-black uppercase">
                       {parsedPreview.project_type} &bull; {parsedPreview.priority}
@@ -984,7 +983,7 @@ export default function DashboardPage() {
                   )}
 
                   {parsedPreview.starter_features && parsedPreview.starter_features.length > 0 && (
-                    <div className="pt-2 border-t border-black/20 space-y-1">
+                    <div className="pt-2 border-t border-neutral-200 space-y-1">
                       <span className="text-[10px] font-mono font-black uppercase text-black block">
                         Starter MVP Roadmap:
                       </span>
@@ -1002,14 +1001,14 @@ export default function DashboardPage() {
                   <button
                     type="button"
                     onClick={() => setParsedPreview(null)}
-                    className="px-4 py-2 bg-[#FAF7EE] text-black border-2 border-black font-mono text-xs font-black uppercase hover:bg-neutral-200 transition cursor-pointer"
+                    className="px-4 py-2 bg-[#FAF7EE] text-black border border-neutral-300 font-mono text-xs font-black uppercase hover:bg-neutral-200 transition cursor-pointer"
                   >
                     Re-edit Raw Text
                   </button>
                   <button
                     type="button"
                     onClick={handleSaveImportedConcept}
-                    className="px-5 py-2 bg-[#DFFF4F] text-black border-2 border-black font-mono text-xs font-black uppercase shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] transition flex items-center gap-1.5 cursor-pointer"
+                    className="px-5 py-2 bg-[#DFFF4F] text-black border border-black font-mono text-xs font-black uppercase shadow-sm hover:bg-black hover:text-[#DFFF4F] transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <Check className="w-3.5 h-3.5" />
                     <span>Save to Ideas Radar</span>
