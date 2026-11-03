@@ -120,8 +120,24 @@ export interface ParsedConcept {
 }
 
 
+export interface WebSource {
+  title: string;
+  url: string;
+  snippet?: string;
+  score?: number;
+  source?: string;
+}
+
+export interface TavilyStatus {
+  configured: boolean;
+  connected: boolean;
+  message: string;
+  latency_ms?: number;
+}
+
 export interface SubAgentResearcher {
   content: string;
+  web_sources?: WebSource[];
 }
 
 export interface SubAgentJudge {
@@ -161,6 +177,7 @@ export interface SubAgentData {
   is_pipeline?: boolean;
   executive_summary?: string;
   openui_lang?: string;
+  web_sources?: WebSource[];
   researcher?: SubAgentResearcher;
   judge?: SubAgentJudge;
   planner?: SubAgentPlanner;
@@ -185,6 +202,7 @@ export interface ChatMessage {
   is_feature_pitch?: boolean;
   subagent_data?: SubAgentData;
   citations?: RagCitation[];
+  web_sources?: WebSource[];
   tier_used?: string;
   created_at: string;
 }
@@ -221,6 +239,7 @@ export interface ChatResponse {
   raw_content: string;
   session_id?: string;
   citations: RagCitation[];
+  web_sources?: WebSource[];
   judge_data?: SubAgentJudge;
   suggested_features?: {
     title: string;

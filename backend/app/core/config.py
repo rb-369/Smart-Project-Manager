@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     NVIDIA_API_KEY: str = ""
 
+    # Tavily Web Search API (Agent Live Internet Grounding)
+    TAVILY_API_KEY: str = ""
+    TAVILY_SEARCH_DEPTH: str = "basic"  # "basic" or "advanced"
+
     # OpenUI & OUI-1 Generative UI Model (Thesys OUI-1 / vLLM / Hugging Face)
     OUI1_BASE_URL: str = "http://localhost:8001/v1"
     OUI1_MODEL: str = "OUI-1"

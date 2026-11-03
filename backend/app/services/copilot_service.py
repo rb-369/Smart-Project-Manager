@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.services.ai_service import AIService
 from app.services.rag_service import RAGService
 from app.services.mongodb_sync import MongoDBSyncService
+from app.services.tavily_service import TavilyService
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +41,23 @@ class CopilotService:
             return (
                 "You are DevCommand's Lead Market Researcher and Technical Feasibility Scout (Researcher Sub-Agent).\n"
                 "Your job is to research real-world competitor benchmarks and evaluate architectural feasibility.\n"
+                "When live internet search intelligence is provided from Tavily, ground your findings in concrete real-world SaaS apps, GitHub projects, and current libraries with verified markdown links.\n"
                 "Always provide:\n"
                 "1. Real-World Competitor Benchmarks: 3-5 real SaaS or open-source apps that solved this problem and how they built it.\n"
                 "2. Feasibility Rating: [Easy / Moderate / Complex / Prohibitive] with technical justification.\n"
                 "3. Infrastructure & Dependencies: Key libraries, cloud services, and protocols needed.\n"
                 "4. Hidden Gotchas & Bottlenecks: Real-world failure modes at scale (rate limits, sync conflicts, state bloat).\n"
                 "5. Pragmatic Build Recommendation: The highest-leverage MVP approach."
+            )
+        elif agent_role == "search":
+            return (
+                "You are DevCommand's Live Web Intelligence Scout (Search Sub-Agent).\n"
+                "Your job is to synthesize real-time internet search results from Tavily AI Search into an actionable, technical developer summary.\n"
+                "Always provide:\n"
+                "1. Direct Answer & Executive Takeaways\n"
+                "2. Key Tools, Libraries, Services, or Precedents Discovered\n"
+                "3. Verified Citations & Markdown Links to relevant web sources\n"
+                "4. Technical Trade-offs or Ecosystem Consensus."
             )
         elif agent_role == "auditor":
             return (
@@ -151,6 +163,10 @@ class CopilotService:
             clean = re.sub(r"^/stats\s*", "", trimmed, flags=re.IGNORECASE).strip()
             return "stats", clean or "Synthesize repository metrics, active features, and incubator status."
 
+        if lower.startswith("/search ") or lower == "/search":
+            clean = re.sub(r"^/search\s*", "", trimmed, flags=re.IGNORECASE).strip()
+            return "search", clean or "Search the internet for developer ecosystem intelligence."
+
         if lower.startswith("/pivot ") or lower == "/pivot":
             clean = re.sub(r"^/pivot\s*", "", trimmed, flags=re.IGNORECASE).strip()
             return "pivot", clean or "Recommend high-leverage lean MVP alternative."
@@ -158,10 +174,20 @@ class CopilotService:
         if lower.startswith("/help") or lower in ["/help", "help", "/?"]:
             return "help", "Display guide to slash skills (/), project mentions (@), and idea mentions (#)."
 
+        # Natural language search intent
+        web_search_triggers = [
+            "search the web for", "search web for", "search online for", "search internet for",
+            "google ", "look up online for", "browse the web for"
+        ]
+        for trigger in web_search_triggers:
+            if lower.startswith(trigger):
+                clean = re.sub(rf"^{re.escape(trigger)}\s*", "", trimmed, flags=re.IGNORECASE).strip()
+                return "search", clean or trimmed
+
         # Check explicit mode argument
         if mode in ["eval", "pipeline"]:
             return "eval", trimmed
-        if mode in ["plan", "research", "audit", "openui", "stats", "pivot", "help"]:
+        if mode in ["plan", "research", "audit", "openui", "stats", "pivot", "help", "search"]:
             return mode, trimmed
 
         # Conversational overrides
@@ -335,11 +361,22 @@ class CopilotService:
         if is_pitch:
             tier_tracker = []
 
-            # Sub-Agent 1: Market Researcher
+            # Sub-Agent 1: Market Researcher (Live Web Grounding via Tavily)
+            web_sources = []
+            tavily_prompt_block = ""
+            if TavilyService.is_configured():
+                try:
+                    search_query = f"{eval_message} SaaS alternatives competitor libraries architecture"
+                    tavily_prompt_block, web_sources = await TavilyService.get_search_context(search_query, max_results=4)
+                except Exception as tavily_err:
+                    logger.warning(f"[Copilot Pipeline] Tavily search failed: {tavily_err}")
+
             researcher_prompt = (
                 f"Feature Proposal:\n{eval_message}\n"
+                f"{tavily_prompt_block}\n"
                 f"{rag_prompt_text}\n"
-                "Research competitor benchmarks, technical feasibility, and real-world failure modes."
+                "Research competitor benchmarks, technical feasibility, and real-world failure modes. "
+                "Ground your findings in concrete real-world precedents and web sources if provided."
             )
             researcher_content, t1 = await cls._execute_cascade_llm(
                 cls.get_system_prompt("researcher"),
@@ -465,8 +502,10 @@ class CopilotService:
                 "is_pipeline": True,
                 "executive_summary": executive_summary,
                 "openui_lang": openui_code,
+                "web_sources": web_sources,
                 "researcher": {
                     "content": researcher_content,
+                    "web_sources": web_sources,
                 },
                 "judge": judge_data,
                 "planner": {
@@ -509,6 +548,7 @@ class CopilotService:
                 "response": executive_summary,
                 "raw_content": planner_content,
                 "citations": citations,
+                "web_sources": web_sources,
                 "judge_data": judge_data,
                 "suggested_features": suggested_features,
                 "subagent_data": subagent_data,
@@ -560,10 +600,22 @@ class CopilotService:
             response_text = f"### 📐 Feature Architecture & Implementation Blueprint\n\n{planner_content}"
 
         elif skill == "research":
+            web_sources = []
+            tavily_text = ""
+            if TavilyService.is_configured():
+                try:
+                    tavily_text, web_sources = await TavilyService.get_search_context(clean_message, max_results=5)
+                except Exception as tavily_err:
+                    logger.warning(f"[Copilot /research] Tavily search error: {tavily_err}")
+            else:
+                tavily_text = "\n*(Notice: TAVILY_API_KEY is not configured in .env. Live internet search is inactive. Add TAVILY_API_KEY in .env for real-time web intelligence.)*\n"
+
             researcher_prompt = (
                 f"Market & Feasibility Research Topic:\n{clean_message}\n"
+                f"{tavily_text}\n"
                 f"{rag_prompt_text}\n"
-                "Research competitor benchmarks, technical feasibility, and real-world failure modes."
+                "Research competitor benchmarks, technical feasibility, and real-world failure modes. "
+                "Cite concrete web sources, libraries, and real companies."
             )
             researcher_content, tier_used = await cls._execute_cascade_llm(
                 cls.get_system_prompt("researcher"),
@@ -575,9 +627,48 @@ class CopilotService:
                 "is_pipeline": False,
                 "researcher": {
                     "content": researcher_content,
+                    "web_sources": web_sources,
                 },
+                "web_sources": web_sources,
             }
             response_text = f"### 🔍 Competitive & Feasibility Intelligence\n\n{researcher_content}"
+
+        elif skill == "search":
+            web_sources = []
+            tavily_text = ""
+            if TavilyService.is_configured():
+                try:
+                    tavily_text, web_sources = await TavilyService.get_search_context(clean_message, max_results=6)
+                except Exception as tavily_err:
+                    logger.warning(f"[Copilot /search] Tavily search error: {tavily_err}")
+            else:
+                tavily_text = (
+                    "\n*(Notice: TAVILY_API_KEY is not configured in .env. "
+                    "Configure TAVILY_API_KEY in .env to activate real-time internet search for all agents.)*\n"
+                )
+
+            search_prompt = (
+                f"Live Internet Investigation Target:\n{clean_message}\n\n"
+                f"{tavily_text}\n"
+                f"{rag_prompt_text}\n"
+                "Synthesize verified findings into a sharp, highly structured developer intelligence brief. "
+                "Include key players, architectural precedents, and markdown URLs to verified sources."
+            )
+            search_content, tier_used = await cls._execute_cascade_llm(
+                cls.get_system_prompt("search"),
+                search_prompt,
+                is_json=False,
+                fallback_fn=lambda: f"Web intelligence summary for '{clean_message}':\n\n{tavily_text if tavily_text else 'No web sources retrieved.'}"
+            )
+            subagent_data = {
+                "is_pipeline": False,
+                "search": {
+                    "content": search_content,
+                    "web_sources": web_sources,
+                },
+                "web_sources": web_sources,
+            }
+            response_text = f"### 🌐 Live Web Intelligence (Tavily Grounded)\n\n{search_content}"
 
         elif skill == "audit":
             auditor_prompt = (
@@ -655,6 +746,7 @@ class CopilotService:
                 "| `/eval <idea>` | **Skill** | Activates the 3-Sub-Agent Swarm (Researcher + Judge + Planner + OpenUI Prototype) |\n"
                 "| `/plan <feature>` | **Skill** | Drafts technical architecture, API contracts, database schema & 1-click roadmap tasks |\n"
                 "| `/research <topic>` | **Skill** | Benchmarks competitor apps, assesses technical feasibility & evaluates OSS libraries |\n"
+                "| `/search <query>` | **Skill** | Live web search via Tavily AI Search with verified web source URLs & citations |\n"
                 "| `/audit <target>` | **Skill** | Audits security (OWASP), database scalability, IDOR vulnerabilities & concurrency risks |\n"
                 "| `/openui <brief>` | **Skill** | Generates an interactive generative UI screen powered by OUI-1 / OpenUI DSL |\n"
                 "| `/stats` | **Skill** | Displays workspace telemetry, vector indexing status & system metrics |\n"
@@ -662,15 +754,15 @@ class CopilotService:
                 "| `/help` | **Skill** | Displays this command and syntax reference guide |\n"
                 "| `@<project-name>` | **Context Tag** | Injects live project schema, repo details, and active roadmap features into prompt |\n"
                 "| `#<idea-title>` | **Context Tag** | Injects incubator idea pitch, target tech stack, and notes into prompt |\n\n"
-                "💡 **Example:** `/audit @notes-management evaluate auth and IDOR edge cases for #AI-concept-importer`"
+                "💡 **Example:** `/search latest FastAPI best practices in 2026` or `/audit @notes-management evaluate auth edge cases`"
             )
             help_oui = (
                 'root = Container("DevCommand Command Reference", "GUIDE", "default", [metricsRow, checklist])\n'
                 'metricsRow = Stack([m1, m2, m3], "row", "md")\n'
-                'm1 = StatMetric("Slash Skills", "8 Registered", "/eval, /plan, /audit...", "healthy")\n'
+                'm1 = StatMetric("Slash Skills", "9 Registered", "/eval, /search, /plan...", "healthy")\n'
                 'm2 = StatMetric("Project Mentions", "@repo", "Grounded Context", "healthy")\n'
                 'm3 = StatMetric("Idea Mentions", "#idea", "Incubator Pitch", "healthy")\n'
-                'checklist = TaskChecklist("Quick Start Actions", ["Try: /eval Realtime Webhooks", "Try: /audit @project", "Try: #idea with /plan"], "GUIDE")'
+                'checklist = TaskChecklist("Quick Start Actions", ["Try: /eval Realtime Webhooks", "Try: /search Tavily Python", "Try: /audit @project"], "GUIDE")'
             )
             subagent_data = {
                 "is_pipeline": False,
@@ -726,7 +818,16 @@ class CopilotService:
 
         else:
             copilot_sys = cls.get_system_prompt("general")
-            copilot_user = f"User Question:\n{message}\n{rag_prompt_text}"
+            web_sources = []
+            tavily_text = ""
+            search_indicators = ["latest", "recent", "who is", "who makes", "competitors", "compare", "search", "lookup", "pricing", "alternative to"]
+            if TavilyService.is_configured() and any(ind in message.lower() for ind in search_indicators):
+                try:
+                    tavily_text, web_sources = await TavilyService.get_search_context(message, max_results=3)
+                except Exception as tavily_err:
+                    logger.warning(f"[Copilot General Chat] Tavily search error: {tavily_err}")
+
+            copilot_user = f"User Question:\n{message}\n{tavily_text}\n{rag_prompt_text}"
             response_text, tier_used = await cls._execute_cascade_llm(
                 copilot_sys,
                 copilot_user,
@@ -737,6 +838,7 @@ class CopilotService:
                 "is_pipeline": False,
                 "executive_summary": response_text,
                 "openui_lang": openui_code,
+                "web_sources": web_sources,
             }
             return_mode = "general"
 
@@ -770,6 +872,7 @@ class CopilotService:
             "response": response_text,
             "raw_content": response_text,
             "citations": citations,
+            "web_sources": subagent_data.get("web_sources", []) if subagent_data else [],
             "judge_data": None,
             "suggested_features": suggested_features,
             "subagent_data": subagent_data,

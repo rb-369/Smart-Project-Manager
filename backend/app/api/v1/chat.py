@@ -69,6 +69,7 @@ class ChatResponse(BaseModel):
     raw_content: str
     session_id: Optional[str] = None
     citations: List[ChatCitation] = []
+    web_sources: List[Dict[str, Any]] = []
     judge_data: Optional[JudgeVerdict] = None
     suggested_features: List[SuggestedFeaturePayload] = []
     subagent_data: Optional[Dict[str, Any]] = None
@@ -707,4 +708,15 @@ async def get_oui1_status(current_user: User = Depends(get_current_user)):
         "mode": "cascade_openui_dsl",
         "message": "OUI-1 vLLM endpoint offline. Active: Cascade Fallback (Gemini 2.5 Flash / OpenRouter / NVIDIA NIM with OpenUI DSL)."
     }
+
+
+@router.get("/tavily-status")
+async def get_tavily_status(current_user: User = Depends(get_current_user)):
+    """
+    Checks connectivity and configuration of the Tavily AI Search Engine.
+    Returns whether TAVILY_API_KEY is configured, latency, and status message.
+    """
+    from app.services.tavily_service import TavilyService
+    return await TavilyService.check_tavily_status()
+
 

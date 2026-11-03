@@ -8,6 +8,8 @@ import { Navbar } from '@/components/Navbar';
 import {
   ChatMessage,
   QdrantStatus,
+  TavilyStatus,
+  WebSource,
   ProjectSummary,
   ChatSession,
 } from '@/types';
@@ -38,6 +40,9 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  Globe,
+  ExternalLink,
+
   Clock,
   UserCheck,
   AtSign,
@@ -85,6 +90,15 @@ const AVAILABLE_SLASH_SKILLS: SlashSkillItem[] = [
     badge: 'SCOUT',
     icon: Search,
     color: 'text-[#0047FF]',
+  },
+  {
+    name: 'Live Web Search & Sources',
+    command: '/search',
+    syntax: '/search <query or tech question>',
+    description: 'Live internet search grounded by Tavily AI Search with verified web source URLs',
+    badge: 'TAVILY',
+    icon: Globe,
+    color: 'text-sky-600',
   },
   {
     name: 'Security & Scalability Audit',
@@ -199,9 +213,10 @@ export default function ChatPage() {
   const [mentionSelectedIndex, setMentionSelectedIndex] = useState(0);
   const [showMentions, setShowMentions] = useState(false);
 
-  // Qdrant Telemetry State & OpenUI / OUI-1 Status
+  // Qdrant Telemetry State & OpenUI / OUI-1 Status & Tavily Search Status
   const [qdrantStatus, setQdrantStatus] = useState<QdrantStatus | null>(null);
   const [oui1Status, setOui1Status] = useState<any>(null);
+  const [tavilyStatus, setTavilyStatus] = useState<TavilyStatus | null>(null);
   const [isSyncingKnowledge, setIsSyncingKnowledge] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
@@ -228,6 +243,15 @@ export default function ChatPage() {
       setOui1Status(status);
     } catch (err) {
       console.warn('Failed to fetch OUI-1 status:', err);
+    }
+  };
+
+  const fetchTavilyStatus = async () => {
+    try {
+      const status = await api.getTavilyStatus();
+      setTavilyStatus(status);
+    } catch (err) {
+      console.warn('Failed to fetch Tavily status:', err);
     }
   };
 
@@ -391,6 +415,7 @@ export default function ChatPage() {
     if (isAuthenticated) {
       fetchQdrantStatus();
       fetchOui1Status();
+      fetchTavilyStatus();
       fetchProjects();
       fetchIdeas();
       fetchSessions(true);
@@ -767,7 +792,7 @@ export default function ChatPage() {
             </div>
             <span className="hidden sm:inline text-neutral-300">|</span>
             <p className="hidden md:block text-[11px] text-neutral-500 font-mono truncate">
-              <strong className="text-[#0047FF] uppercase font-bold">Researcher</strong> &bull; <strong className="text-[#FF5533] uppercase font-bold">Judge</strong> &bull; <strong className="text-neutral-900 uppercase font-bold">Planner</strong> &bull; <strong className="text-purple-600 uppercase font-bold">OpenUI</strong>
+              <strong className="text-[#0047FF] uppercase font-bold">Researcher</strong> &bull; <strong className="text-[#FF5533] uppercase font-bold">Judge</strong> &bull; <strong className="text-neutral-900 uppercase font-bold">Planner</strong> &bull; <strong className="text-sky-600 uppercase font-bold">Tavily Web</strong> &bull; <strong className="text-purple-600 uppercase font-bold">OpenUI</strong>
             </p>
           </div>
 
@@ -786,6 +811,24 @@ export default function ChatPage() {
                   {qdrantStatus.points_count}
                 </span>
               )}
+            </div>
+
+            {/* Tavily Web Search Badge */}
+            <div
+              className={`px-2.5 py-1 rounded-xl border flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase shadow-xs ${
+                tavilyStatus?.connected
+                  ? 'bg-sky-50 border-sky-200 text-sky-800'
+                  : tavilyStatus?.configured
+                  ? 'bg-amber-50 border-amber-200 text-amber-800'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-600'
+              }`}
+              title={tavilyStatus?.message || 'Tavily AI Search Engine Grounding for Autonomous Agents'}
+            >
+              <Globe className="w-3 h-3 text-sky-600" />
+              <span>{tavilyStatus?.connected ? 'TAVILY: LIVE' : tavilyStatus?.configured ? 'TAVILY: READY' : 'TAVILY: WEB'}</span>
+              <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-white/80 border border-current/20">
+                AI SEARCH
+              </span>
             </div>
 
             {/* OpenUI / OUI-1 Status Badge */}
@@ -1394,6 +1437,33 @@ export default function ChatPage() {
                                 <div className="p-5 bg-white rounded-xl border border-neutral-200/90 leading-relaxed whitespace-pre-wrap font-sans text-xs text-neutral-800 shadow-xs">
                                   {subData.researcher.content}
                                 </div>
+
+                                {/* Live Web Precedents Grounded by Tavily */}
+                                {(subData.researcher.web_sources || subData.web_sources || []).length > 0 && (
+                                  <div className="p-3.5 bg-sky-50/60 rounded-xl border border-sky-200/80 space-y-2">
+                                    <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-sky-900 uppercase">
+                                      <Globe className="w-3.5 h-3.5 text-sky-600" />
+                                      <span>Verified Live Web Precedents &amp; Competitors (Tavily AI Search):</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      {(subData.researcher.web_sources || subData.web_sources || []).map((src: any, idx: number) => (
+                                        <a
+                                          key={idx}
+                                          href={src.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="p-2.5 bg-white hover:bg-sky-50 border border-neutral-200 rounded-lg flex items-start justify-between gap-2 text-neutral-800 transition shadow-xs group"
+                                        >
+                                          <div className="min-w-0">
+                                            <p className="font-semibold text-xs text-neutral-900 group-hover:text-sky-700 truncate">{src.title}</p>
+                                            {src.snippet && <p className="text-[10px] text-neutral-500 line-clamp-2 mt-0.5">{src.snippet}</p>}
+                                          </div>
+                                          <ExternalLink className="w-3.5 h-3.5 text-neutral-400 group-hover:text-sky-600 shrink-0 mt-0.5" />
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             )}
 
@@ -1597,6 +1667,32 @@ export default function ChatPage() {
                                 </span>
                               </span>
                             ))}
+                          </div>
+                        )}
+
+                        {/* Grounded Web Sources (Tavily AI Search) */}
+                        {((msg.web_sources && msg.web_sources.length > 0) || (msg.subagent_data?.web_sources && msg.subagent_data.web_sources.length > 0)) && (
+                          <div className="mt-3 pt-3 border-t border-neutral-200/70 space-y-2">
+                            <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase text-sky-800">
+                              <Globe className="w-3.5 h-3.5 text-sky-600" />
+                              <span>Live Web Sources (Tavily AI Search):</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {(msg.web_sources || msg.subagent_data?.web_sources || []).map((source: WebSource, idx: number) => (
+                                <a
+                                  key={idx}
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-50/80 hover:bg-sky-100 border border-sky-200 text-sky-900 rounded-lg text-xs font-sans transition-all shadow-xs group"
+                                  title={source.snippet || source.url}
+                                >
+                                  <Globe className="w-3 h-3 text-sky-600 shrink-0" />
+                                  <span className="font-medium truncate max-w-[200px] sm:max-w-[260px]">{source.title}</span>
+                                  <ExternalLink className="w-3 h-3 text-sky-600 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                                </a>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1898,6 +1994,19 @@ export default function ChatPage() {
               >
                 <Search className="w-3 h-3 text-[#0047FF]" />
                 <span>/research</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleSkill('/search')}
+                className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                  inputValue.trim().startsWith('/search')
+                    ? 'bg-neutral-900 text-sky-300 border-neutral-900'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+                }`}
+                title="/search: Live internet search powered by Tavily AI Search"
+              >
+                <Globe className="w-3 h-3 text-sky-600" />
+                <span>/search</span>
               </button>
               <button
                 type="button"

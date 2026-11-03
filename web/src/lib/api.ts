@@ -221,6 +221,7 @@ export const api = {
   },
   getQdrantStatus: () => request<import('../types').QdrantStatus>('/chat/qdrant-status', { method: 'GET' }),
   getOui1Status: () => request<any>('/chat/oui1-status', { method: 'GET' }),
+  getTavilyStatus: () => request<import('../types').TavilyStatus>('/chat/tavily-status', { method: 'GET' }),
   syncKnowledgeBase: () =>
     request<{ message: string; points_indexed: number }>('/chat/sync-knowledge', { method: 'POST' }),
 
