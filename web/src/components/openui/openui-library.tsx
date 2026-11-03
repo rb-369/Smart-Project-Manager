@@ -14,14 +14,11 @@ import {
   RefreshCw,
   Plus,
   Sparkles,
-  TrendingUp,
-  ShieldCheck,
   Database,
   Server,
   Globe,
   Cpu,
   Lock,
-  Layers,
   Scale,
 } from 'lucide-react';
 
@@ -224,6 +221,79 @@ export const VerdictCard = defineComponent({
 // ============================================================================
 // 5. TaskChecklist Component (Interactive Checkable State!)
 // ============================================================================
+function TaskChecklistRenderer({ props }: { props: any }) {
+  const [checkedState, setCheckedState] = useState<{ [index: number]: boolean }>({});
+
+  const toggleItem = (idx: number) => {
+    setCheckedState((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const totalCount = props.items.length;
+  const completedCount = Object.values(checkedState).filter(Boolean).length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  return (
+    <div className="p-4 sm:p-5 rounded-xl bg-white border border-neutral-200/90 shadow-xs space-y-3">
+      <div className="flex items-center justify-between gap-2 pb-2 border-b border-neutral-100">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-[#0047FF]" />
+          <h4 className="font-bold text-xs uppercase tracking-tight text-neutral-900">
+            {props.title}
+          </h4>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-500">
+          <span>
+            {completedCount}/{totalCount} completed
+          </span>
+          {props.category && (
+            <span className="px-2 py-0.5 rounded bg-neutral-100 border border-neutral-200 text-neutral-700 font-bold uppercase">
+              {props.category}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Live Progress Bar */}
+      <div className="w-full h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+        <div
+          className="h-full bg-[#0047FF] transition-all duration-300"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+
+      {/* Tasks List */}
+      <div className="space-y-1.5 pt-1">
+        {props.items.map((task: string, idx: number) => {
+          const isChecked = !!checkedState[idx];
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => toggleItem(idx)}
+              className={`w-full text-left p-2.5 rounded-lg border flex items-start gap-2.5 transition cursor-pointer ${
+                isChecked
+                  ? 'bg-emerald-50/60 border-emerald-200 text-neutral-500 line-through'
+                  : 'bg-neutral-50/60 hover:bg-neutral-100/70 border-neutral-200/70 text-neutral-800'
+              }`}
+            >
+              <div
+                className={`w-4 h-4 rounded mt-0.5 shrink-0 flex items-center justify-center border transition ${
+                  isChecked
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'border-neutral-400 bg-white'
+                }`}
+              >
+                {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+              </div>
+              <span className="text-xs font-sans leading-relaxed">{task}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export const TaskChecklist = defineComponent({
   name: 'TaskChecklist',
   description: 'Interactive checklist where items can be checked on/off with live progress calculation',
@@ -232,83 +302,86 @@ export const TaskChecklist = defineComponent({
     items: z.array(z.string()).describe('List of task strings to display'),
     category: z.string().optional().describe('Category badge, e.g. SPRINT or ARCHITECTURE'),
   }),
-  component: ({ props }) => {
-    const [checkedState, setCheckedState] = useState<{ [index: number]: boolean }>({});
-
-    const toggleItem = (idx: number) => {
-      setCheckedState((prev) => ({ ...prev, [idx]: !prev[idx] }));
-    };
-
-    const totalCount = props.items.length;
-    const completedCount = Object.values(checkedState).filter(Boolean).length;
-    const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-    return (
-      <div className="p-4 sm:p-5 rounded-xl bg-white border border-neutral-200/90 shadow-xs space-y-3">
-        <div className="flex items-center justify-between gap-2 pb-2 border-b border-neutral-100">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#0047FF]" />
-            <h4 className="font-bold text-xs uppercase tracking-tight text-neutral-900">
-              {props.title}
-            </h4>
-          </div>
-          <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-500">
-            <span>
-              {completedCount}/{totalCount} completed
-            </span>
-            {props.category && (
-              <span className="px-2 py-0.5 rounded bg-neutral-100 border border-neutral-200 text-neutral-700 font-bold uppercase">
-                {props.category}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Live Progress Bar */}
-        <div className="w-full h-1.5 rounded-full bg-neutral-100 overflow-hidden">
-          <div
-            className="h-full bg-[#0047FF] transition-all duration-300"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-
-        {/* Tasks List */}
-        <div className="space-y-1.5 pt-1">
-          {props.items.map((task, idx) => {
-            const isChecked = !!checkedState[idx];
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => toggleItem(idx)}
-                className={`w-full text-left p-2.5 rounded-lg border flex items-start gap-2.5 transition cursor-pointer ${
-                  isChecked
-                    ? 'bg-emerald-50/60 border-emerald-200 text-neutral-500 line-through'
-                    : 'bg-neutral-50/60 hover:bg-neutral-100/70 border-neutral-200/70 text-neutral-800'
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 rounded mt-0.5 shrink-0 flex items-center justify-center border transition ${
-                    isChecked
-                      ? 'bg-emerald-600 border-emerald-600 text-white'
-                      : 'border-neutral-400 bg-white'
-                  }`}
-                >
-                  {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
-                </div>
-                <span className="text-xs font-sans leading-relaxed">{task}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  },
+  component: TaskChecklistRenderer,
 });
 
 // ============================================================================
 // 6. FeatureCard Component (Actionable Blueprint Card)
 // ============================================================================
+function FeatureCardRenderer({ props }: { props: any }) {
+  const triggerAction = useTriggerAction();
+  const [isTriggered, setIsTriggered] = useState(false);
+
+  const handleAction = () => {
+    setIsTriggered(true);
+    if (props.actionId) {
+      try {
+        triggerAction(props.actionId);
+      } catch {
+        // Fallback if not inside interactive action plan
+      }
+    }
+  };
+
+  const isP0 = props.priority === 'P0';
+  const isP1 = props.priority === 'P1';
+
+  return (
+    <div className="p-4 sm:p-5 rounded-xl bg-white border border-neutral-200/90 shadow-xs space-y-3 transition-all hover:border-neutral-300">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span
+            className={`px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded ${
+              isP0
+                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                : isP1
+                ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                : 'bg-blue-50 text-blue-700 border border-blue-200'
+            }`}
+          >
+            {props.priority}
+          </span>
+          {props.complexity && (
+            <span className="px-1.5 py-0.5 text-[10px] font-mono text-neutral-500 bg-neutral-100 rounded border border-neutral-200">
+              SIZE: {props.complexity}
+            </span>
+          )}
+          <h4 className="font-bold text-xs uppercase tracking-tight text-neutral-900">
+            {props.title}
+          </h4>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleAction}
+          disabled={isTriggered}
+          className={`px-3 py-1.5 text-xs font-bold font-mono uppercase shrink-0 rounded-xl flex items-center gap-1.5 transition cursor-pointer ${
+            isTriggered
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+              : 'bg-neutral-900 hover:bg-[#0047FF] text-white shadow-xs active:translate-y-0.5'
+          }`}
+        >
+          {isTriggered ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Added to Roadmap</span>
+            </>
+          ) : (
+            <>
+              <Plus className="w-3.5 h-3.5" />
+              <span>{props.actionLabel || 'Add to Roadmap'}</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      <p className="text-xs text-neutral-600 leading-relaxed font-sans">
+        {props.description}
+      </p>
+    </div>
+  );
+}
+
 export const FeatureCard = defineComponent({
   name: 'FeatureCard',
   description: 'Detailed feature blueprint card with priority badge, complexity, and an interactive action button',
@@ -320,84 +393,63 @@ export const FeatureCard = defineComponent({
     actionId: z.string().optional().describe('Identifier for action callback'),
     actionLabel: z.string().optional().describe('Label on the button, e.g. Add to Roadmap'),
   }),
-  component: ({ props }) => {
-    const triggerAction = useTriggerAction();
-    const [isTriggered, setIsTriggered] = useState(false);
-
-    const handleAction = () => {
-      setIsTriggered(true);
-      if (props.actionId) {
-        try {
-          triggerAction(props.actionId);
-        } catch {
-          // Fallback if not inside interactive action plan
-        }
-      }
-    };
-
-    const isP0 = props.priority === 'P0';
-    const isP1 = props.priority === 'P1';
-
-    return (
-      <div className="p-4 sm:p-5 rounded-xl bg-white border border-neutral-200/90 shadow-xs space-y-3 transition-all hover:border-neutral-300">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded ${
-                isP0
-                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                  : isP1
-                  ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                  : 'bg-blue-50 text-blue-700 border border-blue-200'
-              }`}
-            >
-              {props.priority}
-            </span>
-            {props.complexity && (
-              <span className="px-1.5 py-0.5 text-[10px] font-mono text-neutral-500 bg-neutral-100 rounded border border-neutral-200">
-                SIZE: {props.complexity}
-              </span>
-            )}
-            <h4 className="font-bold text-xs uppercase tracking-tight text-neutral-900">
-              {props.title}
-            </h4>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleAction}
-            disabled={isTriggered}
-            className={`px-3 py-1.5 text-xs font-bold font-mono uppercase shrink-0 rounded-xl flex items-center gap-1.5 transition cursor-pointer ${
-              isTriggered
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
-                : 'bg-neutral-900 hover:bg-[#0047FF] text-white shadow-xs active:translate-y-0.5'
-            }`}
-          >
-            {isTriggered ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Added to Roadmap</span>
-              </>
-            ) : (
-              <>
-                <Plus className="w-3.5 h-3.5" />
-                <span>{props.actionLabel || 'Add to Roadmap'}</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        <p className="text-xs text-neutral-600 leading-relaxed font-sans">
-          {props.description}
-        </p>
-      </div>
-    );
-  },
+  component: FeatureCardRenderer,
 });
 
 // ============================================================================
 // 7. ActionButton Component
 // ============================================================================
+function ActionButtonRenderer({ props }: { props: any }) {
+  const triggerAction = useTriggerAction();
+  const [clicked, setClicked] = useState(false);
+
+  const handleClick = () => {
+    setClicked(true);
+    setTimeout(() => setClicked(false), 2000);
+    try {
+      triggerAction(props.actionId || props.label);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const isPrimary = !props.variant || props.variant === 'primary';
+  const isSuccess = props.variant === 'success';
+  const isDanger = props.variant === 'danger';
+
+  const btnClass = isPrimary
+    ? 'bg-neutral-900 hover:bg-[#0047FF] text-white shadow-xs'
+    : isSuccess
+    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+    : isDanger
+    ? 'bg-rose-600 hover:bg-rose-700 text-white'
+    : 'bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300';
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold uppercase flex items-center gap-2 transition cursor-pointer active:scale-95 ${btnClass}`}
+    >
+      {clicked ? (
+        <>
+          <Check className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Triggered</span>
+        </>
+      ) : (
+        <>
+          {props.icon === 'zap' && <Zap className="w-3.5 h-3.5" />}
+          {props.icon === 'play' && <Play className="w-3.5 h-3.5" />}
+          {props.icon === 'refresh' && <RefreshCw className="w-3.5 h-3.5" />}
+          {props.icon === 'arrow' && <ArrowRight className="w-3.5 h-3.5" />}
+          {(!props.icon || props.icon === 'plus') && <Plus className="w-3.5 h-3.5" />}
+          <span>{props.label}</span>
+        </>
+      )}
+    </button>
+  );
+}
+
 export const ActionButton = defineComponent({
   name: 'ActionButton',
   description: 'Interactive button triggering an action callback when clicked',
@@ -407,61 +459,50 @@ export const ActionButton = defineComponent({
     variant: z.enum(['primary', 'secondary', 'danger', 'success']).optional().describe('Visual style'),
     icon: z.enum(['plus', 'check', 'play', 'zap', 'copy', 'refresh', 'arrow']).optional().describe('Icon'),
   }),
-  component: ({ props }) => {
-    const triggerAction = useTriggerAction();
-    const [clicked, setClicked] = useState(false);
-
-    const handleClick = () => {
-      setClicked(true);
-      setTimeout(() => setClicked(false), 2000);
-      try {
-        triggerAction(props.actionId || props.label);
-      } catch {
-        // Fallback
-      }
-    };
-
-    const isPrimary = !props.variant || props.variant === 'primary';
-    const isSuccess = props.variant === 'success';
-    const isDanger = props.variant === 'danger';
-
-    const btnClass = isPrimary
-      ? 'bg-neutral-900 hover:bg-[#0047FF] text-white shadow-xs'
-      : isSuccess
-      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-      : isDanger
-      ? 'bg-rose-600 hover:bg-rose-700 text-white'
-      : 'bg-white hover:bg-neutral-100 text-neutral-800 border border-neutral-300';
-
-    return (
-      <button
-        type="button"
-        onClick={handleClick}
-        className={`px-3.5 py-2 rounded-xl text-xs font-mono font-bold uppercase flex items-center gap-2 transition cursor-pointer active:scale-95 ${btnClass}`}
-      >
-        {clicked ? (
-          <>
-            <Check className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Triggered</span>
-          </>
-        ) : (
-          <>
-            {props.icon === 'zap' && <Zap className="w-3.5 h-3.5" />}
-            {props.icon === 'play' && <Play className="w-3.5 h-3.5" />}
-            {props.icon === 'refresh' && <RefreshCw className="w-3.5 h-3.5" />}
-            {props.icon === 'arrow' && <ArrowRight className="w-3.5 h-3.5" />}
-            {(!props.icon || props.icon === 'plus') && <Plus className="w-3.5 h-3.5" />}
-            <span>{props.label}</span>
-          </>
-        )}
-      </button>
-    );
-  },
+  component: ActionButtonRenderer,
 });
 
 // ============================================================================
 // 8. CodePreview Component
 // ============================================================================
+function CodePreviewRenderer({ props }: { props: any }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(props.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-xl bg-neutral-950 text-neutral-100 border border-neutral-800 overflow-hidden text-xs font-mono">
+      <div className="flex items-center justify-between px-3 py-2 bg-neutral-900/90 border-b border-neutral-800 text-[11px] text-neutral-400">
+        <span>{props.filename || props.language || 'code'}</span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="flex items-center gap-1 hover:text-white transition cursor-pointer"
+        >
+          {copied ? (
+            <>
+              <Check className="w-3 h-3 text-emerald-400" />
+              <span className="text-emerald-400 font-bold">Copied</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3 h-3" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+      <pre className="p-3.5 overflow-x-auto leading-relaxed text-[11px] font-mono text-neutral-200">
+        <code>{props.code}</code>
+      </pre>
+    </div>
+  );
+}
+
 export const CodePreview = defineComponent({
   name: 'CodePreview',
   description: 'Code snippet box with syntax preview and copy-to-clipboard functionality',
@@ -470,43 +511,7 @@ export const CodePreview = defineComponent({
     language: z.string().optional().describe('Programming language, e.g. typescript, python'),
     filename: z.string().optional().describe('Optional filename header'),
   }),
-  component: ({ props }) => {
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = () => {
-      navigator.clipboard.writeText(props.code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    };
-
-    return (
-      <div className="rounded-xl bg-neutral-950 text-neutral-100 border border-neutral-800 overflow-hidden text-xs font-mono">
-        <div className="flex items-center justify-between px-3 py-2 bg-neutral-900/90 border-b border-neutral-800 text-[11px] text-neutral-400">
-          <span>{props.filename || props.language || 'code'}</span>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="flex items-center gap-1 hover:text-white transition cursor-pointer"
-          >
-            {copied ? (
-              <>
-                <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400 font-bold">Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3" />
-                <span>Copy</span>
-              </>
-            )}
-          </button>
-        </div>
-        <pre className="p-3.5 overflow-x-auto leading-relaxed text-[11px] font-mono text-neutral-200">
-          <code>{props.code}</code>
-        </pre>
-      </div>
-    );
-  },
+  component: CodePreviewRenderer,
 });
 
 // ============================================================================

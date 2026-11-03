@@ -292,7 +292,7 @@ function OpenUIInteractiveCard({
       ) : (
         <div className="rounded-xl bg-neutral-950 p-3.5 text-neutral-200 font-mono text-xs overflow-x-auto border border-neutral-800">
           <div className="text-[10px] font-mono text-neutral-400 pb-2 border-b border-neutral-800 uppercase tracking-widest">
-            // openui-lang declarative syntax
+            {'// openui-lang declarative syntax'}
           </div>
           <pre className="pt-2 leading-relaxed whitespace-pre font-mono">
             <code>{normalizedCode}</code>

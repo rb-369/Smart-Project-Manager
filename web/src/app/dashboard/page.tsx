@@ -302,7 +302,7 @@ export default function DashboardPage() {
   }
 
   // Search filtering
-  let searched = baseList.filter((p) => {
+  const searched = baseList.filter((p) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (

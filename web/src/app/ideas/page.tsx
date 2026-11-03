@@ -22,6 +22,10 @@ import {
   RotateCcw
 } from 'lucide-react';
 
+function generateIdeaOfflineId(prefix = 'offline'): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
 export default function IdeasPage() {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -250,7 +254,7 @@ export default function IdeasPage() {
     } catch (err: any) {
       console.warn('Unable to add suggested project:', err?.message || err);
       const fallbackIdea: FutureProject = {
-        id: `offline-${Date.now()}`,
+        id: generateIdeaOfflineId('offline'),
         title: p.title,
         elevator_pitch: p.elevator_pitch,
         target_tech_stack: p.target_tech_stack,

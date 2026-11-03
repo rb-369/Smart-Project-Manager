@@ -33,6 +33,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+function generateClientMessageId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
 function generateFallbackOpenUIFromJudge(subData: any, msg: any): string {
   const judge = subData?.judge;
   const score = judge?.score ?? 75;
@@ -91,6 +95,44 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const fetchQdrantStatus = async () => {
+    try {
+      const status = await api.getQdrantStatus();
+      setQdrantStatus(status);
+    } catch (err) {
+      console.warn('Failed to fetch Qdrant status:', err);
+    }
+  };
+
+  const fetchOui1Status = async () => {
+    try {
+      const status = await api.getOui1Status();
+      setOui1Status(status);
+    } catch (err) {
+      console.warn('Failed to fetch OUI-1 status:', err);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const res: any = await api.get('/projects');
+      setProjects(res || []);
+    } catch (err) {
+      console.warn('Failed to fetch projects list:', err);
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const res = await api.getChatHistory(selectedProjectId || undefined);
+      if (res && res.history) {
+        setMessages(res.history);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch chat history:', err);
+    }
+  };
+
   // Route protection
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -131,50 +173,12 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isSubmitting, activeStep]);
 
-  const fetchQdrantStatus = async () => {
-    try {
-      const status = await api.getQdrantStatus();
-      setQdrantStatus(status);
-    } catch (err) {
-      console.warn('Failed to fetch Qdrant status:', err);
-    }
-  };
-
-  const fetchOui1Status = async () => {
-    try {
-      const status = await api.getOui1Status();
-      setOui1Status(status);
-    } catch (err) {
-      console.warn('Failed to fetch OUI-1 status:', err);
-    }
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const res: any = await api.get('/projects');
-      setProjects(res || []);
-    } catch (err) {
-      console.warn('Failed to fetch projects list:', err);
-    }
-  };
-
-  const fetchHistory = async () => {
-    try {
-      const res = await api.getChatHistory(selectedProjectId || undefined);
-      if (res && res.history) {
-        setMessages(res.history);
-      }
-    } catch (err) {
-      console.warn('Failed to fetch chat history:', err);
-    }
-  };
-
   const handleSendMessage = async (customText?: string) => {
     const query = (customText || inputValue).trim();
     if (!query || isSubmitting) return;
 
     const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
+      id: generateClientMessageId('user'),
       role: 'user',
       content: query,
       created_at: new Date().toISOString(),
@@ -198,7 +202,7 @@ export default function ChatPage() {
       });
 
       const assistantMessage: ChatMessage = {
-        id: `ai-${Date.now()}`,
+        id: generateClientMessageId('ai'),
         role: 'assistant',
         content: response.response,
         mode: response.mode,
@@ -218,7 +222,7 @@ export default function ChatPage() {
       }
     } catch (err: any) {
       const errorMessage: ChatMessage = {
-        id: `err-${Date.now()}`,
+        id: generateClientMessageId('err'),
         role: 'assistant',
         content: `Error generating response: ${err.message || 'Sub-agent communication failure.'}`,
         created_at: new Date().toISOString(),
@@ -293,7 +297,7 @@ export default function ChatPage() {
       const priority = action.params?.priority || 'P1';
       await handleAddSuggestedFeature(
         { title, priority, description: 'Added from OpenUI interactive component.' },
-        `openui-${Date.now()}`
+        generateClientMessageId('openui')
       );
     } else {
       handleSendMessage(`Execute action: ${action.name} with params ${JSON.stringify(action.params || {})}`);
