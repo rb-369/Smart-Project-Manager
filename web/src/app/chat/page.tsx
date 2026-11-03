@@ -749,59 +749,57 @@ export default function ChatPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F6F3EC] text-black relative flex flex-col font-sans selection:bg-[#DFFF4F] selection:text-black">
+    <div className="h-screen max-h-screen overflow-hidden bg-[#F6F3EC] text-black relative flex flex-col font-sans selection:bg-[#DFFF4F] selection:text-black">
       {/* Navigation Header */}
       <Navbar />
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-4 sm:pt-6 pb-12 flex-1 flex flex-col relative z-10">
+      {/* Main Content: 100% viewport, zero-page-scroll */}
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 pt-2 pb-2 flex-1 min-h-0 flex flex-col overflow-hidden relative z-10">
         
-        {/* Top Control Bar: Title + Telemetry */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3.5 border-b border-neutral-200/90">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
+        {/* Compact Top Control Bar: Title + Telemetry */}
+        <div className="flex items-center justify-between gap-3 pb-2 pt-1 border-b border-neutral-200/90 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               <span className="w-2 h-2 rounded-full bg-[#0047FF] animate-pulse inline-block" />
-              <span className="text-[11px] font-mono text-neutral-500 uppercase tracking-widest font-semibold">
-                DEVCOMMAND AUTONOMOUS COPILOT &bull; MULTI-AGENT SWARM
-              </span>
+              <h1 className="text-base sm:text-lg font-black text-neutral-900 uppercase tracking-tight truncate">
+                DevCommand Copilot
+              </h1>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 uppercase tracking-tight flex items-center gap-3">
-              <span>DevCommand Copilot</span>
-            </h1>
-            <p className="text-xs text-neutral-500 mt-1 font-mono">
-              Coordinating <strong className="text-[#0047FF] uppercase">Market Researcher</strong>, <strong className="text-[#FF5533] uppercase">The Judge</strong>, and <strong className="text-neutral-900 uppercase">Feature Planner</strong> with Qdrant RAG.
+            <span className="hidden sm:inline text-neutral-300">|</span>
+            <p className="hidden md:block text-[11px] text-neutral-500 font-mono truncate">
+              <strong className="text-[#0047FF] uppercase font-bold">Researcher</strong> &bull; <strong className="text-[#FF5533] uppercase font-bold">Judge</strong> &bull; <strong className="text-neutral-900 uppercase font-bold">Planner</strong> &bull; <strong className="text-purple-600 uppercase font-bold">OpenUI</strong>
             </p>
           </div>
 
           {/* Telemetry Status Pills */}
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Qdrant Cloud Badge */}
-            <div className={`px-3 py-1.5 rounded-xl border flex items-center gap-2 text-xs font-mono font-bold uppercase shadow-xs ${
+            <div className={`px-2.5 py-1 rounded-xl border flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase shadow-xs ${
               qdrantStatus?.connected
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                 : 'bg-amber-50 border-amber-200 text-amber-800'
             }`}>
-              <Database className="w-3.5 h-3.5" />
+              <Database className="w-3 h-3" />
               <span>{qdrantStatus?.connected ? 'QDRANT: ONLINE' : 'CONNECTING'}</span>
               {qdrantStatus?.points_count !== undefined && (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px]">
-                  {qdrantStatus.points_count} PTS
+                <span className="px-1.5 py-0.2 rounded-full bg-emerald-600 text-white text-[9px]">
+                  {qdrantStatus.points_count}
                 </span>
               )}
             </div>
 
             {/* OpenUI / OUI-1 Status Badge */}
             <div
-              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-mono font-bold uppercase shadow-xs ${
+              className={`px-2.5 py-1 rounded-xl border flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase shadow-xs ${
                 oui1Status?.connected
                   ? 'bg-blue-50 border-blue-200 text-blue-800'
                   : 'bg-purple-50 border-purple-200 text-purple-800'
               }`}
               title={oui1Status?.message || 'OpenUI Generative UI with OUI-1 & Cascade'}
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#0047FF]" />
+              <Sparkles className="w-3 h-3 text-[#0047FF]" />
               <span>{oui1Status?.connected ? 'OUI-1: ACTIVE' : 'OPENUI: CASCADE'}</span>
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-white/80 border border-current/20">
+              <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-white/80 border border-current/20">
                 DSL
               </span>
             </div>
@@ -810,23 +808,23 @@ export default function ChatPage() {
             <button
               onClick={handleSyncKnowledge}
               disabled={isSyncingKnowledge}
-              className="px-3.5 py-1.5 bg-white hover:bg-neutral-50 border border-neutral-200 text-neutral-800 text-xs font-mono font-bold uppercase rounded-xl flex items-center gap-1.5 transition shadow-xs active:translate-y-0.5 cursor-pointer disabled:opacity-50"
+              className="px-2.5 py-1 bg-white hover:bg-neutral-50 border border-neutral-200 text-neutral-800 text-[11px] font-mono font-bold uppercase rounded-xl flex items-center gap-1.5 transition shadow-xs active:translate-y-0.5 cursor-pointer disabled:opacity-50"
               title="Index all projects and features into Qdrant Cloud"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingKnowledge ? 'animate-spin text-[#0047FF]' : 'text-neutral-600'}`} />
-              <span>{isSyncingKnowledge ? 'INDEXING...' : 'SYNC'}</span>
+              <RefreshCw className={`w-3 h-3 ${isSyncingKnowledge ? 'animate-spin text-[#0047FF]' : 'text-neutral-600'}`} />
+              <span>{isSyncingKnowledge ? 'SYNCING...' : 'SYNC'}</span>
             </button>
 
             {syncMessage && (
-              <span className="text-xs font-mono text-emerald-800 font-bold uppercase px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-xl animate-fade-in shadow-xs">
+              <span className="text-[10px] font-mono text-emerald-800 font-bold uppercase px-2 py-0.5 bg-emerald-50 border border-emerald-200 rounded-lg animate-fade-in shadow-xs">
                 {syncMessage}
               </span>
             )}
           </div>
         </div>
 
-        {/* Multi-Chat 2-Column Split */}
-        <div className="flex-1 flex flex-col lg:flex-row gap-4 mt-4 min-h-[640px] items-stretch relative">
+        {/* Multi-Chat 2-Column Split: Flex-1 Min-H-0 Overflow-Hidden */}
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-3 mt-2 items-stretch relative overflow-hidden">
           
           {/* Mobile Overlay Backdrop */}
           {isSidebarOpen && (
@@ -840,13 +838,12 @@ export default function ChatPage() {
           <aside
             className={`
               fixed lg:static top-0 bottom-0 left-0 z-40 lg:z-10
-              w-72 sm:w-80 bg-white border border-neutral-200/90 rounded-2xl
+              w-64 sm:w-72 bg-white border border-neutral-200/90 rounded-2xl
               flex flex-col shadow-lg lg:shadow-xs transition-transform duration-300 ease-in-out
               ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
               ${!isSidebarOpen ? 'lg:hidden' : ''}
-              p-3.5 space-y-3 shrink-0
+              p-3 space-y-2.5 shrink-0 h-full min-h-0 overflow-hidden
             `}
-            style={{ maxHeight: 'calc(100vh - 140px)' }}
           >
             {/* Sidebar Top: Header + New Chat Button */}
             <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
@@ -890,8 +887,8 @@ export default function ChatPage() {
               </div>
             )}
 
-            {/* Sessions List */}
-            <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 min-h-[220px]">
+            {/* Sessions List: flex-1 min-h-0 overflow-y-auto */}
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
               {isLoadingSessions && sessions.length === 0 ? (
                 <div className="flex items-center justify-center py-8 text-neutral-400 font-mono text-xs gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0047FF]" />
@@ -1021,9 +1018,9 @@ export default function ChatPage() {
           </aside>
 
           {/* Right Main Pane: Active Conversation */}
-          <div className="flex-1 flex flex-col min-w-0 space-y-3">
+          <div className="flex-1 min-h-0 flex flex-col min-w-0 space-y-2 h-full overflow-hidden">
             {/* Conversation Active Header */}
-            <div className="bg-white border border-neutral-200/90 rounded-2xl px-4 py-3 shadow-xs flex items-center justify-between gap-3 flex-wrap">
+            <div className="bg-white border border-neutral-200/90 rounded-2xl px-3.5 py-2 shadow-xs flex items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
                 <button
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -1091,63 +1088,63 @@ export default function ChatPage() {
               </div>
             </div>
 
-            {/* Conversation Box (Scrollable) */}
-            <div className="flex-1 bg-white border border-neutral-200/90 rounded-2xl p-4 sm:p-6 overflow-y-auto min-h-[440px] max-h-[640px] space-y-5 shadow-xs">
+            {/* Conversation Box (Scrollable flex-1 min-h-0) */}
+            <div className="flex-1 min-h-0 bg-white border border-neutral-200/90 rounded-2xl p-3 sm:p-5 overflow-y-auto space-y-4 shadow-xs">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center py-8 px-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0047FF] to-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4 ring-4 ring-blue-50">
-                <Bot className="w-7 h-7 text-white" />
+            <div className="h-full flex flex-col items-center justify-center text-center py-4 px-2 my-auto">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#0047FF] to-sky-400 flex items-center justify-center shadow-md shadow-blue-500/20 mb-2.5 ring-4 ring-blue-50">
+                <Bot className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight mb-2">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 tracking-tight mb-1">
                 DevCommand Pair Programmer &amp; Idea Evaluator
               </h2>
-              <p className="text-xs sm:text-sm text-neutral-500 max-w-lg mb-6 leading-relaxed font-sans">
-                Chat normally for fast answers and codebase context, or invoke <span className="font-mono font-bold text-neutral-900 bg-neutral-100 px-1.5 py-0.5 rounded border border-neutral-200">/eval &lt;idea&gt;</span> to run the ruthless 3-sub-agent evaluation swarm (Researcher, The Judge &amp; Planner).
+              <p className="text-xs text-neutral-500 max-w-md mb-4 leading-relaxed font-sans">
+                Chat normally for fast answers and codebase context, or invoke <span className="font-mono font-bold text-neutral-900 bg-neutral-100 px-1.5 py-0.5 rounded border border-neutral-200">/eval &lt;idea&gt;</span> to run the ruthless 3-sub-agent evaluation swarm.
               </p>
 
               {/* 3-Pillars Sub-Agent Explainer */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl mb-6 text-left">
-                <div className="rounded-xl p-3 bg-neutral-50/80 border border-neutral-200/80 space-y-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-xl mb-4 text-left">
+                <div className="rounded-xl p-2.5 bg-neutral-50/80 border border-neutral-200/80 space-y-0.5">
                   <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#0047FF] uppercase">
                     <Search className="w-3.5 h-3.5" />
                     <span>Researcher</span>
                   </div>
-                  <p className="text-[11px] text-neutral-500 leading-normal">
+                  <p className="text-[10px] text-neutral-500 leading-normal">
                     Discovers competitors, market gaps, and ecosystem precedents.
                   </p>
                 </div>
 
-                <div className="rounded-xl p-3 bg-neutral-50/80 border border-neutral-200/80 space-y-1">
+                <div className="rounded-xl p-2.5 bg-neutral-50/80 border border-neutral-200/80 space-y-0.5">
                   <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#FF5533] uppercase">
                     <Scale className="w-3.5 h-3.5" />
                     <span>The Judge</span>
                   </div>
-                  <p className="text-[11px] text-neutral-500 leading-normal">
+                  <p className="text-[10px] text-neutral-500 leading-normal">
                     Scores viability (0-100), exposes fatal flaws, and advises pivots.
                   </p>
                 </div>
 
-                <div className="rounded-xl p-3 bg-neutral-50/80 border border-neutral-200/80 space-y-1">
+                <div className="rounded-xl p-2.5 bg-neutral-50/80 border border-neutral-200/80 space-y-0.5">
                   <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-neutral-900 uppercase">
                     <Layers className="w-3.5 h-3.5 text-amber-500" />
                     <span>Planner</span>
                   </div>
-                  <p className="text-[11px] text-neutral-500 leading-normal">
+                  <p className="text-[10px] text-neutral-500 leading-normal">
                     Builds actionable architectures with 1-click roadmap tasks.
                   </p>
                 </div>
               </div>
 
               {/* Starter Prompt Cards */}
-              <div className="w-full max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left">
+              <div className="w-full max-w-xl grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
                 {starterPrompts.map((prompt, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(prompt)}
-                    className="p-3.5 rounded-xl bg-neutral-50/70 hover:bg-neutral-100 border border-neutral-200/80 text-xs text-neutral-800 font-sans font-medium flex items-center justify-between group transition-all shadow-xs hover:border-neutral-300 hover:-translate-y-0.5 cursor-pointer"
+                    className="p-2.5 rounded-xl bg-neutral-50/70 hover:bg-neutral-100 border border-neutral-200/80 text-[11px] text-neutral-800 font-sans font-medium flex items-center justify-between group transition-all shadow-xs hover:border-neutral-300 hover:-translate-y-0.5 cursor-pointer"
                   >
-                    <span className="line-clamp-2 leading-relaxed">{prompt}</span>
-                    <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#0047FF] group-hover:translate-x-1 shrink-0 ml-2 transition-all" />
+                    <span className="line-clamp-1 leading-relaxed">{prompt}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-neutral-400 group-hover:text-[#0047FF] group-hover:translate-x-1 shrink-0 ml-1.5 transition-all" />
                   </button>
                 ))}
               </div>
@@ -1681,13 +1678,13 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Prompt Input Box & Autocomplete Popover */}
-        <div className="relative bg-white border border-neutral-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow space-y-3">
+        {/* Prompt Input Box & Autocomplete Popover (Pinned shrink-0 dock) */}
+        <div className="relative bg-white border border-neutral-200/90 rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2 shrink-0">
           {/* Floating Autocomplete Popover */}
           {showMentions && (
-            <div className="absolute bottom-full left-0 right-0 mb-3 bg-white/95 backdrop-blur-md rounded-2xl border border-neutral-200/90 shadow-2xl overflow-hidden z-30 max-h-80 flex flex-col animate-fade-in">
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white/95 backdrop-blur-md rounded-2xl border border-neutral-200/90 shadow-2xl overflow-hidden z-30 max-h-72 flex flex-col animate-fade-in">
               {/* Popover Header */}
-              <div className="px-4 py-2.5 bg-neutral-100/90 border-b border-neutral-200/80 flex items-center justify-between text-xs font-mono font-bold uppercase">
+              <div className="px-3.5 py-2 bg-neutral-100/90 border-b border-neutral-200/80 flex items-center justify-between text-xs font-mono font-bold uppercase">
                 <div className="flex items-center gap-2">
                   {mentionTrigger === '/' && (
                     <>
@@ -1861,12 +1858,12 @@ export default function ChatPage() {
           )}
 
           {/* Quick Prompts, Skills & Mentions Dock */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs">
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-0.5 text-xs no-scrollbar">
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => handleToggleSkill('/eval')}
-                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   inputValue.trim().startsWith('/eval')
                     ? 'bg-neutral-900 text-[#DFFF4F] border-neutral-900'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
@@ -1879,7 +1876,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => handleToggleSkill('/plan')}
-                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   inputValue.trim().startsWith('/plan')
                     ? 'bg-neutral-900 text-amber-300 border-neutral-900'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
@@ -1892,7 +1889,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => handleToggleSkill('/research')}
-                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   inputValue.trim().startsWith('/research')
                     ? 'bg-neutral-900 text-blue-300 border-neutral-900'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
@@ -1905,7 +1902,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => handleToggleSkill('/audit')}
-                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   inputValue.trim().startsWith('/audit')
                     ? 'bg-neutral-900 text-rose-300 border-neutral-900'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
@@ -1918,7 +1915,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => handleToggleSkill('/openui')}
-                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   inputValue.trim().startsWith('/openui')
                     ? 'bg-neutral-900 text-purple-300 border-neutral-900'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
@@ -1931,7 +1928,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => handleToggleSkill('/stats')}
-                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   inputValue.trim().startsWith('/stats')
                     ? 'bg-neutral-900 text-emerald-300 border-neutral-900'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
@@ -1942,12 +1939,12 @@ export default function ChatPage() {
                 <span>/stats</span>
               </button>
 
-              <div className="h-4 w-px bg-neutral-300 mx-0.5" />
+              <div className="h-3.5 w-px bg-neutral-300 mx-0.5" />
 
               <button
                 type="button"
                 onClick={() => handleTriggerMentionPicker('@')}
-                className="px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-800 text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                className="px-2 py-0.5 rounded-full border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-800 text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
                 title="Mention a connected project/repo to inject context"
               >
                 <AtSign className="w-3 h-3 text-[#0047FF]" />
@@ -1957,7 +1954,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => handleTriggerMentionPicker('#')}
-                className="px-2.5 py-1 rounded-full border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-900 text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                className="px-2 py-0.5 rounded-full border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-900 text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
                 title="Mention an incubator idea to inject context"
               >
                 <Hash className="w-3 h-3 text-amber-600" />
@@ -1965,51 +1962,51 @@ export default function ChatPage() {
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
-              <span className="text-[10px] font-mono text-neutral-500 uppercase font-bold shrink-0 flex items-center gap-1">
-                <Zap className="w-3 h-3 text-[#0047FF]" /> Starters:
+            <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto text-xs shrink-0">
+              <span className="text-[10px] font-mono text-neutral-400 uppercase font-bold shrink-0 flex items-center gap-1">
+                <Zap className="w-2.5 h-2.5 text-[#0047FF]" /> Starters:
               </span>
-              {starterPrompts.map((prompt, idx) => (
+              {starterPrompts.slice(0, 2).map((prompt, idx) => (
                 <button
                   key={idx}
                   onClick={() => setInputValue(prompt)}
-                  className="px-3 py-1 bg-neutral-100 hover:bg-[#DFFF4F]/70 text-neutral-700 hover:text-black rounded-full border border-neutral-200/70 text-[11px] font-mono font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer"
+                  className="px-2 py-0.5 bg-neutral-100 hover:bg-[#DFFF4F]/70 text-neutral-700 hover:text-black rounded-full border border-neutral-200/70 text-[10px] font-mono font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer max-w-[200px] truncate"
                 >
-                  {prompt.length > 45 ? `${prompt.slice(0, 45)}...` : prompt}
+                  {prompt}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Text Area & Submit */}
-          <div className="flex items-end gap-2.5">
+          <div className="flex items-end gap-2">
             <textarea
               ref={textareaRef}
               rows={2}
               value={inputValue}
               onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything, or use /plan, /audit, /eval, @project, #idea..."
-              className="flex-1 bg-neutral-50/70 border border-neutral-200/90 rounded-xl text-neutral-900 placeholder-neutral-400 text-sm font-sans p-3.5 outline-none focus:bg-white focus:border-[#0047FF] focus:ring-2 focus:ring-[#0047FF]/10 transition-all resize-none leading-relaxed"
+              placeholder="Ask anything, or use /eval, /plan, /audit, @project, #idea..."
+              className="flex-1 bg-neutral-50/70 border border-neutral-200/90 rounded-xl text-neutral-900 placeholder-neutral-400 text-xs sm:text-sm font-sans p-2.5 sm:p-3 outline-none focus:bg-white focus:border-[#0047FF] focus:ring-2 focus:ring-[#0047FF]/10 transition-all resize-none leading-relaxed max-h-24"
             />
             <button
               onClick={() => handleSendMessage()}
               disabled={isSubmitting || !inputValue.trim()}
-              className="w-12 h-12 rounded-xl bg-neutral-900 hover:bg-[#0047FF] text-white flex items-center justify-center shrink-0 disabled:opacity-30 transition-all shadow-xs active:translate-y-0.5 cursor-pointer"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-neutral-900 hover:bg-[#0047FF] text-white flex items-center justify-center shrink-0 disabled:opacity-30 transition-all shadow-xs active:translate-y-0.5 cursor-pointer"
             >
               {isSubmitting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4" />
               )}
             </button>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 px-1 pt-0.5">
-            <span>Press Enter to send, Shift+Enter for new line</span>
+          <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400 px-1">
+            <span>Enter to send &bull; Shift+Enter for new line</span>
             <span className="flex items-center gap-1 text-neutral-600 font-bold uppercase">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#0047FF]" />
-              <span>MongoDB Cloud History &amp; Qdrant RAG Active</span>
+              <ShieldCheck className="w-3 h-3 text-[#0047FF]" />
+              <span className="hidden sm:inline">MongoDB Cloud History &amp; Qdrant Active</span>
             </span>
           </div>
         </div>
