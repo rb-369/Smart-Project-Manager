@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Renderer } from '@openuidev/react-lang';
 import { devcommandLibrary } from './openui-library';
 import { Sparkles, Code2, LayoutDashboard, AlertCircle, Copy, Check } from 'lucide-react';
+import { MarkdownRenderer } from '../MarkdownRenderer';
 
 interface OpenUIRendererProps {
   content: string;
@@ -146,12 +147,10 @@ export function OpenUIRenderer({
       {segments.map((segment, idx) => {
         if (segment.type === 'text') {
           return (
-            <div
+            <MarkdownRenderer
               key={idx}
-              className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-neutral-800"
-            >
-              {segment.content}
-            </div>
+              content={segment.content}
+            />
           );
         }
 

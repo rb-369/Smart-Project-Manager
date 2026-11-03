@@ -14,6 +14,7 @@ import {
   ChatSession,
 } from '@/types';
 import { OpenUIRenderer } from '@/components/openui/OpenUIRenderer';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import {
   Bot,
   Layers,
@@ -1434,8 +1435,8 @@ export default function ChatPage() {
                             {/* Tab Content 2: Market Researcher */}
                             {activeTab === 'researcher' && subData.researcher && (
                               <div className="space-y-3 animate-fade-in text-xs">
-                                <div className="p-5 bg-white rounded-xl border border-neutral-200/90 leading-relaxed whitespace-pre-wrap font-sans text-xs text-neutral-800 shadow-xs">
-                                  {subData.researcher.content}
+                                <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs">
+                                  <MarkdownRenderer content={subData.researcher.content} />
                                 </div>
 
                                 {/* Live Web Precedents Grounded by Tavily */}
@@ -1497,10 +1498,14 @@ export default function ChatPage() {
                                 )}
 
                                 {/* Blueprint Content */}
-                                <div className="p-5 bg-white rounded-xl border border-neutral-200/90 leading-relaxed whitespace-pre-wrap font-mono text-xs text-neutral-800 shadow-xs">
-                                  {subData.pivot_plan && plannerSubTab === 'pivot'
-                                    ? subData.pivot_plan.content
-                                    : subData.planner.content}
+                                <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs">
+                                  <MarkdownRenderer
+                                    content={
+                                      subData.pivot_plan && plannerSubTab === 'pivot'
+                                        ? subData.pivot_plan.content
+                                        : subData.planner.content
+                                    }
+                                  />
                                 </div>
 
                                 {/* 1-Click Feature Roadmap Additions */}

@@ -129,3 +129,4 @@ def test_copilot_service_resolves_search_skill():
     # Mode argument override:
     skill, clean = CopilotService.resolve_skill("any text", mode="search")
     assert skill == "search"
+

@@ -597,7 +597,7 @@ class CopilotService:
                 },
                 "openui_lang": openui_code,
             }
-            response_text = f"### 📐 Feature Architecture & Implementation Blueprint\n\n{planner_content}"
+            response_text = planner_content if planner_content.strip().startswith("#") else f"### 📐 Feature Architecture & Implementation Blueprint\n\n{planner_content}"
 
         elif skill == "research":
             web_sources = []
@@ -631,7 +631,7 @@ class CopilotService:
                 },
                 "web_sources": web_sources,
             }
-            response_text = f"### 🔍 Competitive & Feasibility Intelligence\n\n{researcher_content}"
+            response_text = researcher_content if researcher_content.strip().startswith("#") else f"### 🔍 Competitive & Feasibility Intelligence\n\n{researcher_content}"
 
         elif skill == "search":
             web_sources = []
@@ -668,7 +668,7 @@ class CopilotService:
                 },
                 "web_sources": web_sources,
             }
-            response_text = f"### 🌐 Live Web Intelligence (Tavily Grounded)\n\n{search_content}"
+            response_text = search_content if search_content.strip().startswith("#") else f"### 🌐 Live Web Intelligence (Tavily Grounded)\n\n{search_content}"
 
         elif skill == "audit":
             auditor_prompt = (
@@ -688,7 +688,7 @@ class CopilotService:
                     "content": auditor_content,
                 },
             }
-            response_text = f"### 🛡️ Security & Architecture Audit Report\n\n{auditor_content}"
+            response_text = auditor_content if auditor_content.strip().startswith("#") else f"### 🛡️ Security & Architecture Audit Report\n\n{auditor_content}"
 
         elif skill == "stats":
             stats_oui = (
@@ -728,7 +728,7 @@ class CopilotService:
                 fallback_fn=lambda: cls._heuristic_fallback(clean_message, "planner", citations)
             )
             suggested_features = cls._extract_planner_features(pivot_content, clean_message)
-            response_text = f"### 🎯 Recommended Lean MVP Pivot\n\n{pivot_content}"
+            response_text = pivot_content if pivot_content.strip().startswith("#") else f"### 🎯 Recommended Lean MVP Pivot\n\n{pivot_content}"
             subagent_data = {
                 "is_pipeline": False,
                 "planner": {
@@ -973,6 +973,11 @@ class CopilotService:
 
     @classmethod
     def _heuristic_fallback(cls, query: str, mode: str, citations: List[Dict[str, Any]]) -> str:
+        # Clean query to extract concise title without conversational filler or raw # / @ symbols
+        clean_topic = re.sub(r"^(?:about this idea|about|tell me|can you|pls|please)\s*", "", query, flags=re.IGNORECASE).strip()
+        clean_topic = re.sub(r"[#@]([\w-]+)", r"\1", clean_topic).strip()
+        clean_topic = clean_topic[:55] or query[:40]
+
         citation_text = ""
         if citations:
             names = [c.get("title") for c in citations if c.get("title")]
@@ -980,14 +985,14 @@ class CopilotService:
 
         if mode == "planner":
             return (
-                f"### ⚡ Technical Feature Blueprint: {query[:50]}\n\n"
-                f"**1. Architecture & Seams:**{citation_text}\n"
+                f"### ⚡ Technical Feature Blueprint: {clean_topic}\n\n"
+                f"**1. Architecture & Boundaries**{citation_text}\n"
                 "- Decouple presentation state from domain logic using a dedicated service layer.\n"
                 "- Enforce asynchronous boundary for external integrations with background task retry queues.\n\n"
-                "**2. Database & API Contract:**\n"
+                "**2. Database & API Contract**\n"
                 "- `POST /api/v1/resource/action` (JSON payload, JWT authenticated, 201 Created)\n"
                 "- Schema Migration: Add indexed lookup columns and audit timestamps.\n\n"
-                "**3. Implementation Checklist:**\n"
+                "**3. Implementation Checklist**\n"
                 "- [ ] Write failing unit test verifying input validation and edge cases\n"
                 "- [ ] Implement service handler with database session scoping\n"
                 "- [ ] Expose REST route with Pydantic request/response validation\n"
@@ -995,8 +1000,8 @@ class CopilotService:
             )
         elif mode == "researcher":
             return (
-                f"### 🔍 Competitive & Feasibility Intelligence: {query[:50]}\n\n"
-                f"**1. Real-World Benchmarks:**{citation_text}\n"
+                f"### 🔍 Competitive & Feasibility Intelligence: {clean_topic}\n\n"
+                f"**1. Real-World Benchmarks**{citation_text}\n"
                 "- **GitHub & GitLab:** Solves this using background queue workers with optimistic UI updates.\n"
                 "- **Linear & Raycast:** Implements client-side local cache syncing before server reconciliation.\n"
                 "- **Supabase / Vercel:** Exposes declarative CLI and webhook web-standards.\n\n"
@@ -1006,7 +1011,7 @@ class CopilotService:
             )
         elif mode == "auditor":
             return (
-                f"### 🛡️ Security & Architecture Audit Report: {query[:50]}\n\n"
+                f"### 🛡️ Security & Architecture Audit Report: {clean_topic}\n\n"
                 f"**1. Authentication & Tenant Boundaries (OWASP A01)**{citation_text}\n"
                 "- Enforce JWT verification and user_id ownership check on all related endpoints.\n"
                 "- Prevent IDOR vulnerabilities: verify user has permissions to modify target records.\n\n"

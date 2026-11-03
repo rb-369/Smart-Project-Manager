@@ -236,3 +236,4 @@ class TavilyService:
                 "latency_ms": latency_ms,
                 "message": f"Tavily check failed: {e}",
             }
+
