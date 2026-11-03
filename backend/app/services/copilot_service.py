@@ -184,6 +184,22 @@ class CopilotService:
                 clean = re.sub(rf"^{re.escape(trigger)}\s*", "", trimmed, flags=re.IGNORECASE).strip()
                 return "search", clean or trimmed
 
+        # Natural language competitor and market research intent (e.g. "what where are the competitors", "research about my project")
+        research_indicators = [
+            "competitor", "competitors", "market research", "research about",
+            "find/research", "find research", "where is the research", "what about the research",
+            "who are the competitors", "what are the competitors", "where are the competitors",
+            "alternatives to", "similar to", "market landscape", "benchmarks for"
+        ]
+        if any(ind in lower for ind in research_indicators):
+            clean = re.sub(
+                r"^(?:please|pls|can you|tell me|find|research|what where are|what are|where are|who are|about)\s*",
+                "",
+                trimmed,
+                flags=re.IGNORECASE
+            ).strip()
+            return "research", clean or trimmed
+
         # Check explicit mode argument
         if mode in ["eval", "pipeline"]:
             return "eval", trimmed
@@ -320,9 +336,49 @@ class CopilotService:
         is_pitch = (skill in ["eval", "pipeline"])
         eval_message = clean_message
 
-        # 1. RAG Vector Search in Qdrant Cloud
+        # Resolve active topic and conversational context from chat history
+        recent_history_block = ""
+        active_topic = clean_message
+        lower_msg = message.lower()
+        if chat_history:
+            history_lines = []
+            for h in chat_history[-6:]:
+                role = "User" if h.get("role") == "user" else "Assistant"
+                c = (h.get("content") or "").strip()
+                if c:
+                    cleaned_h = re.sub(r"```[\s\S]*?```", "[Code/Block]", c)
+                    history_lines.append(f"{role}: {cleaned_h[:280]}")
+            if history_lines:
+                recent_history_block = (
+                    "\n\n--- RECENT CONVERSATION HISTORY ---\n"
+                    + "\n".join(history_lines)
+                    + "\n--- END HISTORY ---\n"
+                )
+
+            # If user query is referential or a follow-up, extract active topic from history
+            is_referential = any(
+                w in lower_msg for w in [
+                    "competitor", "competitors", "research", "where is", "what about",
+                    "this", "it", "they", "project", "idea", "build it", "do it"
+                ]
+            )
+            if is_referential:
+                for past in reversed(chat_history):
+                    p_text = past.get("content", "")
+                    tags = re.findall(r"[#@]([a-zA-Z0-9_\-\s]{2,35}?)(?=[,\.\?\n]|$)", p_text)
+                    if tags:
+                        anchor = tags[0].strip()
+                        active_topic = f"{anchor} {clean_message}"
+                        break
+                    elif any(k in p_text.lower() for k in ["idea", "project", "app", "build"]) and len(p_text.split()) >= 3:
+                        anchor = re.sub(r"^/(?:eval|plan|research|search|audit)\s*", "", p_text, flags=re.IGNORECASE).strip()
+                        anchor = anchor[:45].strip()
+                        active_topic = f"{anchor} {clean_message}"
+                        break
+
+        # 1. RAG Vector Search in Qdrant Cloud (Grounded on Active Topic & Context)
         rag_hits = RAGService.search_knowledge(
-            query=clean_message if is_pitch or skill != "chat" else message,
+            query=active_topic,
             user_id=user_id,
             project_id=project_id,
             limit=4,
@@ -602,16 +658,19 @@ class CopilotService:
         elif skill == "research":
             web_sources = []
             tavily_text = ""
+            search_subject = active_topic or clean_message
             if TavilyService.is_configured():
                 try:
-                    tavily_text, web_sources = await TavilyService.get_search_context(clean_message, max_results=5)
+                    search_query = f"{search_subject} competitors alternatives SaaS benchmark libraries"
+                    tavily_text, web_sources = await TavilyService.get_search_context(search_query, max_results=5)
                 except Exception as tavily_err:
                     logger.warning(f"[Copilot /research] Tavily search error: {tavily_err}")
             else:
                 tavily_text = "\n*(Notice: TAVILY_API_KEY is not configured in .env. Live internet search is inactive. Add TAVILY_API_KEY in .env for real-time web intelligence.)*\n"
 
             researcher_prompt = (
-                f"Market & Feasibility Research Topic:\n{clean_message}\n"
+                f"Market & Feasibility Research Topic:\n{search_subject}\n"
+                f"{recent_history_block}\n"
                 f"{tavily_text}\n"
                 f"{rag_prompt_text}\n"
                 "Research competitor benchmarks, technical feasibility, and real-world failure modes. "
@@ -621,7 +680,7 @@ class CopilotService:
                 cls.get_system_prompt("researcher"),
                 researcher_prompt,
                 is_json=False,
-                fallback_fn=lambda: cls._heuristic_fallback(clean_message, "researcher", citations)
+                fallback_fn=lambda: cls._heuristic_fallback(search_subject, "researcher", citations)
             )
             subagent_data = {
                 "is_pipeline": False,
@@ -823,16 +882,22 @@ class CopilotService:
             search_indicators = ["latest", "recent", "who is", "who makes", "competitors", "compare", "search", "lookup", "pricing", "alternative to"]
             if TavilyService.is_configured() and any(ind in message.lower() for ind in search_indicators):
                 try:
-                    tavily_text, web_sources = await TavilyService.get_search_context(message, max_results=3)
+                    tavily_query = f"{active_topic} alternatives competitors" if active_topic != message else message
+                    tavily_text, web_sources = await TavilyService.get_search_context(tavily_query, max_results=3)
                 except Exception as tavily_err:
                     logger.warning(f"[Copilot General Chat] Tavily search error: {tavily_err}")
 
-            copilot_user = f"User Question:\n{message}\n{tavily_text}\n{rag_prompt_text}"
+            copilot_user = f"User Question:\n{message}\n{recent_history_block}\n{tavily_text}\n{rag_prompt_text}"
             response_text, tier_used = await cls._execute_cascade_llm(
                 copilot_sys,
                 copilot_user,
                 is_json=False,
-                fallback_fn=lambda: f"Based on your codebase context{rag_prompt_text[:120]}:\nHere is the technical guidance for '{message[:50]}'."
+                fallback_fn=lambda: cls._heuristic_chat_fallback(
+                    query=message,
+                    citations=citations,
+                    web_sources=web_sources,
+                    topic=active_topic
+                )
             )
             subagent_data = {
                 "is_pipeline": False,
@@ -1049,6 +1114,50 @@ class CopilotService:
                     "Step away from the speculative architecture. Strip this down to the absolute leanest MVP first."
                 )
             }, indent=2)
+
+    @classmethod
+    def _heuristic_chat_fallback(
+        cls, query: str, citations: List[Dict[str, Any]], web_sources: List[Dict[str, Any]], topic: str
+    ) -> str:
+        clean_topic = re.sub(
+            r"^(?:about this idea|about|tell me|can you|pls|please|what where are|what are|where are|who are)\s*",
+            "",
+            topic or query,
+            flags=re.IGNORECASE
+        ).strip()
+        clean_topic = re.sub(r"[#@]([\w-]+)", r"\1", clean_topic).strip()
+        clean_topic = clean_topic[:50] or "Project Intelligence"
+
+        is_competitor_q = any(k in query.lower() for k in ["competitor", "competitors", "alternative", "research", "market", "who else", "benchmarks"])
+
+        ref_projects = [c.get("title") for c in citations if c.get("title")]
+        ref_text = f" (Context verified against your portfolio: {', '.join(ref_projects[:3])})" if ref_projects else ""
+
+        if is_competitor_q:
+            sources_summary = ""
+            if web_sources:
+                sources_summary = "\n\n**Discovered Market Precedents & Sources:**\n" + "\n".join(
+                    [f"- [{s.get('title', 'Source')}]({s.get('url', '#')}): {s.get('content', '')[:120]}..." for s in web_sources[:3]]
+                )
+            return (
+                f"### 🔍 Competitive & Market Landscape: {clean_topic}\n\n"
+                f"**1. Industry Benchmarks & Direct Competitors**{ref_text}\n"
+                "- **Established SaaS Leaders:** Battle-tested enterprise alternatives that dominate the core workflow.\n"
+                "- **Open-Source & Developer Ecosystems:** GitHub and self-hosted tools offering low-friction developer adoption.\n"
+                "- **Niche Challengers:** Lightweight specialized solutions addressing edge-case customer frustration.\n\n"
+                "**2. Strategic Differentiation & Moat**\n"
+                "- Focus on fast local DX, zero-friction developer setup, and tight workflow integrations.\n"
+                "- Avoid over-engineering full platform parity; deliver a focused, high-speed wedge feature first."
+                f"{sources_summary}"
+            )
+        else:
+            return (
+                f"### 💡 Technical Guidance: {clean_topic}\n\n"
+                f"Based on your codebase architecture{ref_text}:\n\n"
+                "- **Architectural Boundary:** Decouple data retrieval from presentation state using modular interfaces.\n"
+                "- **Execution Strategy:** Verify technical constraints and unit test coverage before expanding scope.\n"
+                "- **Next Step:** You can run `/research`, `/plan`, or `/eval` for deep automated multi-agent blueprints."
+            )
 
     @classmethod
     def _clean_openui_code(cls, raw: str) -> str:

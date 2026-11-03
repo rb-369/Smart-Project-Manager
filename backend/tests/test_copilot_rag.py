@@ -428,4 +428,74 @@ def test_tagged_mentions_and_slash_skills_endpoint(client: TestClient, session: 
     assert "DevCommand Copilot Command & Syntax Guide" in data_help["response"]
 
 
+def test_competitor_research_followup_and_multiword_tags(client: TestClient, session: Session):
+    """
+    Test that multi-word idea tags (e.g. #Code Wars) are recognized,
+    conversational follow-up questions ("what where are the competitors?") route to research skill,
+    and fallback output does not leak raw prompt banners.
+    """
+    from app.models.future_project import FutureProject
+
+    user = User(
+        email="competitor.tester@devcommand.ai",
+        password_hash="testpasshashComp",
+        full_name="Competitor Tester",
+        is_active=True,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    # Add multi-word title incubator idea
+    idea = FutureProject(
+        id=uuid4(),
+        user_id=user.id,
+        title="Code Wars",
+        elevator_pitch="Real-time competitive programming duel platform",
+        target_tech_stack="Next.js, Python, WebSocket",
+        notes="Fast feedback loop coding challenges",
+    )
+    session.add(idea)
+    session.commit()
+
+    token = create_access_token(user.id)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. First message: research proposal with multi-word tag #Code Wars
+    res_m1 = client.post(
+        "/api/v1/chat/message",
+        json={
+            "message": "/research about this idea #Code Wars tell me the competitors of it and should i do it or not",
+            "mode": "auto",
+        },
+        headers=headers,
+    )
+    assert res_m1.status_code == 200
+    data_m1 = res_m1.json()
+    assert data_m1["mode"] == "research"
+    assert data_m1["subagent_data"]["researcher"] is not None
+    session_id = data_m1["session_id"]
+    assert session_id is not None
+
+    # 2. Second message in the same session: follow-up asking for competitors
+    res_m2 = client.post(
+        "/api/v1/chat/message",
+        json={
+            "message": "what where are the competitors? and what about the research where is it?",
+            "mode": "auto",
+            "session_id": session_id,
+        },
+        headers=headers,
+    )
+    assert res_m2.status_code == 200
+    data_m2 = res_m2.json()
+    # Should resolve to research skill
+    assert data_m2["mode"] == "research"
+    # Must NOT leak raw prompt markers
+    assert "--- RELEVANT CONTEXT FROM USER'S CODEBASE" not in data_m2["response"]
+    assert "Here is the technical guidance for 'what where are" not in data_m2["response"]
+    assert data_m2["subagent_data"]["researcher"] is not None
+
+
+
 

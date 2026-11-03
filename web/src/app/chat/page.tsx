@@ -696,12 +696,14 @@ export default function ChatPage() {
     setIsSyncingKnowledge(true);
     setSyncMessage(null);
     try {
-      const res = await api.syncKnowledgeBase();
-      setSyncMessage(`✓ Indexed ${res.points_indexed} vectors in Qdrant`);
+      const res: any = await api.syncKnowledgeBase();
+      const count = res?.points_indexed ?? res?.total_points_indexed ?? 0;
+      setSyncMessage(`✓ Indexed ${count} items in Qdrant`);
       fetchQdrantStatus();
       setTimeout(() => setSyncMessage(null), 4000);
     } catch (err: any) {
-      setSyncMessage('Failed to sync knowledge.');
+      setSyncMessage(err?.message ? `Sync: ${err.message.slice(0, 30)}` : 'Sync failed. Retry shortly.');
+      setTimeout(() => setSyncMessage(null), 4000);
     } finally {
       setIsSyncingKnowledge(false);
     }

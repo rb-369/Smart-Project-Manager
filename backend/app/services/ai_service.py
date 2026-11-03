@@ -24,8 +24,10 @@ def _clean_json_response(raw_text: str) -> Dict[str, Any]:
 
 class AIService:
     @classmethod
-    async def _call_openrouter(cls, system_prompt: str, user_prompt: str, json_mode: bool = True) -> str:
-        """Tier: Call OpenRouter API with active free/available models."""
+    async def _call_openrouter(
+        cls, system_prompt: str, user_prompt: str, json_mode: bool = True, max_tokens: int = 350
+    ) -> str:
+        """Tier: Call OpenRouter API with prioritized, budget-optimized models and automatic 402 token balancing."""
         if not settings.OPENROUTER_API_KEY:
             raise ValueError("OPENROUTER_API_KEY not configured")
 
@@ -37,31 +39,45 @@ class AIService:
             "Content-Type": "application/json",
         }
         models_to_try = [
-            "liquid/lfm-2.5-2.6b:free",
-            "meta-llama/llama-3.3-70b-instruct",
             "deepseek/deepseek-chat",
+            "qwen/qwen-2.5-72b-instruct",
+            "meta-llama/llama-3.3-70b-instruct",
         ]
         last_err = None
+        sys_msg = system_prompt
+        if json_mode and "json" not in sys_msg.lower():
+            sys_msg = f"{sys_msg}\nRespond in valid JSON format only."
+
         async with httpx.AsyncClient(timeout=10.0) as client:
             for model_slug in models_to_try:
-                payload: Dict[str, Any] = {
-                    "model": model_slug,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "temperature": 0.3,
-                }
-                if json_mode:
-                    payload["response_format"] = {"type": "json_object"}
-                try:
-                    resp = await client.post(url, headers=headers, json=payload)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        return data["choices"][0]["message"]["content"]
-                    last_err = f"OpenRouter ({model_slug}) returned {resp.status_code}: {resp.text}"
-                except Exception as e:
-                    last_err = f"OpenRouter ({model_slug}) exception: {e}"
+                target_tokens = max_tokens
+                for attempt in range(2):
+                    payload: Dict[str, Any] = {
+                        "model": model_slug,
+                        "messages": [
+                            {"role": "system", "content": sys_msg},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        "temperature": 0.3,
+                        "max_tokens": target_tokens,
+                    }
+                    if json_mode:
+                        payload["response_format"] = {"type": "json_object"}
+                    try:
+                        resp = await client.post(url, headers=headers, json=payload)
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            return data["choices"][0]["message"]["content"]
+                        if resp.status_code == 402 and "can only afford" in resp.text and attempt == 0:
+                            m_afford = re.search(r"can only afford (\d+)", resp.text)
+                            if m_afford:
+                                affordable = int(m_afford.group(1))
+                                if affordable > 60:
+                                    target_tokens = max(60, affordable - 15)
+                                    continue
+                        last_err = f"OpenRouter ({model_slug}) returned {resp.status_code}: {resp.text}"
+                    except Exception as e:
+                        last_err = f"OpenRouter ({model_slug}) exception: {e}"
         raise RuntimeError(last_err or "OpenRouter all models failed")
 
     @classmethod

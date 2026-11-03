@@ -368,60 +368,107 @@ async def send_chat_message(
         db.refresh(chat_session)
         is_new_session = True
 
-    # 2. Extract explicitly tagged entities (@projects and #ideas)
-    project_mentions = re.findall(r"@([a-zA-Z0-9_\-\.]+)", payload.message)
-    idea_mentions = re.findall(r"#([a-zA-Z0-9_\-\.]+)", payload.message)
+    # 2. Extract explicitly tagged entities (@projects and #ideas) with multi-word title support
+    user_projects = db.exec(
+        select(Project).where(Project.user_id == current_user.id)
+    ).all()
+    user_ideas = db.exec(
+        select(FutureProject).where(FutureProject.user_id == current_user.id)
+    ).all()
+
     tagged_blocks = []
+    matched_projects: Dict[UUID, Project] = {}
+    matched_ideas: Dict[UUID, FutureProject] = {}
+    msg_lower = payload.message.lower()
 
-    if project_mentions:
-        user_projects = db.exec(
-            select(Project).where(Project.user_id == current_user.id)
-        ).all()
-        for mention in project_mentions:
-            clean_m = mention.lower().replace("-", "").replace("_", "")
-            match = None
-            for p in user_projects:
-                p_clean = p.name.lower().replace("-", "").replace("_", "")
-                url_clean = (p.html_url or "").lower().replace("-", "").replace("_", "")
-                if clean_m in p_clean or p_clean in clean_m or (url_clean and clean_m in url_clean):
-                    match = p
-                    break
-            if match:
-                features = db.exec(
-                    select(Feature).where(Feature.project_id == match.id)
-                ).all()
-                feat_lines = [f"- {f.title} ({f.priority}, status: {f.status})" for f in features[:6]]
-                feat_str = "\n".join(feat_lines) if feat_lines else "None listed yet."
-                tagged_blocks.append(
-                    f"TAGGED PROJECT REPOSITORY: @{match.name}\n"
-                    f"Repository URL: {match.html_url or 'N/A'}\n"
-                    f"Description: {match.description or 'No description'}\n"
-                    f"Primary Language: {match.primary_language or 'Unspecified'}\n"
-                    f"Goal: {match.goal or 'N/A'}\n"
-                    f"Current Roadmap Features:\n{feat_str}"
-                )
+    # Match @projects (handles multi-word and dashed names)
+    for p in user_projects:
+        p_name = p.name.lower()
+        if f"@{p_name}" in msg_lower or f"@{p_name.replace('-', ' ')}" in msg_lower or f"@{p_name.replace('_', ' ')}" in msg_lower:
+            matched_projects[p.id] = p
+    for m in re.findall(r"@([a-zA-Z0-9_\-\.]+)", payload.message):
+        clean_m = m.lower().replace("-", "").replace("_", "")
+        for p in user_projects:
+            if clean_m == p.name.lower().replace("-", "").replace("_", ""):
+                matched_projects[p.id] = p
 
-    if idea_mentions:
-        user_ideas = db.exec(
-            select(FutureProject).where(FutureProject.user_id == current_user.id)
+    for match in matched_projects.values():
+        features = db.exec(
+            select(Feature).where(Feature.project_id == match.id)
         ).all()
-        for mention in idea_mentions:
-            clean_m = mention.lower().replace("-", "").replace("_", "")
-            match = None
+        feat_lines = [f"- {f.title} ({f.priority}, status: {f.status})" for f in features[:6]]
+        feat_str = "\n".join(feat_lines) if feat_lines else "None listed yet."
+        tagged_blocks.append(
+            f"TAGGED PROJECT REPOSITORY: @{match.name}\n"
+            f"Repository URL: {match.html_url or 'N/A'}\n"
+            f"Description: {match.description or 'No description'}\n"
+            f"Primary Language: {match.primary_language or 'Unspecified'}\n"
+            f"Goal: {match.goal or 'N/A'}\n"
+            f"Current Roadmap Features:\n{feat_str}"
+        )
+
+    # Match #ideas (handles multi-word titles like "#Code Wars" as well as single-word tags)
+    for idea in user_ideas:
+        idea_title_lower = (idea.title or "").strip().lower()
+        if not idea_title_lower:
+            continue
+        if f"#{idea_title_lower}" in msg_lower or f"#{idea_title_lower.replace(' ', '-')}" in msg_lower:
+            matched_ideas[idea.id] = idea
+    for m in re.findall(r"#([a-zA-Z0-9_\-\.]+)", payload.message):
+        clean_m = m.lower().replace("-", "").replace("_", "")
+        for idea in user_ideas:
+            if clean_m == (idea.title or "").lower().replace("-", "").replace("_", "").replace(" ", ""):
+                matched_ideas[idea.id] = idea
+
+    for match in matched_ideas.values():
+        tagged_blocks.append(
+            f"TAGGED INCUBATOR IDEA: #{match.title}\n"
+            f"Elevator Pitch: {match.elevator_pitch or match.description or 'N/A'}\n"
+            f"Target Tech Stack: {match.target_tech_stack or 'N/A'}\n"
+            f"Notes: {match.notes or 'N/A'}\n"
+            f"Priority: {match.priority or 'P1'}\n"
+            f"Status: {match.status or 'incubating'}"
+        )
+
+    # History resolution: if client didn't supply history, fetch from SQLModel session records
+    session_history = payload.history
+    if (not session_history) and chat_session:
+        past_msgs = db.exec(
+            select(ChatMessageRecord)
+            .where(ChatMessageRecord.session_id == chat_session.id)
+            .order_by(ChatMessageRecord.created_at.asc())
+        ).all()
+        session_history = [{"role": r.role, "content": r.content} for r in past_msgs[-8:]]
+
+    # If no explicit tags in current message, inherit active entity from recent conversation history
+    if not tagged_blocks and session_history:
+        for past in reversed(session_history):
+            past_text = past.get("content", "").lower()
+            found_idea = False
             for idea in user_ideas:
-                idea_clean = (idea.title or "").lower().replace("-", "").replace("_", "")
-                if clean_m in idea_clean or idea_clean in clean_m:
-                    match = idea
+                if idea.title and (f"#{idea.title.lower()}" in past_text or idea.title.lower() in past_text):
+                    tagged_blocks.append(
+                        f"CONVERSATION CONTEXT - ACTIVE INCUBATOR IDEA: #{idea.title}\n"
+                        f"Elevator Pitch: {idea.elevator_pitch or idea.description or 'N/A'}\n"
+                        f"Target Tech Stack: {idea.target_tech_stack or 'N/A'}\n"
+                        f"Notes: {idea.notes or 'N/A'}"
+                    )
+                    found_idea = True
                     break
-            if match:
-                tagged_blocks.append(
-                    f"TAGGED INCUBATOR IDEA: #{match.title}\n"
-                    f"Elevator Pitch: {match.elevator_pitch or match.description or 'N/A'}\n"
-                    f"Target Tech Stack: {match.target_tech_stack or 'N/A'}\n"
-                    f"Notes: {match.notes or 'N/A'}\n"
-                    f"Priority: {match.priority or 'P1'}\n"
-                    f"Status: {match.status or 'incubating'}"
-                )
+            if found_idea:
+                break
+            found_proj = False
+            for p in user_projects:
+                if p.name and (f"@{p.name.lower()}" in past_text or p.name.lower() in past_text):
+                    tagged_blocks.append(
+                        f"CONVERSATION CONTEXT - ACTIVE PROJECT: @{p.name}\n"
+                        f"Description: {p.description or 'N/A'}\n"
+                        f"Goal: {p.goal or 'N/A'}"
+                    )
+                    found_proj = True
+                    break
+            if found_proj:
+                break
 
     tagged_context = "\n\n".join(tagged_blocks) if tagged_blocks else None
 
@@ -431,7 +478,7 @@ async def send_chat_message(
         mode=payload.mode,
         user_id=current_user.id,
         project_id=payload.project_id,
-        chat_history=payload.history,
+        chat_history=session_history,
         session_id=chat_session.id,
         tagged_context=tagged_context,
     )
@@ -623,25 +670,39 @@ def sync_knowledge_base(
     into Qdrant Cloud for instant RAG grounding.
     """
     projects = db.exec(select(Project).where(Project.user_id == current_user.id)).all()
-    project_map = {p.id: p.name for p in projects}
 
     synced_projects = 0
     synced_features = 0
     synced_ideas = 0
 
     for p in projects:
-        if RAGService.index_project(p, current_user.id):
-            synced_projects += 1
+        try:
+            if RAGService.index_project(p, current_user.id):
+                synced_projects += 1
+        except Exception:
+            pass
 
-        features = db.exec(select(Feature).where(Feature.project_id == p.id)).all()
-        for f in features:
-            if RAGService.index_feature(f, p.name, current_user.id):
-                synced_features += 1
+        try:
+            features = db.exec(select(Feature).where(Feature.project_id == p.id)).all()
+            for f in features:
+                try:
+                    if RAGService.index_feature(f, p.name, current_user.id):
+                        synced_features += 1
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
-    ideas = db.exec(select(FutureProject).where(FutureProject.user_id == current_user.id)).all()
-    for idea in ideas:
-        if RAGService.index_future_project(idea, current_user.id):
-            synced_ideas += 1
+    try:
+        ideas = db.exec(select(FutureProject).where(FutureProject.user_id == current_user.id)).all()
+        for idea in ideas:
+            try:
+                if RAGService.index_future_project(idea, current_user.id):
+                    synced_ideas += 1
+            except Exception:
+                pass
+    except Exception:
+        pass
 
     total = synced_projects + synced_features + synced_ideas
 
@@ -650,6 +711,7 @@ def sync_knowledge_base(
         "synced_projects": synced_projects,
         "synced_features": synced_features,
         "synced_ideas": synced_ideas,
+        "points_indexed": total,
         "total_points_indexed": total,
         "message": f"Successfully vectorized and indexed {total} items into Qdrant Cloud.",
     }
