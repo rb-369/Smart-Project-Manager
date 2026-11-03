@@ -237,6 +237,7 @@ class CopilotService:
         user_id: Any = None,
         project_id: Optional[Any] = None,
         chat_history: Optional[List[Dict[str, str]]] = None,
+        session_id: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """
         Main entry point for unified chat. Dispatches sub-agents for feature pitches,
@@ -429,6 +430,7 @@ class CopilotService:
                         content=message,
                         project_id=project_id,
                         is_feature_pitch=True,
+                        session_id=session_id,
                     )
                     MongoDBSyncService.save_chat_message(
                         user_id=user_id,
@@ -439,12 +441,14 @@ class CopilotService:
                         subagent_data=subagent_data,
                         citations=citations,
                         tier_used=active_tier,
+                        session_id=session_id,
                     )
                 except Exception as sync_e:
                     logger.warning(f"Failed to persist chat message to MongoDB: {sync_e}")
 
             return {
                 "mode": "pipeline",
+                "session_id": str(session_id) if session_id else None,
                 "response": executive_summary,
                 "raw_content": planner_content,
                 "citations": citations,
@@ -516,6 +520,7 @@ class CopilotService:
                     content=message,
                     project_id=project_id,
                     is_feature_pitch=False,
+                    session_id=session_id,
                 )
                 MongoDBSyncService.save_chat_message(
                     user_id=user_id,
@@ -526,12 +531,14 @@ class CopilotService:
                     subagent_data=subagent_data,
                     citations=citations,
                     tier_used=tier_used,
+                    session_id=session_id,
                 )
             except Exception as sync_e:
                 logger.warning(f"Failed to persist chat to MongoDB: {sync_e}")
 
         return {
             "mode": "general",
+            "session_id": str(session_id) if session_id else None,
             "response": response_text,
             "raw_content": response_text,
             "citations": citations,

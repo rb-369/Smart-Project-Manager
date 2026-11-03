@@ -194,3 +194,111 @@ def test_orchestrator_eval_skill_routing():
     is_eval, _ = CopilotService.orchestrate_intent("general idea summary", mode="eval")
     assert is_eval is True
 
+
+def test_multi_chat_sessions_and_user_isolation(client: TestClient, session: Session):
+    """
+    Test creating multiple chat sessions per user, switching between chats,
+    and verify strict multi-tenant isolation (User B cannot access User A's chats).
+    """
+    # 1. Create User A and User B
+    user_a = User(
+        email="alice.sessions@devcommand.ai",
+        password_hash="testpasshashA",
+        full_name="Alice MultiChat",
+        is_active=True,
+    )
+    user_b = User(
+        email="bob.sessions@devcommand.ai",
+        password_hash="testpasshashB",
+        full_name="Bob MultiChat",
+        is_active=True,
+    )
+    session.add(user_a)
+    session.add(user_b)
+    session.commit()
+    session.refresh(user_a)
+    session.refresh(user_b)
+
+    token_a = create_access_token(user_a.id)
+    token_b = create_access_token(user_b.id)
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    # 2. User A creates 2 distinct chat sessions
+    res_a_s1 = client.post(
+        "/api/v1/chat/sessions",
+        json={"title": "WhatsApp Concept Evaluation"},
+        headers=headers_a,
+    )
+    assert res_a_s1.status_code == 200
+    s1_id = res_a_s1.json()["session"]["id"]
+
+    res_a_s2 = client.post(
+        "/api/v1/chat/sessions",
+        json={"title": "Auth Architecture Discussion"},
+        headers=headers_a,
+    )
+    assert res_a_s2.status_code == 200
+    s2_id = res_a_s2.json()["session"]["id"]
+
+    # 3. User A lists sessions -> should have 2
+    res_list_a = client.get("/api/v1/chat/sessions", headers=headers_a)
+    assert res_list_a.status_code == 200
+    sessions_a = res_list_a.json()["sessions"]
+    assert len(sessions_a) == 2
+    assert any(s["id"] == s1_id for s in sessions_a)
+    assert any(s["id"] == s2_id for s in sessions_a)
+
+    # 4. User B lists sessions -> should have 0 (Strict user isolation!)
+    res_list_b = client.get("/api/v1/chat/sessions", headers=headers_b)
+    assert res_list_b.status_code == 200
+    sessions_b = res_list_b.json()["sessions"]
+    assert len(sessions_b) == 0
+
+    # 5. User B attempts to access User A's session -> must return 404 Not Found
+    res_b_forbidden = client.get(f"/api/v1/chat/sessions/{s1_id}", headers=headers_b)
+    assert res_b_forbidden.status_code == 404
+
+    # 6. User B attempts to delete User A's session -> must return 404 Not Found
+    res_b_del_forbidden = client.delete(f"/api/v1/chat/sessions/{s1_id}", headers=headers_b)
+    assert res_b_del_forbidden.status_code == 404
+
+    # 7. User A renames session 1
+    res_rename = client.patch(
+        f"/api/v1/chat/sessions/{s1_id}",
+        json={"title": "WhatsApp Concept Bot v2"},
+        headers=headers_a,
+    )
+    assert res_rename.status_code == 200
+    assert res_rename.json()["session"]["title"] == "WhatsApp Concept Bot v2"
+
+    # 8. User A sends message in session 1
+    res_msg = client.post(
+        "/api/v1/chat/message",
+        json={
+            "session_id": s1_id,
+            "message": "Hello from session 1",
+            "mode": "chat",
+        },
+        headers=headers_a,
+    )
+    assert res_msg.status_code == 200
+    assert res_msg.json()["session_id"] == s1_id
+
+    # 9. Check session 1 messages
+    res_s1_detail = client.get(f"/api/v1/chat/sessions/{s1_id}", headers=headers_a)
+    assert res_s1_detail.status_code == 200
+    s1_msgs = res_s1_detail.json()["messages"]
+    assert len(s1_msgs) >= 2  # user message + assistant response
+    assert s1_msgs[0]["content"] == "Hello from session 1"
+
+    # 10. User A deletes session 2
+    res_del_s2 = client.delete(f"/api/v1/chat/sessions/{s2_id}", headers=headers_a)
+    assert res_del_s2.status_code == 200
+
+    # List again: User A now has 1 session, User B still has 0
+    res_after = client.get("/api/v1/chat/sessions", headers=headers_a)
+    assert len(res_after.json()["sessions"]) == 1
+    assert res_after.json()["sessions"][0]["id"] == s1_id
+
+

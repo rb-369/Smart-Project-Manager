@@ -1,5 +1,6 @@
 import time
 import httpx
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,9 +13,11 @@ from app.models.user import User
 from app.models.project import Project
 from app.models.feature import Feature
 from app.models.future_project import FutureProject
+from app.models.chat_session import ChatSession, ChatMessageRecord
 from app.api.v1.auth import get_current_user
 from app.services.copilot_service import CopilotService
 from app.services.rag_service import RAGService
+from app.services.mongodb_sync import MongoDBSyncService
 
 router = APIRouter(prefix="/chat", tags=["Copilot & RAG"])
 
@@ -23,7 +26,17 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="User prompt or question")
     mode: str = Field(default="auto", description="'auto' | 'eval' | 'chat' | 'openui'")
     project_id: Optional[UUID] = Field(default=None, description="Optional project context scope")
+    session_id: Optional[UUID] = Field(default=None, description="Optional chat session ID for multi-chat threading")
     history: Optional[List[Dict[str, str]]] = Field(default=None, description="Chat history")
+
+
+class CreateSessionRequest(BaseModel):
+    title: Optional[str] = "New Chat"
+    project_id: Optional[UUID] = None
+
+
+class UpdateSessionRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=120)
 
 
 class ChatCitation(BaseModel):
@@ -53,12 +66,249 @@ class ChatResponse(BaseModel):
     mode: str
     response: str
     raw_content: str
+    session_id: Optional[str] = None
     citations: List[ChatCitation] = []
     judge_data: Optional[JudgeVerdict] = None
     suggested_features: List[SuggestedFeaturePayload] = []
     subagent_data: Optional[Dict[str, Any]] = None
     openui_lang: Optional[str] = None
     tier_used: str
+
+
+@router.get("/sessions")
+def list_chat_sessions(
+    project_id: Optional[UUID] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieves all chat sessions for the authenticated user, ordered by most recently updated.
+    Guarantees strict multi-tenant isolation: each user only sees their own chat sessions.
+    """
+    stmt = select(ChatSession).where(ChatSession.user_id == current_user.id)
+    if project_id:
+        stmt = stmt.where(ChatSession.project_id == project_id)
+    stmt = stmt.order_by(ChatSession.updated_at.desc())
+
+    sessions = db.exec(stmt).all()
+
+    result = []
+    for s in sessions:
+        # Fetch latest message snippet and count
+        msgs = db.exec(
+            select(ChatMessageRecord)
+            .where(ChatMessageRecord.session_id == s.id)
+            .order_by(ChatMessageRecord.created_at.desc())
+        ).all()
+        
+        last_msg = msgs[0].content[:90] if msgs else None
+        result.append({
+            "id": str(s.id),
+            "title": s.title,
+            "project_id": str(s.project_id) if s.project_id else None,
+            "created_at": s.created_at.isoformat(),
+            "updated_at": s.updated_at.isoformat(),
+            "message_count": len(msgs),
+            "last_message": last_msg,
+        })
+
+    return {"status": "success", "sessions": result}
+
+
+@router.post("/sessions")
+def create_chat_session(
+    payload: CreateSessionRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Creates a new chat session thread for the current authenticated user.
+    """
+    if payload.project_id:
+        project = db.exec(
+            select(Project).where(
+                Project.id == payload.project_id,
+                Project.user_id == current_user.id
+            )
+        ).first()
+        if not project:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Selected project not found or access denied."
+            )
+
+    new_session = ChatSession(
+        user_id=current_user.id,
+        project_id=payload.project_id,
+        title=payload.title.strip() if payload.title else "New Chat",
+    )
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
+
+    # Sync to MongoDB Atlas
+    MongoDBSyncService.save_chat_session(
+        user_id=current_user.id,
+        session_id=new_session.id,
+        title=new_session.title,
+        project_id=new_session.project_id,
+    )
+
+    return {
+        "status": "success",
+        "session": {
+            "id": str(new_session.id),
+            "title": new_session.title,
+            "project_id": str(new_session.project_id) if new_session.project_id else None,
+            "created_at": new_session.created_at.isoformat(),
+            "updated_at": new_session.updated_at.isoformat(),
+            "message_count": 0,
+        }
+    }
+
+
+@router.get("/sessions/{session_id}")
+def get_chat_session_detail(
+    session_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieves full chat message history for a specific chat session.
+    Strictly enforces user isolation: 404 if the session belongs to another user.
+    """
+    session = db.exec(
+        select(ChatSession).where(
+            ChatSession.id == session_id,
+            ChatSession.user_id == current_user.id
+        )
+    ).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chat session not found or does not belong to you."
+        )
+
+    records = db.exec(
+        select(ChatMessageRecord)
+        .where(
+            ChatMessageRecord.session_id == session_id,
+            ChatMessageRecord.user_id == current_user.id
+        )
+        .order_by(ChatMessageRecord.created_at.asc())
+    ).all()
+
+    messages = []
+    for r in records:
+        messages.append({
+            "id": str(r.id),
+            "role": r.role,
+            "content": r.content,
+            "mode": r.mode,
+            "tier_used": r.tier_used,
+            "subagent_data": r.subagent_data,
+            "citations": r.citations or [],
+            "openui_lang": r.subagent_data.get("openui_lang") if r.subagent_data else None,
+            "created_at": r.created_at.isoformat(),
+        })
+
+    return {
+        "status": "success",
+        "session": {
+            "id": str(session.id),
+            "title": session.title,
+            "project_id": str(session.project_id) if session.project_id else None,
+            "created_at": session.created_at.isoformat(),
+            "updated_at": session.updated_at.isoformat(),
+            "message_count": len(messages),
+        },
+        "messages": messages,
+    }
+
+
+@router.patch("/sessions/{session_id}")
+def update_chat_session(
+    session_id: UUID,
+    payload: UpdateSessionRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Renames a chat session title.
+    """
+    session = db.exec(
+        select(ChatSession).where(
+            ChatSession.id == session_id,
+            ChatSession.user_id == current_user.id
+        )
+    ).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chat session not found or does not belong to you."
+        )
+
+    session.title = payload.title.strip()
+    session.updated_at = datetime.now(timezone.utc)
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+
+    MongoDBSyncService.save_chat_session(
+        user_id=current_user.id,
+        session_id=session.id,
+        title=session.title,
+        project_id=session.project_id,
+    )
+
+    return {
+        "status": "success",
+        "session": {
+            "id": str(session.id),
+            "title": session.title,
+            "updated_at": session.updated_at.isoformat(),
+        }
+    }
+
+
+@router.delete("/sessions/{session_id}")
+def delete_chat_session(
+    session_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Deletes a specific chat session and all messages within it.
+    """
+    session = db.exec(
+        select(ChatSession).where(
+            ChatSession.id == session_id,
+            ChatSession.user_id == current_user.id
+        )
+    ).first()
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chat session not found or does not belong to you."
+        )
+
+    # Delete all messages belonging to this session
+    messages = db.exec(
+        select(ChatMessageRecord).where(ChatMessageRecord.session_id == session_id)
+    ).all()
+    for m in messages:
+        db.delete(m)
+
+    db.delete(session)
+    db.commit()
+
+    # Delete from MongoDB Atlas
+    MongoDBSyncService.delete_chat_session(user_id=current_user.id, session_id=session_id)
+
+    return {"status": "success", "message": "Chat session and conversation history deleted successfully."}
 
 
 @router.post("/message", response_model=ChatResponse)
@@ -68,10 +318,10 @@ async def send_chat_message(
     db: Session = Depends(get_db),
 ):
     """
-    Submits a query to the unified DevCommand AI Copilot.
+    Submits a query to the unified DevCommand AI Copilot within an isolated chat session.
     Automatically orchestrates Market Researcher, The Judge, and Feature Planner sub-agents
     for feature pitches, or responds conversationally for general queries.
-    Grounds context from Qdrant Cloud RAG with user isolation and saves to MongoDB Atlas history.
+    Grounds context from Qdrant Cloud RAG with user isolation and saves to multi-tenant chat storage.
     """
     if payload.project_id:
         project = db.exec(
@@ -86,41 +336,211 @@ async def send_chat_message(
                 detail="Selected project not found or does not belong to you."
             )
 
+    # 1. Resolve or create ChatSession for current_user
+    chat_session = None
+    is_new_session = False
+    if payload.session_id:
+        chat_session = db.exec(
+            select(ChatSession).where(
+                ChatSession.id == payload.session_id,
+                ChatSession.user_id == current_user.id
+            )
+        ).first()
+        if not chat_session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Target chat session not found or does not belong to you."
+            )
+    else:
+        # Auto-create session for current_user
+        candidate_title = payload.message.strip().replace("/eval ", "").replace("/evaluate ", "")
+        if len(candidate_title) > 42:
+            candidate_title = candidate_title[:39] + "..."
+        chat_session = ChatSession(
+            user_id=current_user.id,
+            project_id=payload.project_id,
+            title=candidate_title if candidate_title else "New Chat",
+        )
+        db.add(chat_session)
+        db.commit()
+        db.refresh(chat_session)
+        is_new_session = True
+
+    # 2. Process query via Copilot
     result = await CopilotService.process_chat(
         message=payload.message,
         mode=payload.mode,
         user_id=current_user.id,
         project_id=payload.project_id,
         chat_history=payload.history,
+        session_id=chat_session.id,
     )
 
+    # 3. Save records in SQLModel for ACID durability & rapid retrieval
+    user_record = ChatMessageRecord(
+        session_id=chat_session.id,
+        user_id=current_user.id,
+        role="user",
+        content=payload.message,
+        mode=payload.mode,
+    )
+    db.add(user_record)
+
+    assistant_record = ChatMessageRecord(
+        session_id=chat_session.id,
+        user_id=current_user.id,
+        role="assistant",
+        content=result.get("response", ""),
+        mode=result.get("mode"),
+        tier_used=result.get("tier_used"),
+        subagent_data=result.get("subagent_data"),
+        citations=result.get("citations"),
+    )
+    db.add(assistant_record)
+
+    # Update session's updated_at and title if it was default "New Chat"
+    chat_session.updated_at = datetime.now(timezone.utc)
+    if chat_session.title in ["New Chat", ""] and not is_new_session:
+        clean_title = payload.message.strip().replace("/eval ", "").replace("/evaluate ", "")
+        if len(clean_title) > 42:
+            clean_title = clean_title[:39] + "..."
+        chat_session.title = clean_title
+    db.add(chat_session)
+    db.commit()
+
+    # Mirror session to MongoDB Atlas
+    MongoDBSyncService.save_chat_session(
+        user_id=current_user.id,
+        session_id=chat_session.id,
+        title=chat_session.title,
+        project_id=chat_session.project_id,
+    )
+
+    result["session_id"] = str(chat_session.id)
     return result
 
 
 @router.get("/history")
 def get_chat_history_endpoint(
     project_id: Optional[UUID] = None,
+    session_id: Optional[UUID] = None,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
-    Retrieves user's persistent chat conversation history and sub-agent cards from MongoDB Atlas.
+    Retrieves user's persistent chat conversation history and sub-agent cards.
+    If session_id is provided, returns that specific thread.
+    Otherwise returns latest session history or MongoDB cloud history.
     """
-    from app.services.mongodb_sync import MongoDBSyncService
-    history = MongoDBSyncService.get_chat_history(user_id=current_user.id, project_id=project_id, limit=50)
+    if session_id:
+        records = db.exec(
+            select(ChatMessageRecord)
+            .where(
+                ChatMessageRecord.session_id == session_id,
+                ChatMessageRecord.user_id == current_user.id,
+            )
+            .order_by(ChatMessageRecord.created_at.asc())
+        ).all()
+        history = [
+            {
+                "id": str(r.id),
+                "role": r.role,
+                "content": r.content,
+                "mode": r.mode,
+                "tier_used": r.tier_used,
+                "subagent_data": r.subagent_data,
+                "citations": r.citations or [],
+                "openui_lang": r.subagent_data.get("openui_lang") if r.subagent_data else None,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in records
+        ]
+        return {"status": "success", "history": history, "session_id": str(session_id)}
+
+    # Check for latest session in SQLModel
+    latest_sess = db.exec(
+        select(ChatSession)
+        .where(ChatSession.user_id == current_user.id)
+        .order_by(ChatSession.updated_at.desc())
+    ).first()
+
+    if latest_sess:
+        records = db.exec(
+            select(ChatMessageRecord)
+            .where(
+                ChatMessageRecord.session_id == latest_sess.id,
+                ChatMessageRecord.user_id == current_user.id,
+            )
+            .order_by(ChatMessageRecord.created_at.asc())
+        ).all()
+        history = [
+            {
+                "id": str(r.id),
+                "role": r.role,
+                "content": r.content,
+                "mode": r.mode,
+                "tier_used": r.tier_used,
+                "subagent_data": r.subagent_data,
+                "citations": r.citations or [],
+                "openui_lang": r.subagent_data.get("openui_lang") if r.subagent_data else None,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in records
+        ]
+        if history:
+            return {"status": "success", "history": history, "session_id": str(latest_sess.id)}
+
+    # Fallback to MongoDB
+    history = MongoDBSyncService.get_chat_history(
+        user_id=current_user.id,
+        project_id=project_id,
+        session_id=session_id,
+        limit=50
+    )
     return {"status": "success", "history": history}
 
 
 @router.delete("/history")
 def clear_chat_history_endpoint(
     project_id: Optional[UUID] = None,
+    session_id: Optional[UUID] = None,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
-    Clears user's chat conversation history from MongoDB Atlas.
+    Clears user's chat conversation history (scoped to session if provided, or all for user).
     """
-    from app.services.mongodb_sync import MongoDBSyncService
-    success = MongoDBSyncService.clear_chat_history(user_id=current_user.id, project_id=project_id)
-    return {"status": "success", "cleared": success, "message": "Chat history cleared successfully."}
+    if session_id:
+        records = db.exec(
+            select(ChatMessageRecord).where(
+                ChatMessageRecord.session_id == session_id,
+                ChatMessageRecord.user_id == current_user.id,
+            )
+        ).all()
+        for r in records:
+            db.delete(r)
+        db.commit()
+    else:
+        records = db.exec(
+            select(ChatMessageRecord).where(ChatMessageRecord.user_id == current_user.id)
+        ).all()
+        for r in records:
+            db.delete(r)
+        
+        sessions = db.exec(
+            select(ChatSession).where(ChatSession.user_id == current_user.id)
+        ).all()
+        for s in sessions:
+            db.delete(s)
+        db.commit()
+
+    success = MongoDBSyncService.clear_chat_history(
+        user_id=current_user.id,
+        project_id=project_id,
+        session_id=session_id
+    )
+    return {"status": "success", "cleared": True, "message": "Chat history cleared successfully."}
+
 
 
 @router.get("/qdrant-status")

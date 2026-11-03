@@ -9,6 +9,7 @@ import {
   ChatMessage,
   QdrantStatus,
   ProjectSummary,
+  ChatSession,
 } from '@/types';
 import { OpenUIRenderer } from '@/components/openui/OpenUIRenderer';
 import {
@@ -31,6 +32,14 @@ import {
   Trash2,
   Target,
   Sparkles,
+  MessageSquare,
+  MessageCircle,
+  Edit2,
+  X,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Clock,
+  UserCheck,
 } from 'lucide-react';
 
 function generateClientMessageId(prefix: string): string {
@@ -72,6 +81,16 @@ export default function ChatPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [activeStep, setActiveStep] = useState<number>(0);
+
+  // Multi-Chat Sessions State
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [currentSessionTitle, setCurrentSessionTitle] = useState<string>('New Chat');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [sessionSearchQuery, setSessionSearchQuery] = useState('');
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   // Active sub-agent tab per message ID
   const [activeTabPerMessage, setActiveTabPerMessage] = useState<{ [msgId: string]: 'openui' | 'researcher' | 'judge' | 'planner' }>({});
@@ -123,9 +142,128 @@ export default function ChatPage() {
     }
   };
 
+  const loadSessionMessages = async (sessionId: string) => {
+    try {
+      const res = await api.getChatSessionDetail(sessionId);
+      if (res && res.messages) {
+        setMessages(res.messages);
+        setCurrentSessionTitle(res.session?.title || 'Chat');
+      }
+    } catch (err) {
+      console.warn('Failed to load session messages:', err);
+      // Fallback to general history
+      fetchHistory();
+    }
+  };
+
+  const fetchSessions = async (autoSelectFirst: boolean = true) => {
+    setIsLoadingSessions(true);
+    try {
+      const res = await api.listChatSessions(selectedProjectId || undefined);
+      const list = res.sessions || [];
+      setSessions(list);
+
+      if (autoSelectFirst) {
+        if (list.length > 0) {
+          const first = list[0];
+          setCurrentSessionId(first.id);
+          setCurrentSessionTitle(first.title);
+          await loadSessionMessages(first.id);
+        } else {
+          setCurrentSessionId(null);
+          setCurrentSessionTitle('New Chat');
+          setMessages([]);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch chat sessions:', err);
+      fetchHistory();
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
+
+  const handleSelectSession = (sessionId: string) => {
+    if (sessionId === currentSessionId) return;
+    setCurrentSessionId(sessionId);
+    const target = sessions.find((s) => s.id === sessionId);
+    if (target) {
+      setCurrentSessionTitle(target.title);
+    }
+    loadSessionMessages(sessionId);
+  };
+
+  const handleNewChat = async () => {
+    try {
+      const res = await api.createChatSession({
+        title: 'New Chat',
+        project_id: selectedProjectId || undefined,
+      });
+      const newSession = res.session;
+      setSessions((prev) => [newSession, ...prev]);
+      setCurrentSessionId(newSession.id);
+      setCurrentSessionTitle(newSession.title);
+      setMessages([]);
+      textareaRef.current?.focus();
+    } catch (err) {
+      setCurrentSessionId(null);
+      setCurrentSessionTitle('New Chat');
+      setMessages([]);
+    }
+  };
+
+  const handleStartRename = (session: ChatSession, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingSessionId(session.id);
+    setEditingTitle(session.title);
+  };
+
+  const handleSaveRename = async (sessionId: string, e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanTitle = editingTitle.trim();
+    if (!cleanTitle) {
+      setEditingSessionId(null);
+      return;
+    }
+    try {
+      await api.updateChatSession(sessionId, cleanTitle);
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, title: cleanTitle } : s))
+      );
+      if (currentSessionId === sessionId) {
+        setCurrentSessionTitle(cleanTitle);
+      }
+    } catch (err: any) {
+      alert(`Failed to rename: ${err.message}`);
+    } finally {
+      setEditingSessionId(null);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this chat session?')) return;
+    try {
+      await api.deleteChatSession(sessionId);
+      const remaining = sessions.filter((s) => s.id !== sessionId);
+      setSessions(remaining);
+      if (currentSessionId === sessionId) {
+        if (remaining.length > 0) {
+          handleSelectSession(remaining[0].id);
+        } else {
+          setCurrentSessionId(null);
+          setCurrentSessionTitle('New Chat');
+          setMessages([]);
+        }
+      }
+    } catch (err: any) {
+      alert(`Failed to delete session: ${err.message}`);
+    }
+  };
+
   const fetchHistory = async () => {
     try {
-      const res = await api.getChatHistory(selectedProjectId || undefined);
+      const res = await api.getChatHistory(selectedProjectId || undefined, currentSessionId || undefined);
       if (res && res.history) {
         setMessages(res.history);
       }
@@ -141,13 +279,13 @@ export default function ChatPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // Fetch initial telemetry, project list, and MongoDB cloud history
+  // Fetch initial telemetry, project list, and user's isolated chat sessions
   useEffect(() => {
     if (isAuthenticated) {
       fetchQdrantStatus();
       fetchOui1Status();
       fetchProjects();
-      fetchHistory();
+      fetchSessions(true);
     }
   }, [isAuthenticated, selectedProjectId]);
 
@@ -210,8 +348,16 @@ export default function ChatPage() {
         message: query,
         mode: isExplicitEval ? 'eval' : 'auto',
         project_id: selectedProjectId || undefined,
+        session_id: currentSessionId || undefined,
         history: historyPayload,
       });
+
+      if (response.session_id) {
+        if (!currentSessionId || currentSessionId !== response.session_id) {
+          setCurrentSessionId(response.session_id);
+        }
+        fetchSessions(false);
+      }
 
       const assistantMessage: ChatMessage = {
         id: generateClientMessageId('ai'),
@@ -269,11 +415,12 @@ export default function ChatPage() {
   };
 
   const handleClearHistory = async () => {
-    if (!confirm('Clear all conversation history from MongoDB Atlas?')) return;
+    if (!confirm('Clear conversation history for this chat session?')) return;
     setIsClearingHistory(true);
     try {
-      await api.clearChatHistory(selectedProjectId || undefined);
+      await api.clearChatHistory(selectedProjectId || undefined, currentSessionId || undefined);
       setMessages([]);
+      fetchSessions(false);
     } catch (err: any) {
       alert(`Failed to clear: ${err.message}`);
     } finally {
@@ -323,6 +470,10 @@ export default function ChatPage() {
     setTimeout(() => setCopiedId(null), 2500);
   };
 
+  const filteredSessions = sessions.filter((s) =>
+    (s.title || '').toLowerCase().includes(sessionSearchQuery.toLowerCase())
+  );
+
   const starterPrompts = [
     '/eval Automated WhatsApp concept import bot with webhook dispatch',
     'What are my current repository statistics and active features?',
@@ -338,7 +489,7 @@ export default function ChatPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-4 sm:pt-6 pb-12 flex-1 flex flex-col relative z-10">
         
-        {/* Top Control Bar: Title + Telemetry + Project Scope */}
+        {/* Top Control Bar: Title + Telemetry */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3.5 border-b border-neutral-200/90">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -348,32 +499,15 @@ export default function ChatPage() {
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 uppercase tracking-tight flex items-center gap-3">
-              <span>Single Copilot &amp; Sub-Agents</span>
+              <span>DevCommand Copilot</span>
             </h1>
             <p className="text-xs text-neutral-500 mt-1 font-mono">
-              Single unified interface coordinating <strong className="text-[#0047FF] uppercase">Market Researcher</strong>, <strong className="text-[#FF5533] uppercase">The Judge</strong>, and <strong className="text-neutral-900 uppercase">Feature Planner</strong> sub-agents with Qdrant Cloud RAG.
+              Coordinating <strong className="text-[#0047FF] uppercase">Market Researcher</strong>, <strong className="text-[#FF5533] uppercase">The Judge</strong>, and <strong className="text-neutral-900 uppercase">Feature Planner</strong> with Qdrant RAG.
             </p>
           </div>
 
-          {/* Controls: RAG Status, Project Scope, Clear History */}
+          {/* Telemetry Status Pills */}
           <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Project Scope Selector */}
-            <div className="flex items-center gap-2 bg-white border border-neutral-200/90 rounded-xl px-3 py-1.5 text-xs font-mono font-bold shadow-xs hover:border-neutral-300 transition-all">
-              <FolderGit2 className="w-3.5 h-3.5 text-[#0047FF]" />
-              <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="bg-transparent text-neutral-900 uppercase outline-none cursor-pointer text-xs font-bold"
-              >
-                <option value="">🌐 ALL REPOSITORIES</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    📦 {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Qdrant Cloud Badge */}
             <div className={`px-3 py-1.5 rounded-xl border flex items-center gap-2 text-xs font-mono font-bold uppercase shadow-xs ${
               qdrantStatus?.connected
@@ -416,19 +550,6 @@ export default function ChatPage() {
               <span>{isSyncingKnowledge ? 'INDEXING...' : 'SYNC'}</span>
             </button>
 
-            {/* Clear History Button */}
-            {messages.length > 0 && (
-              <button
-                onClick={handleClearHistory}
-                disabled={isClearingHistory}
-                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-mono font-bold uppercase rounded-xl flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-                title="Clear cloud chat history in MongoDB Atlas"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>CLEAR</span>
-              </button>
-            )}
-
             {syncMessage && (
               <span className="text-xs font-mono text-emerald-800 font-bold uppercase px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-xl animate-fade-in shadow-xs">
                 {syncMessage}
@@ -437,8 +558,274 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Conversation Box (Scrollable) */}
-        <div className="flex-1 bg-white border border-neutral-200/90 rounded-2xl p-4 sm:p-6 my-4 overflow-y-auto min-h-[480px] max-h-[660px] space-y-5 shadow-xs">
+        {/* Multi-Chat 2-Column Split */}
+        <div className="flex-1 flex flex-col lg:flex-row gap-4 mt-4 min-h-[640px] items-stretch relative">
+          
+          {/* Mobile Overlay Backdrop */}
+          {isSidebarOpen && (
+            <div
+              onClick={() => setIsSidebarOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 lg:hidden"
+            />
+          )}
+
+          {/* Left Sidebar: Multi-Chat Threads Drawer */}
+          <aside
+            className={`
+              fixed lg:static top-0 bottom-0 left-0 z-40 lg:z-10
+              w-72 sm:w-80 bg-white border border-neutral-200/90 rounded-2xl
+              flex flex-col shadow-lg lg:shadow-xs transition-transform duration-300 ease-in-out
+              ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+              ${!isSidebarOpen ? 'lg:hidden' : ''}
+              p-3.5 space-y-3 shrink-0
+            `}
+            style={{ maxHeight: 'calc(100vh - 140px)' }}
+          >
+            {/* Sidebar Top: Header + New Chat Button */}
+            <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#0047FF]" />
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-neutral-900">
+                  Conversations
+                </span>
+                <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-neutral-100 rounded-full text-neutral-600">
+                  {sessions.length}
+                </span>
+              </div>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-1 hover:bg-neutral-100 rounded-lg text-neutral-400 hover:text-neutral-700 lg:hidden cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* "+ New Conversation" Button */}
+            <button
+              onClick={handleNewChat}
+              className="w-full py-2.5 px-3.5 bg-neutral-900 hover:bg-[#0047FF] text-white rounded-xl font-mono text-xs font-bold uppercase transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:translate-y-0.5 group"
+            >
+              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+              <span>New Conversation</span>
+            </button>
+
+            {/* Optional search if > 3 sessions */}
+            {sessions.length > 3 && (
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={sessionSearchQuery}
+                  onChange={(e) => setSessionSearchQuery(e.target.value)}
+                  placeholder="Filter chats..."
+                  className="w-full pl-8 pr-2.5 py-1.5 text-xs font-mono bg-neutral-50/80 border border-neutral-200/80 rounded-lg outline-none focus:border-[#0047FF] transition-all"
+                />
+              </div>
+            )}
+
+            {/* Sessions List */}
+            <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 min-h-[220px]">
+              {isLoadingSessions && sessions.length === 0 ? (
+                <div className="flex items-center justify-center py-8 text-neutral-400 font-mono text-xs gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0047FF]" />
+                  <span>Loading chats...</span>
+                </div>
+              ) : filteredSessions.length === 0 ? (
+                <div className="text-center py-8 px-2 space-y-2">
+                  <MessageCircle className="w-8 h-8 text-neutral-300 mx-auto" />
+                  <p className="text-xs font-mono text-neutral-500 font-medium">No previous chats.</p>
+                  <p className="text-[11px] text-neutral-400">Click &ldquo;New Conversation&rdquo; to start!</p>
+                </div>
+              ) : (
+                filteredSessions.map((s) => {
+                  const isActive = currentSessionId === s.id;
+                  const isEditingThis = editingSessionId === s.id;
+
+                  return (
+                    <div
+                      key={s.id}
+                      onClick={() => handleSelectSession(s.id)}
+                      className={`
+                        group relative p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1
+                        ${isActive
+                          ? 'bg-neutral-900 text-white border-neutral-900 shadow-xs'
+                          : 'bg-white hover:bg-neutral-50/80 border-neutral-200/70 text-neutral-800 hover:border-neutral-300'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center justify-between gap-1.5">
+                        {isEditingThis ? (
+                          <form
+                            onSubmit={(e) => handleSaveRename(s.id, e)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1 w-full"
+                          >
+                            <input
+                              type="text"
+                              value={editingTitle}
+                              onChange={(e) => setEditingTitle(e.target.value)}
+                              autoFocus
+                              className="w-full text-xs font-medium font-sans bg-white text-neutral-900 px-1.5 py-0.5 rounded border border-[#0047FF] outline-none"
+                            />
+                            <button
+                              type="submit"
+                              className="p-1 hover:bg-emerald-100 rounded text-emerald-600"
+                            >
+                              <Check className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingSessionId(null)}
+                              className="p-1 hover:bg-rose-100 rounded text-rose-600"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </form>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2 truncate">
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-[#DFFF4F]' : 'bg-neutral-300'}`} />
+                              <span className="text-xs font-semibold truncate font-sans">
+                                {s.title}
+                              </span>
+                            </div>
+
+                            {/* Hover Actions: Rename & Delete */}
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={(e) => handleStartRename(s, e)}
+                                className={`p-1 rounded transition-colors ${
+                                  isActive ? 'hover:bg-neutral-800 text-neutral-300' : 'hover:bg-neutral-200 text-neutral-500'
+                                }`}
+                                title="Rename chat"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteSession(s.id, e)}
+                                className={`p-1 rounded transition-colors ${
+                                  isActive ? 'hover:bg-neutral-800 text-rose-300' : 'hover:bg-rose-100 text-rose-600'
+                                }`}
+                                title="Delete chat"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Snippet / Metadata */}
+                      {!isEditingThis && (
+                        <div className={`flex items-center justify-between text-[10px] font-mono ${
+                          isActive ? 'text-neutral-400' : 'text-neutral-400'
+                        }`}>
+                          <span className="truncate max-w-[170px]">
+                            {s.last_message ? s.last_message : new Date(s.updated_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                          </span>
+                          {s.message_count !== undefined && s.message_count > 0 && (
+                            <span className={`px-1.5 py-0.2 rounded text-[9px] ${
+                              isActive ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'
+                            }`}>
+                              {s.message_count} {s.message_count === 1 ? 'msg' : 'msgs'}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Sidebar User Multi-Tenancy Footer */}
+            <div className="pt-2 border-t border-neutral-100 text-[11px] font-mono text-neutral-500 space-y-1">
+              <div className="flex items-center gap-1.5 text-neutral-700 font-bold truncate">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="truncate">{user?.full_name || user?.email || 'Authenticated User'}</span>
+              </div>
+              <div className="text-[10px] text-neutral-400 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-[#0047FF]" />
+                <span>Isolated User Multi-Tenancy</span>
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Main Pane: Active Conversation */}
+          <div className="flex-1 flex flex-col min-w-0 space-y-3">
+            {/* Conversation Active Header */}
+            <div className="bg-white border border-neutral-200/90 rounded-2xl px-4 py-3 shadow-xs flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="p-1.5 rounded-xl hover:bg-neutral-100 text-neutral-700 transition flex items-center gap-1 text-xs font-mono font-bold uppercase cursor-pointer"
+                  title={isSidebarOpen ? 'Hide Conversations' : 'Show Conversations'}
+                >
+                  {isSidebarOpen ? <PanelLeftClose className="w-4 h-4 text-neutral-500" /> : <PanelLeftOpen className="w-4 h-4 text-[#0047FF]" />}
+                  <span className="hidden sm:inline text-neutral-600">{isSidebarOpen ? 'Hide' : 'Chats'}</span>
+                </button>
+
+                <div className="h-4 w-px bg-neutral-200" />
+
+                <div className="flex items-center gap-2 truncate">
+                  <h2 className="text-sm sm:text-base font-bold text-neutral-900 truncate font-sans">
+                    {currentSessionTitle}
+                  </h2>
+                  {currentSessionId && (
+                    <button
+                      onClick={() => {
+                        const target = sessions.find((s) => s.id === currentSessionId);
+                        if (target) {
+                          handleStartRename(target, { stopPropagation: () => {} } as any);
+                        }
+                      }}
+                      className="p-1 hover:bg-neutral-100 rounded text-neutral-400 hover:text-neutral-700 transition"
+                      title="Rename conversation"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Scope & Clear Controls */}
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Project Scope Selector */}
+                <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200/90 rounded-xl px-2.5 py-1 text-xs font-mono font-bold shadow-xs">
+                  <FolderGit2 className="w-3.5 h-3.5 text-[#0047FF]" />
+                  <select
+                    value={selectedProjectId}
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className="bg-transparent text-neutral-900 uppercase outline-none cursor-pointer text-xs font-bold max-w-[140px] sm:max-w-[200px] truncate"
+                  >
+                    <option value="">🌐 ALL REPOSITORIES</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        📦 {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Clear Chat Button */}
+                {messages.length > 0 && (
+                  <button
+                    onClick={handleClearHistory}
+                    disabled={isClearingHistory}
+                    className="p-1.5 sm:px-2.5 sm:py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-mono font-bold uppercase rounded-xl flex items-center gap-1 transition shadow-xs cursor-pointer"
+                    title="Clear messages in this chat"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">CLEAR</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Conversation Box (Scrollable) */}
+            <div className="flex-1 bg-white border border-neutral-200/90 rounded-2xl p-4 sm:p-6 overflow-y-auto min-h-[440px] max-h-[640px] space-y-5 shadow-xs">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-8 px-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0047FF] to-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4 ring-4 ring-blue-50">
@@ -1027,7 +1414,9 @@ export default function ChatPage() {
             </span>
           </div>
         </div>
-      </main>
+      </div>
     </div>
-  );
+  </main>
+</div>
+);
 }

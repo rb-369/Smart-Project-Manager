@@ -194,10 +194,27 @@ export interface QdrantStatus {
   latency_ms?: number;
 }
 
+export interface ChatSession {
+  id: string;
+  user_id: string;
+  project_id?: string | null;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  message_count?: number;
+  last_message?: string | null;
+}
+
+export interface ChatSessionDetail {
+  session: ChatSession;
+  messages: ChatMessage[];
+}
+
 export interface ChatResponse {
   mode: string;
   response: string;
   raw_content: string;
+  session_id?: string;
   citations: RagCitation[];
   judge_data?: SubAgentJudge;
   suggested_features?: {
@@ -214,5 +231,6 @@ export interface ChatRequest {
   message: string;
   mode?: string;
   project_id?: string;
+  session_id?: string;
   history?: { role: 'user' | 'assistant'; content: string }[];
 }

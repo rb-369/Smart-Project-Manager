@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from app.models.project import Project
     from app.models.future_project import FutureProject
     from app.models.ai_log import AILog
+    from app.models.chat_session import ChatSession
 
 
 class User(SQLModel, table=True):
@@ -30,3 +31,4 @@ class User(SQLModel, table=True):
     projects: List["Project"] = Relationship(back_populates="user", cascade_delete=True)
     future_projects: List["FutureProject"] = Relationship(back_populates="user", cascade_delete=True)
     ai_logs: List["AILog"] = Relationship(back_populates="user", cascade_delete=True)
+    chat_sessions: List["ChatSession"] = Relationship(back_populates="user", cascade_delete=True)

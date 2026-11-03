@@ -22,6 +22,7 @@ def init_db() -> None:
     import app.models.feature  # noqa: F401
     import app.models.future_project  # noqa: F401
     import app.models.ai_log  # noqa: F401
+    import app.models.chat_session  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 

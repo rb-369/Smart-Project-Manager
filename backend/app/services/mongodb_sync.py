@@ -361,6 +361,55 @@ class MongoDBSyncService:
             logger.warning(f"Error syncing ai log {ai_log.id} to MongoDB Atlas: {e}")
 
     @staticmethod
+    def save_chat_session(
+        user_id: Any,
+        session_id: Any,
+        title: str,
+        project_id: Optional[Any] = None,
+    ) -> Dict[str, Any]:
+        """Save or upsert a chat session in MongoDB Atlas."""
+        from datetime import datetime, timezone
+
+        doc = {
+            "_id": str(session_id),
+            "id": str(session_id),
+            "user_id": str(user_id),
+            "title": title,
+            "project_id": str(project_id) if project_id else None,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+        if is_mongodb_configured():
+            db = get_mongodb_database()
+            if db is not None:
+                try:
+                    db.chat_sessions.update_one(
+                        {"_id": str(session_id), "user_id": str(user_id)},
+                        {"$set": doc},
+                        upsert=True,
+                    )
+                except Exception as e:
+                    logger.warning(f"Error saving chat session to MongoDB: {e}")
+
+        return doc
+
+    @staticmethod
+    def delete_chat_session(user_id: Any, session_id: Any) -> bool:
+        """Delete a chat session and its messages from MongoDB Atlas."""
+        if not is_mongodb_configured():
+            return False
+        db = get_mongodb_database()
+        if db is None:
+            return False
+        try:
+            db.chat_sessions.delete_one({"_id": str(session_id), "user_id": str(user_id)})
+            db.chat_messages.delete_many({"session_id": str(session_id), "user_id": str(user_id)})
+            return True
+        except Exception as e:
+            logger.warning(f"Error deleting chat session from MongoDB: {e}")
+            return False
+
+    @staticmethod
     def save_chat_message(
         user_id: Any,
         role: str,
@@ -370,6 +419,7 @@ class MongoDBSyncService:
         subagent_data: Optional[Dict[str, Any]] = None,
         citations: Optional[List[Dict[str, Any]]] = None,
         tier_used: Optional[str] = None,
+        session_id: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """Save a chat message with sub-agent outputs to MongoDB Atlas."""
         import uuid
@@ -380,6 +430,7 @@ class MongoDBSyncService:
             "_id": msg_id,
             "id": msg_id,
             "user_id": str(user_id),
+            "session_id": str(session_id) if session_id else None,
             "project_id": str(project_id) if project_id else None,
             "role": role,
             "content": content,
@@ -401,7 +452,12 @@ class MongoDBSyncService:
         return doc
 
     @staticmethod
-    def get_chat_history(user_id: Any, project_id: Optional[Any] = None, limit: int = 50) -> List[Dict[str, Any]]:
+    def get_chat_history(
+        user_id: Any,
+        project_id: Optional[Any] = None,
+        session_id: Optional[Any] = None,
+        limit: int = 50,
+    ) -> List[Dict[str, Any]]:
         """Retrieve user's chat history from MongoDB Atlas."""
         if not is_mongodb_configured():
             return []
@@ -410,7 +466,9 @@ class MongoDBSyncService:
             return []
         try:
             query: Dict[str, Any] = {"user_id": str(user_id)}
-            if project_id:
+            if session_id:
+                query["session_id"] = str(session_id)
+            elif project_id:
                 query["project_id"] = str(project_id)
             cursor = db.chat_messages.find(query).sort("created_at", 1).limit(limit)
             results = []
@@ -424,7 +482,11 @@ class MongoDBSyncService:
             return []
 
     @staticmethod
-    def clear_chat_history(user_id: Any, project_id: Optional[Any] = None) -> bool:
+    def clear_chat_history(
+        user_id: Any,
+        project_id: Optional[Any] = None,
+        session_id: Optional[Any] = None,
+    ) -> bool:
         """Clear user's chat history in MongoDB Atlas."""
         if not is_mongodb_configured():
             return False
@@ -433,7 +495,9 @@ class MongoDBSyncService:
             return False
         try:
             query: Dict[str, Any] = {"user_id": str(user_id)}
-            if project_id:
+            if session_id:
+                query["session_id"] = str(session_id)
+            elif project_id:
                 query["project_id"] = str(project_id)
             db.chat_messages.delete_many(query)
             return True

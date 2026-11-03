@@ -172,16 +172,53 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  getChatHistory: (projectId?: string) =>
-    request<{ status: string; history: import('../types').ChatMessage[] }>(
-      `/chat/history${projectId ? `?project_id=${projectId}` : ''}`,
+  listChatSessions: (projectId?: string) =>
+    request<{ status: string; sessions: import('../types').ChatSession[] }>(
+      `/chat/sessions${projectId ? `?project_id=${projectId}` : ''}`,
       { method: 'GET' }
     ),
-  clearChatHistory: (projectId?: string) =>
-    request<{ status: string; cleared: boolean; message: string }>(
-      `/chat/history${projectId ? `?project_id=${projectId}` : ''}`,
-      { method: 'DELETE' }
+  createChatSession: (data: { title?: string; project_id?: string }) =>
+    request<{ status: string; session: import('../types').ChatSession }>('/chat/sessions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  getChatSessionDetail: (sessionId: string) =>
+    request<{ status: string; session: import('../types').ChatSession; messages: import('../types').ChatMessage[] }>(
+      `/chat/sessions/${sessionId}`,
+      { method: 'GET' }
     ),
+  updateChatSession: (sessionId: string, title: string) =>
+    request<{ status: string; session: { id: string; title: string; updated_at: string } }>(
+      `/chat/sessions/${sessionId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ title }),
+      }
+    ),
+  deleteChatSession: (sessionId: string) =>
+    request<{ status: string; message: string }>(`/chat/sessions/${sessionId}`, {
+      method: 'DELETE',
+    }),
+  getChatHistory: (projectId?: string, sessionId?: string) => {
+    const params = new URLSearchParams();
+    if (projectId) params.set('project_id', projectId);
+    if (sessionId) params.set('session_id', sessionId);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return request<{ status: string; history: import('../types').ChatMessage[]; session_id?: string }>(
+      `/chat/history${qs}`,
+      { method: 'GET' }
+    );
+  },
+  clearChatHistory: (projectId?: string, sessionId?: string) => {
+    const params = new URLSearchParams();
+    if (projectId) params.set('project_id', projectId);
+    if (sessionId) params.set('session_id', sessionId);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return request<{ status: string; cleared: boolean; message: string }>(
+      `/chat/history${qs}`,
+      { method: 'DELETE' }
+    );
+  },
   getQdrantStatus: () => request<import('../types').QdrantStatus>('/chat/qdrant-status', { method: 'GET' }),
   getOui1Status: () => request<any>('/chat/oui1-status', { method: 'GET' }),
   syncKnowledgeBase: () =>
