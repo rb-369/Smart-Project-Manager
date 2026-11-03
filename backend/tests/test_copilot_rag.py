@@ -151,3 +151,46 @@ def test_copilot_chat_modes_and_endpoints(client: TestClient, session: Session):
     res_sync = client.post("/api/v1/chat/sync-knowledge", headers=headers)
     assert res_sync.status_code == 200
     assert res_sync.json()["status"] == "success"
+
+
+def test_orchestrator_eval_skill_routing():
+    """Verify that CopilotService.orchestrate_intent correctly distinguishes between general queries and /eval proposals."""
+    from app.services.copilot_service import CopilotService
+
+    # 1. Informational & Conversational queries -> FALSE (no 3-stage heavy pipeline)
+    is_eval, clean = CopilotService.orchestrate_intent("what are my stats")
+    assert is_eval is False
+    assert clean == "what are my stats"
+
+    is_eval, _ = CopilotService.orchestrate_intent("hello there")
+    assert is_eval is False
+
+    is_eval, _ = CopilotService.orchestrate_intent("explain how the auth middleware works")
+    assert is_eval is False
+
+    is_eval, _ = CopilotService.orchestrate_intent("fix this error in api client")
+    assert is_eval is False
+
+    # 2. Explicit /eval skill invocation -> TRUE (clean string stripped)
+    is_eval, clean = CopilotService.orchestrate_intent("/eval Automated WhatsApp Concept Importer")
+    assert is_eval is True
+    assert clean == "Automated WhatsApp Concept Importer"
+
+    is_eval, clean = CopilotService.orchestrate_intent("/evaluate AI Driven Test Scaffolder")
+    assert is_eval is True
+    assert clean == "AI Driven Test Scaffolder"
+
+    # 3. Explicit evaluation trigger phrases -> TRUE
+    is_eval, _ = CopilotService.orchestrate_intent("should we build biometric auth for mobile")
+    assert is_eval is True
+
+    is_eval, _ = CopilotService.orchestrate_intent("evaluate this idea: background queue for video processing")
+    assert is_eval is True
+
+    # 4. Explicit mode override
+    is_eval, _ = CopilotService.orchestrate_intent("general idea summary", mode="chat")
+    assert is_eval is False
+
+    is_eval, _ = CopilotService.orchestrate_intent("general idea summary", mode="eval")
+    assert is_eval is True
+

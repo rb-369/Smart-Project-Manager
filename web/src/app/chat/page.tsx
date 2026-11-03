@@ -70,6 +70,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
   const [activeStep, setActiveStep] = useState<number>(0);
 
   // Active sub-agent tab per message ID
@@ -150,9 +151,9 @@ export default function ChatPage() {
     }
   }, [isAuthenticated, selectedProjectId]);
 
-  // Stepper animation timer when submitting
+  // Stepper animation timer when evaluating via 3-sub-agent swarm
   useEffect(() => {
-    if (!isSubmitting) {
+    if (!isSubmitting || !isEvaluating) {
       setActiveStep(0);
       return;
     }
@@ -166,7 +167,7 @@ export default function ChatPage() {
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [isSubmitting]);
+  }, [isSubmitting, isEvaluating]);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -176,6 +177,17 @@ export default function ChatPage() {
   const handleSendMessage = async (customText?: string) => {
     const query = (customText || inputValue).trim();
     if (!query || isSubmitting) return;
+
+    const lower = query.toLowerCase();
+    const isExplicitEval = lower.startsWith('/eval ') || lower.startsWith('/evaluate ');
+    const isEvalTrigger = [
+      'evaluate this idea', 'evaluate this feature', 'evaluate my idea',
+      'rate this idea', 'judge this idea', 'should we build', 'should i build',
+      'is it worth building', 'viability rating', 'design an automated', 'i want to rebuild'
+    ].some((t) => lower.includes(t));
+    const willEvaluate = isExplicitEval || isEvalTrigger;
+
+    setIsEvaluating(willEvaluate);
 
     const userMessage: ChatMessage = {
       id: generateClientMessageId('user'),
@@ -196,7 +208,7 @@ export default function ChatPage() {
 
       const response = await api.sendChatMessage({
         message: query,
-        mode: 'auto',
+        mode: isExplicitEval ? 'eval' : 'auto',
         project_id: selectedProjectId || undefined,
         history: historyPayload,
       });
@@ -230,6 +242,7 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsSubmitting(false);
+      setIsEvaluating(false);
     }
   };
 
@@ -311,10 +324,10 @@ export default function ChatPage() {
   };
 
   const starterPrompts = [
-    'Should we build an automated WhatsApp concept import bot for DevCommand?',
-    '⚡ Build an interactive sprint velocity dashboard with OpenUI',
-    '📋 Generate an interactive roadmap & task checklist for user authentication',
-    'Evaluate adding biometric WebAuthn security keys with interactive architecture',
+    '/eval Automated WhatsApp concept import bot with webhook dispatch',
+    'What are my current repository statistics and active features?',
+    '/eval Biometric WebAuthn passkeys with hardware fallback architecture',
+    'How does the multi-tenant Qdrant RAG pipeline isolate vector search?',
   ];
 
   return (
@@ -432,10 +445,10 @@ export default function ChatPage() {
                 <Bot className="w-7 h-7 text-white" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight mb-2">
-                What feature or idea would you like to evaluate?
+                DevCommand Pair Programmer &amp; Idea Evaluator
               </h2>
               <p className="text-xs sm:text-sm text-neutral-500 max-w-lg mb-6 leading-relaxed font-sans">
-                Pitch any feature or ask any codebase question. Our 3 autonomous sub-agents coordinate instantly to research competitors, judge viability, and engineer the blueprint.
+                Chat normally for fast answers and codebase context, or invoke <span className="font-mono font-bold text-neutral-900 bg-neutral-100 px-1.5 py-0.5 rounded border border-neutral-200">/eval &lt;idea&gt;</span> to run the ruthless 3-sub-agent evaluation swarm (Researcher, The Judge &amp; Planner).
               </p>
 
               {/* 3-Pillars Sub-Agent Explainer */}
@@ -861,55 +874,70 @@ export default function ChatPage() {
             })
           )}
 
-          {/* Submitting Stepper Indicator */}
+          {/* Submitting Status / Stepper Indicator */}
           {isSubmitting && (
             <div className="flex items-start space-y-2 animate-fade-in w-full max-w-2xl">
               <div className="bg-white rounded-2xl border border-neutral-200/90 p-5 shadow-sm w-full space-y-3.5">
-                <div className="flex items-center justify-between pb-2.5 border-b border-neutral-100 text-xs font-mono font-bold uppercase">
-                  <div className="flex items-center gap-2 text-neutral-900">
+                {isEvaluating ? (
+                  <>
+                    <div className="flex items-center justify-between pb-2.5 border-b border-neutral-100 text-xs font-mono font-bold uppercase">
+                      <div className="flex items-center gap-2 text-neutral-900">
+                        <Loader2 className="w-4 h-4 animate-spin text-[#0047FF]" />
+                        <span>ORCHESTRATING 3-STAGE EVALUATION SWARM (/eval)</span>
+                      </div>
+                      <span className="text-neutral-400 font-medium">Pipeline Active</span>
+                    </div>
+
+                    {/* Animated 4-Stage Stepper */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px] font-bold uppercase">
+                      <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                        activeStep >= 1 ? 'bg-emerald-50 border-emerald-200 text-emerald-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
+                      }`}>
+                        {activeStep >= 1 ? <Check className="w-3.5 h-3.5 shrink-0 text-emerald-600" /> : <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 shrink-0" />}
+                        <span className="truncate">1. Context</span>
+                      </div>
+
+                      <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                        activeStep >= 2 ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
+                      }`}>
+                        <Search className="w-3.5 h-3.5 shrink-0 text-[#0047FF]" />
+                        <span className="truncate">2. Researcher</span>
+                      </div>
+
+                      <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                        activeStep >= 3 ? 'bg-rose-50 border-rose-200 text-rose-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
+                      }`}>
+                        <Scale className="w-3.5 h-3.5 shrink-0 text-[#FF5533]" />
+                        <span className="truncate">3. Judge</span>
+                      </div>
+
+                      <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                        activeStep >= 4 ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
+                      }`}>
+                        <Layers className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                        <span className="truncate">4. Planner</span>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] font-mono text-neutral-500 pt-0.5">
+                      {activeStep === 1 && 'Querying Qdrant Cloud vectors for user repository codebase context...'}
+                      {activeStep === 2 && 'Market Researcher Sub-Agent is discovering competitors and evaluating feasibility...'}
+                      {activeStep === 3 && 'The Judge Sub-Agent is calculating feature score, brutal critique, and fatal flaws...'}
+                      {activeStep >= 4 && 'Feature Planner Sub-Agent is drafting architecture blueprint and roadmap tasks...'}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 py-1 font-mono text-xs">
                     <Loader2 className="w-4 h-4 animate-spin text-[#0047FF]" />
-                    <span>ORCHESTRATING SUB-AGENTS</span>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-neutral-900 uppercase">DevCommand Copilot</span>
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-neutral-100 text-neutral-600 rounded border border-neutral-200">Conversational Mode</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-500 font-normal">Synthesizing answer with Qdrant Cloud vector context &amp; codebase intelligence...</p>
+                    </div>
                   </div>
-                  <span className="text-neutral-400 font-medium">Pipeline Active</span>
-                </div>
-
-                {/* Animated 4-Stage Stepper */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px] font-bold uppercase">
-                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
-                    activeStep >= 1 ? 'bg-emerald-50 border-emerald-200 text-emerald-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
-                  }`}>
-                    {activeStep >= 1 ? <Check className="w-3.5 h-3.5 shrink-0 text-emerald-600" /> : <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 shrink-0" />}
-                    <span className="truncate">1. Context</span>
-                  </div>
-
-                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
-                    activeStep >= 2 ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
-                  }`}>
-                    <Search className="w-3.5 h-3.5 shrink-0 text-[#0047FF]" />
-                    <span className="truncate">2. Researcher</span>
-                  </div>
-
-                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
-                    activeStep >= 3 ? 'bg-rose-50 border-rose-200 text-rose-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
-                  }`}>
-                    <Scale className="w-3.5 h-3.5 shrink-0 text-[#FF5533]" />
-                    <span className="truncate">3. Judge</span>
-                  </div>
-
-                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
-                    activeStep >= 4 ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
-                  }`}>
-                    <Layers className="w-3.5 h-3.5 shrink-0 text-amber-500" />
-                    <span className="truncate">4. Planner</span>
-                  </div>
-                </div>
-
-                <div className="text-[11px] font-mono text-neutral-500 pt-0.5">
-                  {activeStep === 1 && 'Querying Qdrant Cloud vectors for user repository codebase context...'}
-                  {activeStep === 2 && 'Market Researcher Sub-Agent is discovering competitors and evaluating feasibility...'}
-                  {activeStep === 3 && 'The Judge Sub-Agent is calculating feature score, brutal critique, and fatal flaws...'}
-                  {activeStep >= 4 && 'Feature Planner Sub-Agent is drafting architecture blueprint and roadmap tasks...'}
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -919,20 +947,52 @@ export default function ChatPage() {
 
         {/* Prompt Input Box */}
         <div className="bg-white border border-neutral-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow space-y-3">
-          {/* Quick Prompts Row */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-            <span className="text-[10px] font-mono text-neutral-500 uppercase font-bold shrink-0 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-[#0047FF]" /> Quick Ideas:
-            </span>
-            {starterPrompts.map((prompt, idx) => (
+          {/* Quick Prompts & Skills Row */}
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
-                key={idx}
-                onClick={() => setInputValue(prompt)}
-                className="px-3 py-1 bg-neutral-100 hover:bg-[#DFFF4F]/70 text-neutral-700 hover:text-black rounded-full border border-neutral-200/70 text-[11px] font-mono font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer"
+                type="button"
+                onClick={() => {
+                  setInputValue((prev) => {
+                    const trimmed = prev.trim();
+                    if (trimmed.startsWith('/eval ')) {
+                      return trimmed.replace(/^\/eval\s+/, '');
+                    } else if (trimmed.startsWith('/eval')) {
+                      return '';
+                    }
+                    return trimmed ? `/eval ${trimmed}` : '/eval ';
+                  });
+                  textareaRef.current?.focus();
+                }}
+                className={`px-3 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                  inputValue.trim().startsWith('/eval')
+                    ? 'bg-neutral-900 text-[#DFFF4F] border-neutral-900 ring-2 ring-neutral-900/10'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+                }`}
+                title="Toggle /eval skill: 3-subagent evaluation pipeline (Researcher + Judge + Planner)"
               >
-                {prompt.length > 50 ? `${prompt.slice(0, 50)}...` : prompt}
+                <Scale className="w-3.5 h-3.5 text-[#FF5533]" />
+                <span>Skill: /eval</span>
+                {inputValue.trim().startsWith('/eval') && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                )}
               </button>
-            ))}
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
+              <span className="text-[10px] font-mono text-neutral-500 uppercase font-bold shrink-0 flex items-center gap-1">
+                <Zap className="w-3 h-3 text-[#0047FF]" /> Starters:
+              </span>
+              {starterPrompts.map((prompt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setInputValue(prompt)}
+                  className="px-3 py-1 bg-neutral-100 hover:bg-[#DFFF4F]/70 text-neutral-700 hover:text-black rounded-full border border-neutral-200/70 text-[11px] font-mono font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer"
+                >
+                  {prompt.length > 45 ? `${prompt.slice(0, 45)}...` : prompt}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Text Area & Submit */}
@@ -943,7 +1003,7 @@ export default function ChatPage() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Pitch a feature idea, ask about competitors, or evaluate an architectural change..."
+              placeholder="Ask anything, or use /eval <idea> to activate the 3-sub-agent evaluation swarm..."
               className="flex-1 bg-neutral-50/70 border border-neutral-200/90 rounded-xl text-neutral-900 placeholder-neutral-400 text-sm font-sans p-3.5 outline-none focus:bg-white focus:border-[#0047FF] focus:ring-2 focus:ring-[#0047FF]/10 transition-all resize-none leading-relaxed"
             />
             <button

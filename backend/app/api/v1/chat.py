@@ -21,7 +21,7 @@ router = APIRouter(prefix="/chat", tags=["Copilot & RAG"])
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="User prompt or question")
-    mode: str = Field(default="planner", description="'planner' | 'researcher' | 'judge'")
+    mode: str = Field(default="auto", description="'auto' | 'eval' | 'chat' | 'openui'")
     project_id: Optional[UUID] = Field(default=None, description="Optional project context scope")
     history: Optional[List[Dict[str, str]]] = Field(default=None, description="Chat history")
 

@@ -105,33 +105,74 @@ class CopilotService:
             )
 
     @classmethod
+    def orchestrate_intent(cls, message: str, mode: str = "auto") -> Tuple[bool, str]:
+        """
+        Orchestrator that determines whether to activate the intensive 3-stage evaluation pipeline
+        (Market Researcher + The Judge + Feature Planner) or direct conversational copilot.
+        
+        Returns:
+            Tuple[is_eval_pipeline: bool, clean_message: str]
+        """
+        trimmed = message.strip()
+        lower = trimmed.lower()
+
+        # 1. Explicit /eval or /evaluate skill invocation
+        if lower.startswith("/eval "):
+            return True, trimmed[6:].strip()
+        if lower.startswith("/evaluate "):
+            return True, trimmed[10:].strip()
+        if lower in ["/eval", "/evaluate"]:
+            return True, "Evaluate the current project roadmap and advise next high-impact initiatives."
+        if mode in ["eval", "pipeline"]:
+            return True, trimmed
+
+        # Explicit conversational overrides
+        if mode in ["chat", "conversational", "general", "openui"]:
+            return False, trimmed
+
+        # 2. Informational, debugging, conversational, status, or codebase inspection queries
+        # These must NEVER trigger the 3-subagent pipeline.
+        informational_patterns = [
+            "what are my stats", "my stats", "stats", "status", "who are you", "what can you do",
+            "hello", "hi", "hey", "good morning", "good evening", "howdy",
+            "show me", "list my", "what repos", "what projects", "which projects",
+            "explain", "help me with", "how do i", "how to", "how does", "why is",
+            "fix", "debug", "error", "failing", "test coverage", "commit", "push",
+            "where is", "where are", "tell me about", "summarize"
+        ]
+        if any(lower.startswith(pat) or lower == pat for pat in informational_patterns):
+            return False, trimmed
+
+        # 3. Explicit evaluation intents (asking for judgment, rating, or critique of a feature idea)
+        eval_triggers = [
+            "evaluate this idea", "evaluate this feature", "evaluate my idea", "evaluate proposal",
+            "evaluate the proposal", "rate this idea", "rate my idea", "rate this proposal",
+            "judge this idea", "judge this feature", "judge my proposal",
+            "is it worth building", "is this worth building", "should we build", "should i build",
+            "viability rating for", "critique this idea", "critique my idea", "critique this feature",
+            "pros and cons of building"
+        ]
+        if any(t in lower for t in eval_triggers):
+            return True, trimmed
+
+        # 4. Proactive proposal triggers: only if explicitly proposing a new system/architecture
+        # e.g., "Design an automated Stripe subscription billing system with webhooks",
+        # "I want to rebuild Twitter from scratch on a blockchain using 15 microservices"
+        proposal_prefixes = [
+            "design an automated", "design a", "i want to rebuild", "rebuild ",
+            "propose an architecture", "build a new system", "architect a"
+        ]
+        if any(lower.startswith(p) for p in proposal_prefixes):
+            return True, trimmed
+
+        # By default, keep copilot fast, responsive, and conversational
+        return False, trimmed
+
+    @classmethod
     def classify_intent(cls, message: str) -> bool:
-        """
-        Determines whether the message is a feature pitch / architectural improvement
-        (which triggers the 3-sub-agent pipeline), or a general question / chat query.
-        """
-        lower = message.lower().strip()
-
-        # Explicit feature-planning triggers
-        feature_keywords = [
-            "build", "add", "feature", "implement", "create", "idea", "should we", "should i",
-            "plan", "suggest", "propose", "system", "redesign", "integrate", "develop",
-            "make a", "new feature", "functionality", "enhance", "prototype", "evaluate",
-            "judge", "research", "competitor", "is it good", "worth building", "rate this"
-        ]
-
-        if any(kw in lower for kw in feature_keywords):
-            return True
-
-        # Purely conversational or informational queries
-        general_intents = [
-            "what is", "who are", "how does", "explain", "help me with", "show me",
-            "hello", "hi", "hey", "status", "list my", "what repos", "what projects"
-        ]
-        if any(lower.startswith(g) for g in general_intents) and not any(kw in lower for kw in ["feature", "idea", "build"]):
-            return False
-
-        return len(lower.split()) >= 4
+        """Backward-compatible wrapper for orchestrator intent classification."""
+        is_pitch, _ = cls.orchestrate_intent(message)
+        return is_pitch
 
     @classmethod
     async def _execute_cascade_llm(
@@ -201,11 +242,11 @@ class CopilotService:
         Main entry point for unified chat. Dispatches sub-agents for feature pitches,
         or handles general queries with Qdrant RAG context.
         """
-        is_pitch = cls.classify_intent(message) or mode in ["planner", "researcher", "judge"]
+        is_pitch, eval_message = cls.orchestrate_intent(message, mode)
 
         # 1. RAG Vector Search in Qdrant Cloud
         rag_hits = RAGService.search_knowledge(
-            query=message,
+            query=eval_message if is_pitch else message,
             user_id=user_id,
             project_id=project_id,
             limit=4,
@@ -238,7 +279,7 @@ class CopilotService:
 
             # Sub-Agent 1: Market Researcher
             researcher_prompt = (
-                f"Feature Proposal:\n{message}\n"
+                f"Feature Proposal:\n{eval_message}\n"
                 f"{rag_prompt_text}\n"
                 "Research competitor benchmarks, technical feasibility, and real-world failure modes."
             )
@@ -246,13 +287,13 @@ class CopilotService:
                 cls.get_system_prompt("researcher"),
                 researcher_prompt,
                 is_json=False,
-                fallback_fn=lambda: cls._heuristic_fallback(message, "researcher", citations)
+                fallback_fn=lambda: cls._heuristic_fallback(eval_message, "researcher", citations)
             )
             tier_tracker.append(t1)
 
             # Sub-Agent 2: The Judge (Injected with Researcher Findings!)
             judge_prompt = (
-                f"Feature Proposal:\n{message}\n"
+                f"Feature Proposal:\n{eval_message}\n"
                 f"Market Researcher Sub-Agent Intelligence:\n{researcher_content}\n"
                 f"{rag_prompt_text}\n"
                 "Deliver your ruthless judgment in strict JSON with score, verdict_signal, brutal_critique, failure_modes, what_to_build_instead, and summary_verdict."
@@ -261,14 +302,14 @@ class CopilotService:
                 cls.get_system_prompt("judge"),
                 judge_prompt,
                 is_json=True,
-                fallback_fn=lambda: cls._heuristic_fallback(message, "judge", citations)
+                fallback_fn=lambda: cls._heuristic_fallback(eval_message, "judge", citations)
             )
             tier_tracker.append(t2)
             judge_data = cls._parse_judge_json(judge_raw)
 
             # Sub-Agent 3: Feature Planner (Drafts Technical Architecture)
             planner_prompt = (
-                f"Feature Proposal:\n{message}\n"
+                f"Feature Proposal:\n{eval_message}\n"
                 f"Judge's Initial Rating: {judge_data.get('score', 50)}/100 ({judge_data.get('verdict_signal', 'PROCEED_WITH_CAUTION')})\n"
                 f"{rag_prompt_text}\n"
                 "Draft a production-ready technical architecture, API contracts, schema, and actionable checklist."
@@ -277,10 +318,10 @@ class CopilotService:
                 cls.get_system_prompt("planner"),
                 planner_prompt,
                 is_json=False,
-                fallback_fn=lambda: cls._heuristic_fallback(message, "planner", citations)
+                fallback_fn=lambda: cls._heuristic_fallback(eval_message, "planner", citations)
             )
             tier_tracker.append(t3)
-            suggested_features = cls._extract_planner_features(planner_content, message)
+            suggested_features = cls._extract_planner_features(planner_content, eval_message)
 
             # Smart Pivot: If The Judge gave DO_NOT_BUILD, also generate the recommended alternative blueprint!
             pivot_plan = None
@@ -289,7 +330,7 @@ class CopilotService:
                 alt_idea = judge_data["what_to_build_instead"]
                 alt_prompt = (
                     f"Recommended Alternative by The Judge:\n{alt_idea}\n"
-                    f"Original Pitch: {message}\n"
+                    f"Original Pitch: {eval_message}\n"
                     f"{rag_prompt_text}\n"
                     "Draft an ultra-lean MVP implementation blueprint for this recommended alternative."
                 )
@@ -321,7 +362,7 @@ class CopilotService:
             if settings.OPENUI_ENABLED:
                 try:
                     openui_prompt = (
-                        f"Create an interactive OpenUI dashboard in openui-lang for the feature proposal: '{message[:70]}'.\n"
+                        f"Create an interactive OpenUI dashboard in openui-lang for the feature proposal: '{eval_message[:70]}'.\n"
                         f"Verdict: Score {score}/100, Signal {signal}.\n"
                         f"Summary: {judge_data.get('summary_verdict', '')[:120]}.\n"
                         f"Tasks: {[f.get('title') for f in suggested_features[:3]]}.\n"
@@ -333,7 +374,7 @@ class CopilotService:
                         is_json=False,
                         is_openui=True,
                         fallback_fn=lambda: cls.generate_fallback_openui(
-                            title=message[:50],
+                            title=eval_message[:50],
                             score=score,
                             signal=signal,
                             critique=judge_data.get("summary_verdict", ""),
@@ -344,7 +385,7 @@ class CopilotService:
                     openui_code = cls._clean_openui_code(raw_oui)
                     if not cls._is_valid_openui(openui_code):
                         openui_code = cls.generate_fallback_openui(
-                            title=message[:50],
+                            title=eval_message[:50],
                             score=score,
                             signal=signal,
                             critique=judge_data.get("summary_verdict", ""),
@@ -354,7 +395,7 @@ class CopilotService:
                 except Exception as oui_e:
                     logger.warning(f"Failed to generate OpenUI DSL block: {oui_e}")
                     openui_code = cls.generate_fallback_openui(
-                        title=message[:50],
+                        title=eval_message[:50],
                         score=score,
                         signal=signal,
                         critique=judge_data.get("summary_verdict", ""),
