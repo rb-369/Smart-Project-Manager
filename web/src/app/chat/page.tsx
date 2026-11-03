@@ -266,34 +266,34 @@ export default function ChatPage() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-6 sm:pt-8 pb-12 flex-1 flex flex-col relative z-10">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-4 sm:pt-6 pb-12 flex-1 flex flex-col relative z-10">
         
         {/* Top Control Bar: Title + Telemetry + Project Scope */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b-2 border-black">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3.5 border-b border-neutral-200/90">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="w-2.5 h-2.5 bg-[#0047FF] border border-black inline-block" />
-              <span className="text-[11px] font-mono text-neutral-700 uppercase tracking-widest font-black">
+              <span className="w-2 h-2 rounded-full bg-[#0047FF] animate-pulse inline-block" />
+              <span className="text-[11px] font-mono text-neutral-500 uppercase tracking-widest font-semibold">
                 DEVCOMMAND AUTONOMOUS COPILOT &bull; MULTI-AGENT SWARM
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-black uppercase tracking-tight flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 uppercase tracking-tight flex items-center gap-3">
               <span>Single Copilot &amp; Sub-Agents</span>
             </h1>
-            <p className="text-xs text-neutral-600 mt-1 font-mono">
-              Single unified interface coordinating <strong className="text-[#0047FF] uppercase">Market Researcher</strong>, <strong className="text-[#FF5533] uppercase">The Judge</strong>, and <strong className="text-black uppercase">Feature Planner</strong> sub-agents with Qdrant Cloud RAG.
+            <p className="text-xs text-neutral-500 mt-1 font-mono">
+              Single unified interface coordinating <strong className="text-[#0047FF] uppercase">Market Researcher</strong>, <strong className="text-[#FF5533] uppercase">The Judge</strong>, and <strong className="text-neutral-900 uppercase">Feature Planner</strong> sub-agents with Qdrant Cloud RAG.
             </p>
           </div>
 
           {/* Controls: RAG Status, Project Scope, Clear History */}
           <div className="flex items-center gap-2.5 flex-wrap">
             {/* Project Scope Selector */}
-            <div className="flex items-center gap-1.5 bg-white border-2 border-black px-3 py-1.5 text-xs font-mono font-black shadow-[2px_2px_0px_#000000]">
+            <div className="flex items-center gap-2 bg-white border border-neutral-200/90 rounded-xl px-3 py-1.5 text-xs font-mono font-bold shadow-xs hover:border-neutral-300 transition-all">
               <FolderGit2 className="w-3.5 h-3.5 text-[#0047FF]" />
               <select
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="bg-transparent text-black uppercase outline-none cursor-pointer text-xs font-black"
+                className="bg-transparent text-neutral-900 uppercase outline-none cursor-pointer text-xs font-bold"
               >
                 <option value="">🌐 ALL REPOSITORIES</option>
                 {projects.map((p) => (
@@ -305,15 +305,15 @@ export default function ChatPage() {
             </div>
 
             {/* Qdrant Cloud Badge */}
-            <div className={`px-3 py-1.5 border-2 border-black flex items-center gap-2 text-xs font-mono font-black uppercase shadow-[2px_2px_0px_#000000] ${
+            <div className={`px-3 py-1.5 rounded-xl border flex items-center gap-2 text-xs font-mono font-bold uppercase shadow-xs ${
               qdrantStatus?.connected
-                ? 'bg-[#BBF7D0] text-black'
-                : 'bg-amber-200 text-black'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-amber-50 border-amber-200 text-amber-800'
             }`}>
               <Database className="w-3.5 h-3.5" />
               <span>{qdrantStatus?.connected ? 'QDRANT: ONLINE' : 'CONNECTING'}</span>
               {qdrantStatus?.points_count !== undefined && (
-                <span className="px-1.5 py-0.2 bg-black text-[#DFFF4F] text-[10px]">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px]">
                   {qdrantStatus.points_count} PTS
                 </span>
               )}
@@ -323,10 +323,10 @@ export default function ChatPage() {
             <button
               onClick={handleSyncKnowledge}
               disabled={isSyncingKnowledge}
-              className="px-3.5 py-1.5 bg-[#FAF7EE] hover:bg-[#DFFF4F] border-2 border-black text-black text-xs font-mono font-black uppercase flex items-center gap-1.5 transition shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-1.5 bg-white hover:bg-neutral-50 border border-neutral-200 text-neutral-800 text-xs font-mono font-bold uppercase rounded-xl flex items-center gap-1.5 transition shadow-xs active:translate-y-0.5 cursor-pointer disabled:opacity-50"
               title="Index all projects and features into Qdrant Cloud"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingKnowledge ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingKnowledge ? 'animate-spin text-[#0047FF]' : 'text-neutral-600'}`} />
               <span>{isSyncingKnowledge ? 'INDEXING...' : 'SYNC'}</span>
             </button>
 
@@ -335,7 +335,7 @@ export default function ChatPage() {
               <button
                 onClick={handleClearHistory}
                 disabled={isClearingHistory}
-                className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 border-2 border-black text-rose-800 text-xs font-mono font-black uppercase flex items-center gap-1.5 transition shadow-[2px_2px_0px_#000000] cursor-pointer"
+                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-mono font-bold uppercase rounded-xl flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                 title="Clear cloud chat history in MongoDB Atlas"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -344,7 +344,7 @@ export default function ChatPage() {
             )}
 
             {syncMessage && (
-              <span className="text-xs font-mono text-black font-black uppercase px-2 py-1 bg-[#DFFF4F] border-2 border-black animate-fade-in shadow-[2px_2px_0px_#000000]">
+              <span className="text-xs font-mono text-emerald-800 font-bold uppercase px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-xl animate-fade-in shadow-xs">
                 {syncMessage}
               </span>
             )}
@@ -352,32 +352,62 @@ export default function ChatPage() {
         </div>
 
         {/* Conversation Box (Scrollable) */}
-        <div className="flex-1 bg-white border-2 border-black p-4 sm:p-6 my-4 overflow-y-auto min-h-[460px] max-h-[640px] space-y-4 shadow-[6px_6px_0px_#000000]">
+        <div className="flex-1 bg-white border border-neutral-200/90 rounded-2xl p-4 sm:p-6 my-4 overflow-y-auto min-h-[480px] max-h-[660px] space-y-5 shadow-xs">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center py-10 px-4">
-              <div className="w-16 h-16 bg-[#0047FF] border-2 border-black flex items-center justify-center shadow-[4px_4px_0px_#000000] mb-4 p-3">
-                <Bot className="w-8 h-8 text-[#DFFF4F]" />
+            <div className="h-full flex flex-col items-center justify-center text-center py-8 px-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0047FF] to-sky-400 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4 ring-4 ring-blue-50">
+                <Bot className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-xl font-black text-black uppercase tracking-tight mb-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight mb-2">
                 What feature or idea would you like to evaluate?
               </h2>
-              <p className="text-xs text-neutral-600 max-w-md mb-6 leading-relaxed font-mono">
-                Pitch any feature or ask any codebase question. When you suggest an idea, our 3 sub-agents automatically coordinate to research competitors, judge viability, and engineer the blueprint.
+              <p className="text-xs sm:text-sm text-neutral-500 max-w-lg mb-6 leading-relaxed font-sans">
+                Pitch any feature or ask any codebase question. Our 3 autonomous sub-agents coordinate instantly to research competitors, judge viability, and engineer the blueprint.
               </p>
 
-              {/* Starter Prompt Cards */}
-              <div className="w-full max-w-2xl grid grid-cols-1 gap-2 text-left">
-                <div className="text-[11px] font-mono text-black uppercase font-black tracking-wider px-1">
-                  Try pitching an idea to the sub-agent pipeline:
+              {/* 3-Pillars Sub-Agent Explainer */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-2xl mb-6 text-left">
+                <div className="rounded-xl p-3 bg-neutral-50/80 border border-neutral-200/80 space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#0047FF] uppercase">
+                    <Search className="w-3.5 h-3.5" />
+                    <span>Researcher</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500 leading-normal">
+                    Discovers competitors, market gaps, and ecosystem precedents.
+                  </p>
                 </div>
+
+                <div className="rounded-xl p-3 bg-neutral-50/80 border border-neutral-200/80 space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#FF5533] uppercase">
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>The Judge</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500 leading-normal">
+                    Scores viability (0-100), exposes fatal flaws, and advises pivots.
+                  </p>
+                </div>
+
+                <div className="rounded-xl p-3 bg-neutral-50/80 border border-neutral-200/80 space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-neutral-900 uppercase">
+                    <Layers className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Planner</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500 leading-normal">
+                    Builds actionable architectures with 1-click roadmap tasks.
+                  </p>
+                </div>
+              </div>
+
+              {/* Starter Prompt Cards */}
+              <div className="w-full max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left">
                 {starterPrompts.map((prompt, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(prompt)}
-                    className="p-3 bg-[#FAF7EE] hover:bg-[#DFFF4F] border-2 border-black text-xs text-black font-mono font-bold flex items-center justify-between group transition-all shadow-[2px_2px_0px_#000000] cursor-pointer"
+                    className="p-3.5 rounded-xl bg-neutral-50/70 hover:bg-neutral-100 border border-neutral-200/80 text-xs text-neutral-800 font-sans font-medium flex items-center justify-between group transition-all shadow-xs hover:border-neutral-300 hover:-translate-y-0.5 cursor-pointer"
                   >
-                    <span>{prompt}</span>
-                    <ChevronRight className="w-4 h-4 text-black group-hover:translate-x-1 transition-all" />
+                    <span className="line-clamp-2 leading-relaxed">{prompt}</span>
+                    <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:text-[#0047FF] group-hover:translate-x-1 shrink-0 ml-2 transition-all" />
                   </button>
                 ))}
               </div>
@@ -392,27 +422,27 @@ export default function ChatPage() {
               return (
                 <div
                   key={msg.id}
-                  className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-2`}
+                  className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-1.5`}
                 >
                   {/* Header label */}
-                  <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-600 font-black uppercase px-1">
-                    <span>{msg.role === 'user' ? 'YOU' : (hasSubAgents ? 'DEVCOMMAND COPILOT (SUB-AGENT PIPELINE)' : 'DEVCOMMAND AI')}</span>
+                  <div className="flex items-center gap-2 text-[11px] font-mono text-neutral-400 font-medium px-1">
+                    <span>{msg.role === 'user' ? 'YOU' : (hasSubAgents ? 'COPILOT SWARM' : 'DEVCOMMAND AI')}</span>
                     <span>&bull;</span>
                     <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    {msg.tier_used && <span className="text-[#0047FF]">[{msg.tier_used}]</span>}
+                    {msg.tier_used && <span className="text-[#0047FF] font-semibold">[{msg.tier_used}]</span>}
                   </div>
 
                   {/* Message Body */}
                   <div
-                    className={`max-w-4xl p-5 text-sm leading-relaxed border-2 border-black ${
+                    className={`${
                       msg.role === 'user'
-                        ? 'bg-[#0047FF] text-white shadow-[4px_4px_0px_#000000]'
-                        : 'bg-[#FAF7EE] text-black shadow-[6px_6px_0px_#000000] w-full'
+                        ? 'rounded-2xl rounded-tr-xs bg-neutral-900 text-white p-4 sm:p-5 shadow-xs max-w-2xl border border-neutral-800'
+                        : 'rounded-2xl rounded-tl-xs bg-neutral-50/70 border border-neutral-200/80 p-5 sm:p-6 w-full max-w-4xl space-y-4 shadow-xs'
                     }`}
                   >
                     {/* User message */}
                     {msg.role === 'user' && (
-                      <div className="whitespace-pre-wrap font-sans text-sm font-medium">
+                      <div className="whitespace-pre-wrap font-sans text-sm font-medium leading-relaxed">
                         {msg.content}
                       </div>
                     )}
@@ -421,27 +451,27 @@ export default function ChatPage() {
                     {msg.role === 'assistant' && (
                       <div className="space-y-4">
                         {/* Copy / Actions Bar */}
-                        <div className="flex items-center justify-between pb-3 border-b-2 border-black">
+                        <div className="flex items-center justify-between pb-3 border-b border-neutral-200/80">
                           <div className="flex items-center gap-2">
                             {hasSubAgents ? (
-                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-black uppercase bg-[#DFFF4F] text-black border border-black">
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-[#DFFF4F]/90 text-neutral-900 border border-amber-300 rounded-full">
                                 <Bot className="w-3.5 h-3.5 text-black" />
                                 <span>3 Sub-Agents Executed</span>
                               </div>
                             ) : (
-                              <div className="px-2.5 py-0.5 text-[11px] font-mono font-black uppercase bg-white text-black border border-black">
+                              <div className="px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-white text-neutral-700 border border-neutral-200 rounded-full">
                                 Conversational Copilot
                               </div>
                             )}
                           </div>
                           <button
                             onClick={() => copyToClipboard(msg.content, msg.id)}
-                            className="text-xs text-neutral-600 hover:text-black flex items-center gap-1 font-mono font-bold cursor-pointer"
+                            className="text-xs text-neutral-500 hover:text-neutral-900 flex items-center gap-1 font-mono font-medium px-2 py-1 rounded-lg hover:bg-white border border-transparent hover:border-neutral-200 transition cursor-pointer"
                           >
                             {copiedId === msg.id ? (
                               <>
                                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                <span className="text-emerald-700 font-black">Copied</span>
+                                <span className="text-emerald-700 font-bold">Copied</span>
                               </>
                             ) : (
                               <>
@@ -456,13 +486,13 @@ export default function ChatPage() {
                         {hasSubAgents && subData.judge && (
                           <div className="space-y-4">
                             {/* 1. Executive Verdict Banner */}
-                            <div className="p-4 bg-black text-white border-2 border-black shadow-[3px_3px_0px_#000000] space-y-3">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-700">
+                            <div className="p-4 sm:p-5 rounded-xl bg-neutral-900 text-white border border-neutral-800 shadow-sm space-y-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-800">
                                 <div>
-                                  <div className="text-[10px] font-mono text-[#DFFF4F] uppercase tracking-widest font-black">
+                                  <div className="text-[10px] font-mono text-[#DFFF4F] uppercase tracking-widest font-bold">
                                     THE JUDGE SUB-AGENT VERDICT
                                   </div>
-                                  <div className="text-base font-black tracking-tight mt-0.5 text-white uppercase">
+                                  <div className="text-base font-bold tracking-tight mt-0.5 text-white uppercase">
                                     {subData.judge.verdict_title || 'Feature Viability Rating'}
                                   </div>
                                 </div>
@@ -470,16 +500,16 @@ export default function ChatPage() {
                                 {/* Score Gauge & Signal Badge */}
                                 <div className="flex items-center gap-3 shrink-0">
                                   <div className="text-right font-mono">
-                                    <span className="text-2xl font-black text-white">{subData.judge.score}</span>
+                                    <span className="text-2xl font-bold text-white num-tabular">{subData.judge.score}</span>
                                     <span className="text-xs text-neutral-400">/100</span>
                                   </div>
                                   <div
-                                    className={`px-3 py-1.5 font-black text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 border border-black ${
+                                    className={`px-3 py-1 font-bold text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 rounded-full ${
                                       subData.judge.verdict_signal === 'BUILD_NOW'
-                                        ? 'bg-[#DFFF4F] text-black'
+                                        ? 'bg-emerald-500 text-white ring-2 ring-emerald-400/20'
                                         : subData.judge.verdict_signal === 'PROCEED_WITH_CAUTION'
                                         ? 'bg-amber-400 text-black'
-                                        : 'bg-[#FF5533] text-black'
+                                        : 'bg-[#FF5533] text-white'
                                     }`}
                                   >
                                     <span>{subData.judge.verdict_signal.replace(/_/g, ' ')}</span>
@@ -487,49 +517,49 @@ export default function ChatPage() {
                                 </div>
                               </div>
 
-                              <p className="text-xs text-neutral-200 leading-relaxed font-mono">
+                              <p className="text-xs text-neutral-300 leading-relaxed font-sans">
                                 {subData.judge.summary_verdict}
                               </p>
                             </div>
 
                             {/* 2. Sub-Agent Interactive Tabs */}
-                            <div className="flex items-center gap-2 border-b-2 border-black pb-2">
+                            <div className="flex items-center gap-1 p-1 bg-neutral-200/60 rounded-xl border border-neutral-300/50">
                               {/* Tab 1: The Judge */}
                               <button
                                 onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'judge' }))}
-                                className={`px-3 py-1.5 text-xs font-black font-mono uppercase flex items-center gap-1.5 border-2 border-black cursor-pointer transition-all ${
+                                className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
                                   activeTab === 'judge'
-                                    ? 'bg-[#FF5533] text-black shadow-[2px_2px_0px_#000000]'
-                                    : 'bg-white text-black hover:bg-neutral-100'
+                                    ? 'bg-white text-neutral-900 shadow-xs'
+                                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/50'
                                 }`}
                               >
-                                <Scale className="w-3.5 h-3.5" />
+                                <Scale className="w-3.5 h-3.5 text-[#FF5533]" />
                                 <span>1. The Judge</span>
                               </button>
 
                               {/* Tab 2: Market Researcher */}
                               <button
                                 onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'researcher' }))}
-                                className={`px-3 py-1.5 text-xs font-black font-mono uppercase flex items-center gap-1.5 border-2 border-black cursor-pointer transition-all ${
+                                className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
                                   activeTab === 'researcher'
-                                    ? 'bg-[#0047FF] text-white shadow-[2px_2px_0px_#000000]'
-                                    : 'bg-white text-black hover:bg-neutral-100'
+                                    ? 'bg-white text-neutral-900 shadow-xs'
+                                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/50'
                                 }`}
                               >
-                                <Search className="w-3.5 h-3.5" />
+                                <Search className="w-3.5 h-3.5 text-[#0047FF]" />
                                 <span>2. Researcher</span>
                               </button>
 
                               {/* Tab 3: Feature Planner */}
                               <button
                                 onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'planner' }))}
-                                className={`px-3 py-1.5 text-xs font-black font-mono uppercase flex items-center gap-1.5 border-2 border-black cursor-pointer transition-all ${
+                                className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
                                   activeTab === 'planner'
-                                    ? 'bg-[#DFFF4F] text-black shadow-[2px_2px_0px_#000000]'
-                                    : 'bg-white text-black hover:bg-neutral-100'
+                                    ? 'bg-white text-neutral-900 shadow-xs'
+                                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/50'
                                 }`}
                               >
-                                <Layers className="w-3.5 h-3.5" />
+                                <Layers className="w-3.5 h-3.5 text-amber-500" />
                                 <span>3. Feature Planner</span>
                               </button>
                             </div>
@@ -537,11 +567,11 @@ export default function ChatPage() {
                             {/* Tab Content 1: The Judge */}
                             {activeTab === 'judge' && (
                               <div className="space-y-3 animate-fade-in text-xs">
-                                <div className="p-3 bg-white border-2 border-black space-y-1.5 shadow-[2px_2px_0px_#000000]">
-                                  <div className="font-mono text-black uppercase tracking-wider text-[11px] font-black">
+                                <div className="p-4 bg-white rounded-xl border border-neutral-200/90 space-y-1.5 shadow-xs">
+                                  <div className="font-mono text-neutral-800 uppercase tracking-wider text-[11px] font-bold">
                                     Unvarnished Assessment
                                   </div>
-                                  <p className="text-neutral-800 leading-relaxed font-mono">
+                                  <p className="text-neutral-700 leading-relaxed font-sans text-xs">
                                     {subData.judge.brutal_critique}
                                   </p>
                                 </div>
@@ -549,15 +579,15 @@ export default function ChatPage() {
                                 {/* Strengths vs Fatal Flaws */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                   {/* Fatal Flaws */}
-                                  <div className="p-3 bg-rose-50 border-2 border-black space-y-1.5 shadow-[2px_2px_0px_#000000]">
-                                    <div className="font-black text-rose-800 flex items-center gap-1.5 font-mono text-[11px] uppercase">
+                                  <div className="p-4 bg-rose-50/70 rounded-xl border border-rose-200/80 space-y-2 shadow-xs">
+                                    <div className="font-bold text-rose-800 flex items-center gap-1.5 font-mono text-[11px] uppercase">
                                       <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                                       <span>Fatal Flaws &amp; Risks</span>
                                     </div>
-                                    <ul className="space-y-1 text-black font-mono text-[11px]">
+                                    <ul className="space-y-1.5 text-neutral-800 font-sans text-xs">
                                       {(subData.judge.failure_modes || []).map((flaw, i) => (
                                         <li key={i} className="flex items-start gap-1.5">
-                                          <span className="text-rose-600 font-black">&bull;</span>
+                                          <span className="text-rose-500 font-bold">&bull;</span>
                                           <span>{flaw}</span>
                                         </li>
                                       ))}
@@ -565,12 +595,12 @@ export default function ChatPage() {
                                   </div>
 
                                   {/* What To Build Instead */}
-                                  <div className="p-3 bg-[#FAF7EE] border-2 border-black space-y-1.5 shadow-[2px_2px_0px_#000000]">
-                                    <div className="font-black text-[#0047FF] flex items-center gap-1.5 font-mono text-[11px] uppercase">
+                                  <div className="p-4 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-2 shadow-xs">
+                                    <div className="font-bold text-[#0047FF] flex items-center gap-1.5 font-mono text-[11px] uppercase">
                                       <Zap className="w-3.5 h-3.5 text-[#0047FF]" />
                                       <span>Smart Alternative Proposal</span>
                                     </div>
-                                    <p className="text-black leading-relaxed font-mono text-[11px]">
+                                    <p className="text-neutral-800 leading-relaxed font-sans text-xs">
                                       {subData.judge.what_to_build_instead || 'Focus on the simplest verifiable MVP slice first.'}
                                     </p>
                                   </div>
@@ -581,7 +611,7 @@ export default function ChatPage() {
                             {/* Tab Content 2: Market Researcher */}
                             {activeTab === 'researcher' && subData.researcher && (
                               <div className="space-y-3 animate-fade-in text-xs">
-                                <div className="p-4 bg-white border-2 border-black leading-relaxed whitespace-pre-wrap font-mono text-black shadow-[2px_2px_0px_#000000]">
+                                <div className="p-5 bg-white rounded-xl border border-neutral-200/90 leading-relaxed whitespace-pre-wrap font-sans text-xs text-neutral-800 shadow-xs">
                                   {subData.researcher.content}
                                 </div>
                               </div>
@@ -591,24 +621,24 @@ export default function ChatPage() {
                             {activeTab === 'planner' && subData.planner && (
                               <div className="space-y-3 animate-fade-in text-xs">
                                 {subData.pivot_plan && (
-                                  <div className="flex items-center gap-2 p-1.5 bg-white border-2 border-black">
+                                  <div className="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-lg border border-neutral-200">
                                     <button
                                       onClick={() => setPlannerSubTabPerMessage((prev) => ({ ...prev, [msg.id]: 'pivot' }))}
-                                      className={`flex-1 py-1 px-2.5 font-black font-mono text-[11px] uppercase flex items-center justify-center gap-1.5 border-2 cursor-pointer transition-all ${
+                                      className={`flex-1 py-1.5 px-3 font-bold font-mono text-[11px] uppercase rounded-md flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                                         plannerSubTab === 'pivot'
-                                          ? 'bg-[#0047FF] text-white border-black shadow-[1px_1px_0px_#000000]'
-                                          : 'border-transparent text-neutral-600 hover:text-black'
+                                          ? 'bg-white text-neutral-900 shadow-xs'
+                                          : 'text-neutral-500 hover:text-neutral-900'
                                       }`}
                                     >
-                                      <Target className="w-3.5 h-3.5" />
+                                      <Target className="w-3.5 h-3.5 text-[#0047FF]" />
                                       <span>Recommended Pivot Plan</span>
                                     </button>
                                     <button
                                       onClick={() => setPlannerSubTabPerMessage((prev) => ({ ...prev, [msg.id]: 'original' }))}
-                                      className={`flex-1 py-1 px-2.5 font-black font-mono text-[11px] uppercase flex items-center justify-center gap-1.5 border-2 cursor-pointer transition-all ${
+                                      className={`flex-1 py-1.5 px-3 font-bold font-mono text-[11px] uppercase rounded-md flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
                                         plannerSubTab === 'original'
-                                          ? 'bg-black text-[#DFFF4F] border-black shadow-[1px_1px_0px_#000000]'
-                                          : 'border-transparent text-neutral-600 hover:text-black'
+                                          ? 'bg-white text-neutral-900 shadow-xs'
+                                          : 'text-neutral-500 hover:text-neutral-900'
                                       }`}
                                     >
                                       <span>Original Pitch Draft</span>
@@ -617,7 +647,7 @@ export default function ChatPage() {
                                 )}
 
                                 {/* Blueprint Content */}
-                                <div className="p-4 bg-white border-2 border-black leading-relaxed whitespace-pre-wrap font-mono text-black shadow-[2px_2px_0px_#000000]">
+                                <div className="p-5 bg-white rounded-xl border border-neutral-200/90 leading-relaxed whitespace-pre-wrap font-mono text-xs text-neutral-800 shadow-xs">
                                   {subData.pivot_plan && plannerSubTab === 'pivot'
                                     ? subData.pivot_plan.content
                                     : subData.planner.content}
@@ -628,7 +658,7 @@ export default function ChatPage() {
                                   ? subData.pivot_plan.suggested_features
                                   : subData.planner.suggested_features) || []).length > 0 && (
                                   <div className="pt-2 space-y-2">
-                                    <div className="font-mono font-black text-black uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                                    <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                                       <Layers className="w-3.5 h-3.5 text-[#0047FF]" />
                                       <span>1-Click Add to Project Roadmap</span>
                                     </div>
@@ -642,26 +672,26 @@ export default function ChatPage() {
                                         return (
                                           <div
                                             key={idx}
-                                            className="p-3 bg-white border-2 border-black flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_#000000]"
+                                            className="p-3.5 bg-white rounded-xl border border-neutral-200/90 hover:border-neutral-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs transition-all"
                                           >
-                                            <div className="space-y-0.5">
+                                            <div className="space-y-1">
                                               <div className="flex items-center gap-2">
-                                                <span className="px-1.5 py-0.5 text-[10px] font-mono font-black bg-black text-[#DFFF4F] border border-black uppercase">
+                                                <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-neutral-900 text-white rounded-md uppercase">
                                                   {feat.priority}
                                                 </span>
-                                                <span className="font-black text-black text-xs">{feat.title}</span>
+                                                <span className="font-bold text-neutral-900 text-xs">{feat.title}</span>
                                               </div>
-                                              <p className="text-[11px] text-neutral-600 leading-normal font-mono">
+                                              <p className="text-[11px] text-neutral-500 leading-normal font-mono">
                                                 {feat.description}
                                               </p>
                                             </div>
                                             <button
                                               onClick={() => handleAddSuggestedFeature(feat, itemKey)}
                                               disabled={isAdded}
-                                              className={`px-3 py-1.5 text-xs font-black font-mono uppercase shrink-0 border-2 border-black flex items-center gap-1.5 transition cursor-pointer ${
+                                              className={`px-3.5 py-1.5 text-xs font-bold font-mono uppercase shrink-0 rounded-xl flex items-center gap-1.5 transition cursor-pointer ${
                                                 isAdded
-                                                  ? 'bg-[#BBF7D0] text-black cursor-default shadow-none'
-                                                  : 'bg-[#DFFF4F] hover:bg-black hover:text-[#DFFF4F] text-black shadow-[2px_2px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
+                                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+                                                  : 'bg-neutral-900 hover:bg-[#0047FF] text-white shadow-xs active:translate-y-0.5'
                                               }`}
                                             >
                                               {isAdded ? (
@@ -689,26 +719,26 @@ export default function ChatPage() {
 
                         {/* Conversational Output */}
                         {(!hasSubAgents || !subData.judge) && (
-                          <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-black">
+                          <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-neutral-800">
                             {msg.content}
                           </div>
                         )}
 
                         {/* Grounded RAG Citations Bar */}
                         {msg.citations && msg.citations.length > 0 && (
-                          <div className="mt-4 pt-3 border-t-2 border-black flex items-center gap-2 flex-wrap text-[11px] font-mono text-neutral-600 font-black uppercase">
-                            <div className="flex items-center gap-1 text-black">
+                          <div className="mt-4 pt-3 border-t border-neutral-200/70 flex items-center gap-2 flex-wrap text-[11px] font-mono text-neutral-500 font-bold uppercase">
+                            <div className="flex items-center gap-1 text-neutral-700">
                               <Database className="w-3 h-3 text-[#0047FF]" />
                               <span>Qdrant Vectors:</span>
                             </div>
                             {msg.citations.map((cite, i) => (
                               <span
                                 key={i}
-                                className="px-2 py-0.5 bg-white border border-black text-black flex items-center gap-1"
+                                className="px-2.5 py-1 bg-white border border-neutral-200 rounded-lg text-neutral-800 flex items-center gap-1.5 shadow-xs"
                               >
-                                <span>[{cite.entity_type || 'code'}]</span>
+                                <span className="text-neutral-400">[{cite.entity_type || 'code'}]</span>
                                 <span>{cite.title}</span>
-                                <span className="text-[#0047FF]">
+                                <span className="text-[#0047FF] font-bold">
                                   {(cite.score * 100).toFixed(0)}%
                                 </span>
                               </span>
@@ -726,47 +756,47 @@ export default function ChatPage() {
           {/* Submitting Stepper Indicator */}
           {isSubmitting && (
             <div className="flex items-start space-y-2 animate-fade-in w-full max-w-2xl">
-              <div className="bg-white text-black border-2 border-black p-5 shadow-[4px_4px_0px_#000000] w-full space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b-2 border-black text-xs font-mono font-black uppercase">
-                  <div className="flex items-center gap-2 text-black">
+              <div className="bg-white rounded-2xl border border-neutral-200/90 p-5 shadow-sm w-full space-y-3.5">
+                <div className="flex items-center justify-between pb-2.5 border-b border-neutral-100 text-xs font-mono font-bold uppercase">
+                  <div className="flex items-center gap-2 text-neutral-900">
                     <Loader2 className="w-4 h-4 animate-spin text-[#0047FF]" />
                     <span>ORCHESTRATING SUB-AGENTS</span>
                   </div>
-                  <span className="text-neutral-500">Pipeline Active</span>
+                  <span className="text-neutral-400 font-medium">Pipeline Active</span>
                 </div>
 
                 {/* Animated 4-Stage Stepper */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px] font-black uppercase">
-                  <div className={`p-2 border-2 border-black flex items-center gap-2 ${
-                    activeStep >= 1 ? 'bg-[#BBF7D0] text-black shadow-[1px_1px_0px_#000000]' : 'bg-[#FAF7EE] text-neutral-400'
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px] font-bold uppercase">
+                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                    activeStep >= 1 ? 'bg-emerald-50 border-emerald-200 text-emerald-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
                   }`}>
-                    {activeStep >= 1 ? <Check className="w-3.5 h-3.5 shrink-0" /> : <div className="w-3.5 h-3.5 rounded-full border border-black shrink-0" />}
+                    {activeStep >= 1 ? <Check className="w-3.5 h-3.5 shrink-0 text-emerald-600" /> : <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 shrink-0" />}
                     <span className="truncate">1. Context</span>
                   </div>
 
-                  <div className={`p-2 border-2 border-black flex items-center gap-2 ${
-                    activeStep >= 2 ? 'bg-[#0047FF] text-white shadow-[1px_1px_0px_#000000]' : 'bg-[#FAF7EE] text-neutral-400'
+                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                    activeStep >= 2 ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
                   }`}>
-                    <Search className="w-3.5 h-3.5 shrink-0" />
+                    <Search className="w-3.5 h-3.5 shrink-0 text-[#0047FF]" />
                     <span className="truncate">2. Researcher</span>
                   </div>
 
-                  <div className={`p-2 border-2 border-black flex items-center gap-2 ${
-                    activeStep >= 3 ? 'bg-[#FF5533] text-black shadow-[1px_1px_0px_#000000]' : 'bg-[#FAF7EE] text-neutral-400'
+                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                    activeStep >= 3 ? 'bg-rose-50 border-rose-200 text-rose-800 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
                   }`}>
-                    <Scale className="w-3.5 h-3.5 shrink-0" />
+                    <Scale className="w-3.5 h-3.5 shrink-0 text-[#FF5533]" />
                     <span className="truncate">3. Judge</span>
                   </div>
 
-                  <div className={`p-2 border-2 border-black flex items-center gap-2 ${
-                    activeStep >= 4 ? 'bg-[#DFFF4F] text-black shadow-[1px_1px_0px_#000000]' : 'bg-[#FAF7EE] text-neutral-400'
+                  <div className={`p-2.5 rounded-xl border transition-all flex items-center gap-2 ${
+                    activeStep >= 4 ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-xs' : 'bg-neutral-50 border-neutral-200/60 text-neutral-400'
                   }`}>
-                    <Layers className="w-3.5 h-3.5 shrink-0" />
+                    <Layers className="w-3.5 h-3.5 shrink-0 text-amber-500" />
                     <span className="truncate">4. Planner</span>
                   </div>
                 </div>
 
-                <div className="text-[11px] font-mono text-neutral-600 pt-1">
+                <div className="text-[11px] font-mono text-neutral-500 pt-0.5">
                   {activeStep === 1 && 'Querying Qdrant Cloud vectors for user repository codebase context...'}
                   {activeStep === 2 && 'Market Researcher Sub-Agent is discovering competitors and evaluating feasibility...'}
                   {activeStep === 3 && 'The Judge Sub-Agent is calculating feature score, brutal critique, and fatal flaws...'}
@@ -780,17 +810,17 @@ export default function ChatPage() {
         </div>
 
         {/* Prompt Input Box */}
-        <div className="bg-white border-2 border-black p-3.5 shadow-[6px_6px_0px_#000000] space-y-2">
+        <div className="bg-white border border-neutral-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow space-y-3">
           {/* Quick Prompts Row */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-            <span className="text-[10px] font-mono text-black uppercase font-black shrink-0 flex items-center gap-1">
+            <span className="text-[10px] font-mono text-neutral-500 uppercase font-bold shrink-0 flex items-center gap-1">
               <Zap className="w-3 h-3 text-[#0047FF]" /> Quick Ideas:
             </span>
             {starterPrompts.map((prompt, idx) => (
               <button
                 key={idx}
                 onClick={() => setInputValue(prompt)}
-                className="px-2.5 py-1 bg-[#FAF7EE] hover:bg-[#DFFF4F] border border-black text-black text-[11px] font-mono font-bold whitespace-nowrap transition-colors shrink-0 cursor-pointer"
+                className="px-3 py-1 bg-neutral-100 hover:bg-[#DFFF4F]/70 text-neutral-700 hover:text-black rounded-full border border-neutral-200/70 text-[11px] font-mono font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer"
               >
                 {prompt.length > 50 ? `${prompt.slice(0, 50)}...` : prompt}
               </button>
@@ -798,7 +828,7 @@ export default function ChatPage() {
           </div>
 
           {/* Text Area & Submit */}
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-2.5">
             <textarea
               ref={textareaRef}
               rows={2}
@@ -806,12 +836,12 @@ export default function ChatPage() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Pitch a feature idea, ask about competitors, or evaluate an architectural change..."
-              className="flex-1 bg-[#FAF7EE] border-2 border-black text-black placeholder-neutral-500 text-sm font-mono p-3 outline-none focus:bg-white transition-colors resize-none leading-relaxed"
+              className="flex-1 bg-neutral-50/70 border border-neutral-200/90 rounded-xl text-neutral-900 placeholder-neutral-400 text-sm font-sans p-3.5 outline-none focus:bg-white focus:border-[#0047FF] focus:ring-2 focus:ring-[#0047FF]/10 transition-all resize-none leading-relaxed"
             />
             <button
               onClick={() => handleSendMessage()}
               disabled={isSubmitting || !inputValue.trim()}
-              className="w-12 h-12 bg-[#DFFF4F] hover:bg-black hover:text-[#DFFF4F] text-black border-2 border-black shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none font-bold flex items-center justify-center shrink-0 disabled:opacity-40 transition-all cursor-pointer"
+              className="w-12 h-12 rounded-xl bg-neutral-900 hover:bg-[#0047FF] text-white flex items-center justify-center shrink-0 disabled:opacity-30 transition-all shadow-xs active:translate-y-0.5 cursor-pointer"
             >
               {isSubmitting ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -821,9 +851,9 @@ export default function ChatPage() {
             </button>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] font-mono text-neutral-600 px-2 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 px-1 pt-0.5">
             <span>Press Enter to send, Shift+Enter for new line</span>
-            <span className="flex items-center gap-1 text-black font-black uppercase">
+            <span className="flex items-center gap-1 text-neutral-600 font-bold uppercase">
               <ShieldCheck className="w-3.5 h-3.5 text-[#0047FF]" />
               <span>MongoDB Cloud History &amp; Qdrant RAG Active</span>
             </span>
