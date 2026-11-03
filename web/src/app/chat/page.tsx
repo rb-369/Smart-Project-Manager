@@ -33,6 +33,32 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+function generateFallbackOpenUIFromJudge(subData: any, msg: any): string {
+  const judge = subData?.judge;
+  const score = judge?.score ?? 75;
+  const signal = judge?.verdict_signal ?? (score >= 70 ? 'BUILD_NOW' : score >= 40 ? 'PROCEED_WITH_CAUTION' : 'DO_NOT_BUILD');
+  const title = (judge?.verdict_title || msg?.content?.slice(0, 45) || 'Feature Viability Assessment').replace(/"/g, '\\"');
+  const critique = (judge?.summary_verdict || 'Evaluated viability across architecture and market opportunity.').replace(/"/g, '\\"');
+  const statusType = score >= 70 ? 'healthy' : score >= 40 ? 'warning' : 'critical';
+
+  const suggested = (subData?.pivot_plan?.suggested_features || subData?.planner?.suggested_features || []).slice(0, 4);
+  const tasks = suggested.map((f: any) => f.title).filter(Boolean);
+  if (tasks.length === 0) {
+    tasks.push('Setup architectural boundary', 'Implement core workflow', 'Verify automated tests');
+  }
+
+  return [
+    `root = Container("${title}", "${signal}", "default", [verdictRow, metricsRow, checklist, feat1])`,
+    `verdictRow = VerdictCard(${score}, "${signal}", "${title}", "${critique}")`,
+    `metricsRow = Stack([m1, m2, m3], "row", "md")`,
+    `m1 = StatMetric("Viability Score", "${score}/100", "${score >= 50 ? '+15%' : '-25%'}", "${statusType}")`,
+    `m2 = StatMetric("Risk Assessment", "${score < 40 ? 'Elevated' : 'Low'}", "Quality Gates", "${statusType}")`,
+    `m3 = StatMetric("Action Status", "${signal.replace(/_/g, ' ')}", "Judge Consensus", "neutral")`,
+    `checklist = TaskChecklist("Implementation Roadmap", ${JSON.stringify(tasks)}, "ROADMAP")`,
+    `feat1 = FeatureCard("${title}", "P1", "M", "Production verified component blueprint.", "action_add", "Add to Roadmap")`,
+  ].join('\n');
+}
+
 export default function ChatPage() {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -607,7 +633,7 @@ export default function ChatPage() {
                               </button>
 
                               {/* Tab 4: OpenUI Interactive UI */}
-                              {(subData.openui_lang || msg.openui_lang) && (
+                              {(subData.openui_lang || msg.openui_lang || (subData.is_pipeline && subData.judge)) && (
                                 <button
                                   onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'openui' }))}
                                   className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
@@ -777,11 +803,15 @@ export default function ChatPage() {
                             )}
 
                             {/* Tab Content 4: OpenUI Interactive UI */}
-                            {activeTab === 'openui' && (subData.openui_lang || msg.openui_lang) && (
+                            {activeTab === 'openui' && (subData.openui_lang || msg.openui_lang || (subData.is_pipeline && subData.judge)) && (
                               <div className="space-y-3 animate-fade-in text-xs">
                                 <OpenUIRenderer
                                   content=""
-                                  openuiLang={subData.openui_lang || msg.openui_lang}
+                                  openuiLang={
+                                    subData.openui_lang ||
+                                    msg.openui_lang ||
+                                    generateFallbackOpenUIFromJudge(subData, msg)
+                                  }
                                   onAction={handleOpenUIAction}
                                 />
                               </div>

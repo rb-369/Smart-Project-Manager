@@ -71,22 +71,31 @@ class CopilotService:
                 "You are an AI assistant that generates interactive generative UI using openui-lang, "
                 "the declarative UI DSL developed for the OUI-1 generative model architecture (thesysdev/OUI-1).\n"
                 "Your ENTIRE response must be valid openui-lang code — no markdown wrappers, no explanations, just code.\n\n"
-                "## Syntax Rules\n"
+                "## CRITICAL SYNTAX RULES:\n"
                 "1. Each statement is on its own line: `identifier = Expression`\n"
-                "2. `root` is the entry point — every program must define `root = Container(...)` as the FIRST statement.\n"
-                "3. Expressions are: strings, numbers, booleans, arrays ([...]), or component calls `TypeName(arg1, arg2, ...)`.\n"
-                "4. Arguments are POSITIONAL (order matters, never use key: value syntax).\n\n"
-                "## Component Signatures\n"
-                "- Container(title: string, badge?: string, variant?: \"default\" | \"highlight\" | \"dark\" | \"glass\" | \"warning\", children: any[]) — Top-level card container with title, badge, and children\n"
-                "- Stack(children: any[], direction?: \"col\" | \"row\", gap?: \"xs\" | \"sm\" | \"md\" | \"lg\", wrap?: boolean) — Flex layout container\n"
-                "- StatMetric(label: string, value: string, change?: string, status?: \"healthy\" | \"warning\" | \"critical\" | \"neutral\", subtitle?: string) — High-visibility KPI card\n"
-                "- VerdictCard(score: number, signal: \"BUILD_NOW\" | \"PROCEED_WITH_CAUTION\" | \"DO_NOT_BUILD\", title: string, critique?: string) — The Judge sub-agent rating card\n"
-                "- TaskChecklist(title: string, items: string[], category?: string) — Interactive task checklist with toggleable checkboxes\n"
-                "- FeatureCard(title: string, priority: \"P0\" | \"P1\" | \"P2\" | \"P3\", complexity?: \"S\" | \"M\" | \"L\" | \"XL\", description: string, actionId?: string, actionLabel?: string) — Feature blueprint card\n"
-                "- ActionButton(label: string, actionId: string, variant?: \"primary\" | \"secondary\" | \"danger\" | \"success\", icon?: \"plus\" | \"check\" | \"play\" | \"zap\" | \"copy\" | \"refresh\" | \"arrow\") — Interactive button\n"
-                "- CodePreview(code: string, language?: string, filename?: string) — Code snippet preview\n"
-                "- TechBadge(label: string, category?: \"frontend\" | \"backend\" | \"database\" | \"ai\" | \"infra\" | \"auth\", status?: string) — Stack badge\n"
-                "- Callout(title: string, message: string, type?: \"info\" | \"warning\" | \"success\" | \"critical\") — Alert/info banner\n"
+                "2. The FIRST line MUST define root: `root = Container(...)`\n"
+                "3. Positional arguments ONLY — NEVER use named arguments (e.g. NEVER write Container(title=\"...\") or key = value inside calls).\n"
+                "4. All child variables MUST be defined as separate statements, NOT assigned inside an array.\n\n"
+                "## COMPONENT SIGNATURES:\n"
+                "- Container(title: string, badge?: string, variant?: \"default\" | \"highlight\" | \"dark\" | \"glass\" | \"warning\", children: any[])\n"
+                "- Stack(children: any[], direction?: \"col\" | \"row\", gap?: \"xs\" | \"sm\" | \"md\" | \"lg\", wrap?: boolean)\n"
+                "- StatMetric(label: string, value: string, change?: string, status?: \"healthy\" | \"warning\" | \"critical\" | \"neutral\", subtitle?: string)\n"
+                "- VerdictCard(score: number, signal: \"BUILD_NOW\" | \"PROCEED_WITH_CAUTION\" | \"DO_NOT_BUILD\", title: string, critique?: string)\n"
+                "- TaskChecklist(title: string, items: string[], category?: string)\n"
+                "- FeatureCard(title: string, priority: \"P0\" | \"P1\" | \"P2\" | \"P3\", complexity?: \"S\" | \"M\" | \"L\" | \"XL\", description: string, actionId?: string, actionLabel?: string)\n"
+                "- ActionButton(label: string, actionId: string, variant?: \"primary\" | \"secondary\" | \"danger\" | \"success\", icon?: string)\n"
+                "- CodePreview(code: string, language?: string, filename?: string)\n"
+                "- TechBadge(label: string, category?: string, status?: string)\n"
+                "- Callout(title: string, message: string, type?: \"info\" | \"warning\" | \"success\" | \"critical\")\n\n"
+                "## EXACT OUTPUT EXAMPLE:\n"
+                'root = Container("Real-Time Analytics Dashboard", "BUILD_NOW", "default", [verdictRow, metricsRow, checklist, feat1])\n'
+                'verdictRow = VerdictCard(88, "BUILD_NOW", "Viability Assessment", "Strong technical leverage.")\n'
+                'metricsRow = Stack([m1, m2, m3], "row", "md")\n'
+                'm1 = StatMetric("Sprint Velocity", "94%", "+8%", "healthy")\n'
+                'm2 = StatMetric("Test Coverage", "89%", "240 passing", "healthy")\n'
+                'm3 = StatMetric("Risk Rating", "Low", "0 blocking debt", "healthy")\n'
+                'checklist = TaskChecklist("Implementation Tasks", ["Setup API contract", "Deploy to Vercel", "Run verification"], "TASKS")\n'
+                'feat1 = FeatureCard("Core Stream Engine", "P0", "M", "Streaming client dock integration.", "add_feat_1", "Add to Roadmap")\n'
             )
         else:
             return (
@@ -333,6 +342,15 @@ class CopilotService:
                         )
                     )
                     openui_code = cls._clean_openui_code(raw_oui)
+                    if not cls._is_valid_openui(openui_code):
+                        openui_code = cls.generate_fallback_openui(
+                            title=message[:50],
+                            score=score,
+                            signal=signal,
+                            critique=judge_data.get("summary_verdict", ""),
+                            tasks=[f.get("title") for f in suggested_features[:4]],
+                            features=suggested_features[:2],
+                        )
                 except Exception as oui_e:
                     logger.warning(f"Failed to generate OpenUI DSL block: {oui_e}")
                     openui_code = cls.generate_fallback_openui(
@@ -421,6 +439,14 @@ class CopilotService:
                 )
             )
             openui_code = cls._clean_openui_code(raw_oui)
+            if not cls._is_valid_openui(openui_code):
+                openui_code = cls.generate_fallback_openui(
+                    title=message[:50],
+                    score=95,
+                    signal="BUILD_NOW",
+                    critique="Live interactive component generated via OpenUI.",
+                    tasks=["Inspect connected repositories", "Verify deployment health", "Analyze sprint velocity"],
+                )
             response_text = (
                 f"Generated interactive interface powered by **OpenUI (OUI-1 DSL Engine)**:\n\n"
                 f"```openui\n{openui_code}\n```"
@@ -635,6 +661,25 @@ class CopilotService:
         if filtered:
             return "\n".join(filtered).strip()
         return text.strip()
+
+    @classmethod
+    def _is_valid_openui(cls, code: str) -> bool:
+        """Validates that output satisfies strict positional openui-lang syntax and has a defined root."""
+        if not code or len(code.strip()) < 35:
+            return False
+        trimmed = code.strip()
+        # Must define root
+        if "root =" not in trimmed and "root=" not in trimmed:
+            return False
+        # Reject hallucinated named parameters inside calls like Container(title = ...)
+        if re.search(r"\(\s*[a-zA-Z_]+\s*=\s*", trimmed):
+            return False
+        if re.search(r"\[\s*[a-zA-Z_]+\s*=\s*", trimmed):
+            return False
+        # Must have balanced parentheses and brackets
+        if trimmed.count("(") != trimmed.count(")") or trimmed.count("[") != trimmed.count("]"):
+            return False
+        return True
 
     @classmethod
     def generate_fallback_openui(
