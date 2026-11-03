@@ -122,6 +122,40 @@ class AIService:
             return data["choices"][0]["message"]["content"]
 
     @classmethod
+    async def _call_oui1(cls, system_prompt: str, user_prompt: str) -> str:
+        """
+        Specialized Tier: Call the local or hosted OUI-1 generative UI model (thesysdev/OUI-1 via vLLM).
+        OUI-1 is an open-weights text-diffusion model based on DiffusionGemma 26B-A4B trained
+        exclusively for generating token-efficient openui-lang DSL screens.
+        """
+        if not settings.OPENUI_ENABLED or not settings.OUI1_BASE_URL:
+            raise ValueError("OUI1_BASE_URL not configured or OpenUI disabled")
+
+        url = f"{settings.OUI1_BASE_URL.rstrip('/')}/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+        }
+        if settings.OUI1_API_KEY and settings.OUI1_API_KEY != "EMPTY":
+            headers["Authorization"] = f"Bearer {settings.OUI1_API_KEY}"
+
+        payload: Dict[str, Any] = {
+            "model": settings.OUI1_MODEL,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0.2,
+            "max_tokens": 4096,
+        }
+
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            if resp.status_code != 200:
+                raise RuntimeError(f"OUI-1 vLLM endpoint returned {resp.status_code}: {resp.text}")
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
+
+    @classmethod
     async def execute_cascade(
         cls, system_prompt: str, user_prompt: str, fallback_generator
     ) -> Tuple[Dict[str, Any], str]:

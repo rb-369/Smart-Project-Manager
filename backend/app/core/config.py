@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     NVIDIA_API_KEY: str = ""
 
+    # OpenUI & OUI-1 Generative UI Model (Thesys OUI-1 / vLLM / Hugging Face)
+    OUI1_BASE_URL: str = "http://localhost:8001/v1"
+    OUI1_MODEL: str = "OUI-1"
+    OUI1_API_KEY: str = "EMPTY"
+    OPENUI_ENABLED: bool = True
+
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",

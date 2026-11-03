@@ -156,6 +156,7 @@ export interface SubAgentPivotPlan {
 export interface SubAgentData {
   is_pipeline?: boolean;
   executive_summary?: string;
+  openui_lang?: string;
   researcher?: SubAgentResearcher;
   judge?: SubAgentJudge;
   planner?: SubAgentPlanner;
@@ -175,6 +176,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   mode?: string;
+  openui_lang?: string;
   is_feature_pitch?: boolean;
   subagent_data?: SubAgentData;
   citations?: RagCitation[];
@@ -204,6 +206,7 @@ export interface ChatResponse {
     description: string;
   }[];
   subagent_data?: SubAgentData;
+  openui_lang?: string;
   tier_used: string;
 }
 

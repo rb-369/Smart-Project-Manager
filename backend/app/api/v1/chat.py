@@ -1,3 +1,5 @@
+import time
+import httpx
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -55,6 +57,7 @@ class ChatResponse(BaseModel):
     judge_data: Optional[JudgeVerdict] = None
     suggested_features: List[SuggestedFeaturePayload] = []
     subagent_data: Optional[Dict[str, Any]] = None
+    openui_lang: Optional[str] = None
     tier_used: str
 
 
@@ -170,3 +173,59 @@ def sync_knowledge_base(
         "total_points_indexed": total,
         "message": f"Successfully vectorized and indexed {total} items into Qdrant Cloud.",
     }
+
+
+@router.get("/oui1-status")
+async def get_oui1_status(current_user: User = Depends(get_current_user)):
+    """
+    Checks the connectivity and status of the Thesys OUI-1 generative UI model endpoint (vLLM).
+    Returns whether OUI-1 is reachable, latency, model identifier, and cascade fallback mode.
+    """
+    from app.core.config import settings
+
+    if not settings.OPENUI_ENABLED:
+        return {
+            "configured": False,
+            "connected": False,
+            "model": settings.OUI1_MODEL,
+            "base_url": settings.OUI1_BASE_URL,
+            "message": "OpenUI generative UI integration is disabled in settings.",
+            "mode": "cascade_fallback"
+        }
+
+    url = f"{settings.OUI1_BASE_URL.rstrip('/')}/models"
+    headers = {}
+    if settings.OUI1_API_KEY and settings.OUI1_API_KEY != "EMPTY":
+        headers["Authorization"] = f"Bearer {settings.OUI1_API_KEY}"
+
+    start_time = time.time()
+    try:
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            resp = await client.get(url, headers=headers)
+            latency = round((time.time() - start_time) * 1000, 1)
+            if resp.status_code == 200:
+                data = resp.json()
+                models = [m.get("id") for m in data.get("data", [])]
+                return {
+                    "configured": True,
+                    "connected": True,
+                    "model": settings.OUI1_MODEL,
+                    "base_url": settings.OUI1_BASE_URL,
+                    "latency_ms": latency,
+                    "available_models": models,
+                    "mode": "dedicated_vllm_oui1",
+                    "message": f"OUI-1 vLLM endpoint connected ({latency}ms). Token-diffusion UI streaming active."
+                }
+    except Exception as e:
+        pass
+
+    # If local vLLM is not running, return cascade fallback status
+    return {
+        "configured": True,
+        "connected": False,
+        "model": settings.OUI1_MODEL,
+        "base_url": settings.OUI1_BASE_URL,
+        "mode": "cascade_openui_dsl",
+        "message": "OUI-1 vLLM endpoint offline. Active: Cascade Fallback (Gemini 2.5 Flash / OpenRouter / NVIDIA NIM with OpenUI DSL)."
+    }
+

@@ -183,6 +183,7 @@ export const api = {
       { method: 'DELETE' }
     ),
   getQdrantStatus: () => request<import('../types').QdrantStatus>('/chat/qdrant-status', { method: 'GET' }),
+  getOui1Status: () => request<any>('/chat/oui1-status', { method: 'GET' }),
   syncKnowledgeBase: () =>
     request<{ message: string; points_indexed: number }>('/chat/sync-knowledge', { method: 'POST' }),
 

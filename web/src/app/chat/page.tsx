@@ -10,6 +10,7 @@ import {
   QdrantStatus,
   ProjectSummary,
 } from '@/types';
+import { OpenUIRenderer } from '@/components/openui/OpenUIRenderer';
 import {
   Bot,
   Layers,
@@ -29,6 +30,7 @@ import {
   FolderGit2,
   Trash2,
   Target,
+  Sparkles,
 } from 'lucide-react';
 
 export default function ChatPage() {
@@ -41,7 +43,7 @@ export default function ChatPage() {
   const [activeStep, setActiveStep] = useState<number>(0);
 
   // Active sub-agent tab per message ID
-  const [activeTabPerMessage, setActiveTabPerMessage] = useState<{ [msgId: string]: 'researcher' | 'judge' | 'planner' }>({});
+  const [activeTabPerMessage, setActiveTabPerMessage] = useState<{ [msgId: string]: 'openui' | 'researcher' | 'judge' | 'planner' }>({});
   // Planner sub-tab per message ID (pivot vs original)
   const [plannerSubTabPerMessage, setPlannerSubTabPerMessage] = useState<{ [msgId: string]: 'pivot' | 'original' }>({});
 
@@ -49,8 +51,9 @@ export default function ChatPage() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
-  // Qdrant Telemetry State
+  // Qdrant Telemetry State & OpenUI / OUI-1 Status
   const [qdrantStatus, setQdrantStatus] = useState<QdrantStatus | null>(null);
+  const [oui1Status, setOui1Status] = useState<any>(null);
   const [isSyncingKnowledge, setIsSyncingKnowledge] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
@@ -73,6 +76,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchQdrantStatus();
+      fetchOui1Status();
       fetchProjects();
       fetchHistory();
     }
@@ -107,6 +111,15 @@ export default function ChatPage() {
       setQdrantStatus(status);
     } catch (err) {
       console.warn('Failed to fetch Qdrant status:', err);
+    }
+  };
+
+  const fetchOui1Status = async () => {
+    try {
+      const status = await api.getOui1Status();
+      setOui1Status(status);
+    } catch (err) {
+      console.warn('Failed to fetch OUI-1 status:', err);
     }
   };
 
@@ -247,6 +260,20 @@ export default function ChatPage() {
     }
   };
 
+  const handleOpenUIAction = async (action: { name: string; params?: any }) => {
+    const actName = (action.name || '').toLowerCase();
+    if (actName.includes('add') || actName.includes('feature') || actName.includes('roadmap')) {
+      const title = action.params?.title || 'Interactive OpenUI Feature';
+      const priority = action.params?.priority || 'P1';
+      await handleAddSuggestedFeature(
+        { title, priority, description: 'Added from OpenUI interactive component.' },
+        `openui-${Date.now()}`
+      );
+    } else {
+      handleSendMessage(`Execute action: ${action.name} with params ${JSON.stringify(action.params || {})}`);
+    }
+  };
+
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -255,9 +282,9 @@ export default function ChatPage() {
 
   const starterPrompts = [
     'Should we build an automated WhatsApp concept import bot for DevCommand?',
-    'Evaluate adding biometric WebAuthn security keys to our Next.js authentication flow',
-    'Evaluate building an offline PWA caching service worker for poor network conditions',
-    'What features would make DevCommand 10x more valuable for solo full-stack developers?',
+    '⚡ Build an interactive sprint velocity dashboard with OpenUI',
+    '📋 Generate an interactive roadmap & task checklist for user authentication',
+    'Evaluate adding biometric WebAuthn security keys with interactive architecture',
   ];
 
   return (
@@ -317,6 +344,22 @@ export default function ChatPage() {
                   {qdrantStatus.points_count} PTS
                 </span>
               )}
+            </div>
+
+            {/* OpenUI / OUI-1 Status Badge */}
+            <div
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-mono font-bold uppercase shadow-xs ${
+                oui1Status?.connected
+                  ? 'bg-blue-50 border-blue-200 text-blue-800'
+                  : 'bg-purple-50 border-purple-200 text-purple-800'
+              }`}
+              title={oui1Status?.message || 'OpenUI Generative UI with OUI-1 & Cascade'}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#0047FF]" />
+              <span>{oui1Status?.connected ? 'OUI-1: ACTIVE' : 'OPENUI: CASCADE'}</span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-white/80 border border-current/20">
+                DSL
+              </span>
             </div>
 
             {/* Sync Knowledge Button */}
@@ -416,7 +459,7 @@ export default function ChatPage() {
             messages.map((msg) => {
               const subData = msg.subagent_data;
               const hasSubAgents = subData && subData.is_pipeline;
-              const activeTab = activeTabPerMessage[msg.id] || 'judge';
+              const activeTab = activeTabPerMessage[msg.id] || (subData?.openui_lang || msg.openui_lang ? 'openui' : 'judge');
               const plannerSubTab = plannerSubTabPerMessage[msg.id] || 'pivot';
 
               return (
@@ -562,6 +605,24 @@ export default function ChatPage() {
                                 <Layers className="w-3.5 h-3.5 text-amber-500" />
                                 <span>3. Feature Planner</span>
                               </button>
+
+                              {/* Tab 4: OpenUI Interactive UI */}
+                              {(subData.openui_lang || msg.openui_lang) && (
+                                <button
+                                  onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'openui' }))}
+                                  className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
+                                    activeTab === 'openui'
+                                      ? 'bg-neutral-900 text-white shadow-xs'
+                                      : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/50'
+                                  }`}
+                                >
+                                  <Sparkles className="w-3.5 h-3.5 text-[#DFFF4F]" />
+                                  <span>4. Interactive UI</span>
+                                  <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#DFFF4F] text-black">
+                                    OUI-1
+                                  </span>
+                                </button>
+                              )}
                             </div>
 
                             {/* Tab Content 1: The Judge */}
@@ -714,14 +775,27 @@ export default function ChatPage() {
                                 )}
                               </div>
                             )}
+
+                            {/* Tab Content 4: OpenUI Interactive UI */}
+                            {activeTab === 'openui' && (subData.openui_lang || msg.openui_lang) && (
+                              <div className="space-y-3 animate-fade-in text-xs">
+                                <OpenUIRenderer
+                                  content=""
+                                  openuiLang={subData.openui_lang || msg.openui_lang}
+                                  onAction={handleOpenUIAction}
+                                />
+                              </div>
+                            )}
                           </div>
                         )}
 
-                        {/* Conversational Output */}
+                        {/* Conversational Output with OpenUI Generative UI */}
                         {(!hasSubAgents || !subData.judge) && (
-                          <div className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-neutral-800">
-                            {msg.content}
-                          </div>
+                          <OpenUIRenderer
+                            content={msg.content}
+                            openuiLang={msg.openui_lang || subData?.openui_lang}
+                            onAction={handleOpenUIAction}
+                          />
                         )}
 
                         {/* Grounded RAG Citations Bar */}

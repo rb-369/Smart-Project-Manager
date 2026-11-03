@@ -8,6 +8,7 @@ import {
   ChatMessage,
   QdrantStatus,
 } from '@/types';
+import { OpenUIRenderer } from '@/components/openui/OpenUIRenderer';
 import {
   Bot,
   Send,
@@ -361,11 +362,12 @@ function ChatLauncherContent() {
                             </div>
                           )}
 
-                          {/* Conversational content if no subagent pipeline */}
+                          {/* Conversational content with OpenUI support */}
                           {(!isPipeline || !sub?.judge) && (
-                            <div className="whitespace-pre-wrap text-neutral-800 leading-relaxed text-xs">
-                              {msg.content}
-                            </div>
+                            <OpenUIRenderer
+                              content={msg.content}
+                              openuiLang={msg.openui_lang || sub?.openui_lang}
+                            />
                           )}
 
                           {/* Citations */}
