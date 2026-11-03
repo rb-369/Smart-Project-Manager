@@ -302,3 +302,130 @@ def test_multi_chat_sessions_and_user_isolation(client: TestClient, session: Ses
     assert res_after.json()["sessions"][0]["id"] == s1_id
 
 
+def test_slash_skills_resolution():
+    """Verify that CopilotService.resolve_skill correctly handles all registered slash skills."""
+    from app.services.copilot_service import CopilotService
+
+    # /eval
+    skill, clean = CopilotService.resolve_skill("/eval Live WebSocket Engine")
+    assert skill == "eval"
+    assert clean == "Live WebSocket Engine"
+
+    # /plan
+    skill, clean = CopilotService.resolve_skill("/plan Rate Limiting Middleware with Redis")
+    assert skill == "plan"
+    assert clean == "Rate Limiting Middleware with Redis"
+
+    # /research
+    skill, clean = CopilotService.resolve_skill("/research Vector search benchmarks vs Qdrant")
+    assert skill == "research"
+    assert clean == "Vector search benchmarks vs Qdrant"
+
+    # /audit
+    skill, clean = CopilotService.resolve_skill("/audit OAuth2 token refresh & revoke lifecycle")
+    assert skill == "audit"
+    assert clean == "OAuth2 token refresh & revoke lifecycle"
+
+    # /openui
+    skill, clean = CopilotService.resolve_skill("/openui High-density telemetry dashboard")
+    assert skill == "openui"
+    assert clean == "High-density telemetry dashboard"
+
+    # /stats
+    skill, clean = CopilotService.resolve_skill("/stats")
+    assert skill == "stats"
+
+    # /pivot
+    skill, clean = CopilotService.resolve_skill("/pivot Over-engineered microservices architecture")
+    assert skill == "pivot"
+    assert clean == "Over-engineered microservices architecture"
+
+    # /help
+    skill, _ = CopilotService.resolve_skill("/help")
+    assert skill == "help"
+
+
+def test_tagged_mentions_and_slash_skills_endpoint(client: TestClient, session: Session):
+    """Test calling /api/v1/chat/message with @project, #idea, and slash skills."""
+    from app.models.future_project import FutureProject
+
+    user = User(
+        email="tagtester@devcommand.ai",
+        password_hash="testpasshashTags",
+        full_name="Tag Tester",
+        is_active=True,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    # Add a project
+    proj = Project(
+        id=uuid4(),
+        user_id=user.id,
+        name="notes-management",
+        html_url="https://github.com/owner/notes-management",
+        description="Markdown notes manager with offline sync",
+        primary_language="Python",
+        project_type=ProjectType.PRODUCTION,
+        status=ProjectStatus.IN_PROGRESS,
+    )
+    session.add(proj)
+
+    # Add an incubator idea
+    idea = FutureProject(
+        id=uuid4(),
+        user_id=user.id,
+        title="AI-concept-importer",
+        elevator_pitch="Instant WhatsApp and Slack idea crawler",
+        target_tech_stack="Python, FastAPI, OpenAI",
+        notes="High leverage MVP slice",
+    )
+    session.add(idea)
+    session.commit()
+
+    token = create_access_token(user.id)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Test /plan with @project and #idea tagging
+    res_plan = client.post(
+        "/api/v1/chat/message",
+        json={
+            "message": "/plan architectural boundaries for @notes-management based on #AI-concept-importer",
+            "mode": "auto",
+        },
+        headers=headers,
+    )
+    assert res_plan.status_code == 200
+    data_plan = res_plan.json()
+    assert data_plan["mode"] == "plan"
+    assert len(data_plan["suggested_features"]) > 0
+    assert data_plan["subagent_data"]["planner"] is not None
+
+    # 2. Test /audit skill
+    res_audit = client.post(
+        "/api/v1/chat/message",
+        json={
+            "message": "/audit security vulnerabilities and IDOR for @notes-management",
+            "mode": "auto",
+        },
+        headers=headers,
+    )
+    assert res_audit.status_code == 200
+    data_audit = res_audit.json()
+    assert data_audit["mode"] == "audit"
+    assert data_audit["subagent_data"]["auditor"] is not None
+
+    # 3. Test /help skill
+    res_help = client.post(
+        "/api/v1/chat/message",
+        json={"message": "/help", "mode": "auto"},
+        headers=headers,
+    )
+    assert res_help.status_code == 200
+    data_help = res_help.json()
+    assert data_help["mode"] == "help"
+    assert "DevCommand Copilot Command & Syntax Guide" in data_help["response"]
+
+
+

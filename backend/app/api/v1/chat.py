@@ -1,5 +1,6 @@
 import time
 import httpx
+import re
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from uuid import UUID
@@ -353,7 +354,7 @@ async def send_chat_message(
             )
     else:
         # Auto-create session for current_user
-        candidate_title = payload.message.strip().replace("/eval ", "").replace("/evaluate ", "")
+        candidate_title = re.sub(r"^/(?:eval|evaluate|plan|research|audit|openui|pivot)\s+", "", payload.message.strip(), flags=re.IGNORECASE)
         if len(candidate_title) > 42:
             candidate_title = candidate_title[:39] + "..."
         chat_session = ChatSession(
@@ -366,7 +367,64 @@ async def send_chat_message(
         db.refresh(chat_session)
         is_new_session = True
 
-    # 2. Process query via Copilot
+    # 2. Extract explicitly tagged entities (@projects and #ideas)
+    project_mentions = re.findall(r"@([a-zA-Z0-9_\-\.]+)", payload.message)
+    idea_mentions = re.findall(r"#([a-zA-Z0-9_\-\.]+)", payload.message)
+    tagged_blocks = []
+
+    if project_mentions:
+        user_projects = db.exec(
+            select(Project).where(Project.user_id == current_user.id)
+        ).all()
+        for mention in project_mentions:
+            clean_m = mention.lower().replace("-", "").replace("_", "")
+            match = None
+            for p in user_projects:
+                p_clean = p.name.lower().replace("-", "").replace("_", "")
+                url_clean = (p.html_url or "").lower().replace("-", "").replace("_", "")
+                if clean_m in p_clean or p_clean in clean_m or (url_clean and clean_m in url_clean):
+                    match = p
+                    break
+            if match:
+                features = db.exec(
+                    select(Feature).where(Feature.project_id == match.id)
+                ).all()
+                feat_lines = [f"- {f.title} ({f.priority}, status: {f.status})" for f in features[:6]]
+                feat_str = "\n".join(feat_lines) if feat_lines else "None listed yet."
+                tagged_blocks.append(
+                    f"TAGGED PROJECT REPOSITORY: @{match.name}\n"
+                    f"Repository URL: {match.html_url or 'N/A'}\n"
+                    f"Description: {match.description or 'No description'}\n"
+                    f"Primary Language: {match.primary_language or 'Unspecified'}\n"
+                    f"Goal: {match.goal or 'N/A'}\n"
+                    f"Current Roadmap Features:\n{feat_str}"
+                )
+
+    if idea_mentions:
+        user_ideas = db.exec(
+            select(FutureProject).where(FutureProject.user_id == current_user.id)
+        ).all()
+        for mention in idea_mentions:
+            clean_m = mention.lower().replace("-", "").replace("_", "")
+            match = None
+            for idea in user_ideas:
+                idea_clean = (idea.title or "").lower().replace("-", "").replace("_", "")
+                if clean_m in idea_clean or idea_clean in clean_m:
+                    match = idea
+                    break
+            if match:
+                tagged_blocks.append(
+                    f"TAGGED INCUBATOR IDEA: #{match.title}\n"
+                    f"Elevator Pitch: {match.elevator_pitch or match.description or 'N/A'}\n"
+                    f"Target Tech Stack: {match.target_tech_stack or 'N/A'}\n"
+                    f"Notes: {match.notes or 'N/A'}\n"
+                    f"Priority: {match.priority or 'P1'}\n"
+                    f"Status: {match.status or 'incubating'}"
+                )
+
+    tagged_context = "\n\n".join(tagged_blocks) if tagged_blocks else None
+
+    # 3. Process query via Copilot
     result = await CopilotService.process_chat(
         message=payload.message,
         mode=payload.mode,
@@ -374,6 +432,7 @@ async def send_chat_message(
         project_id=payload.project_id,
         chat_history=payload.history,
         session_id=chat_session.id,
+        tagged_context=tagged_context,
     )
 
     # 3. Save records in SQLModel for ACID durability & rapid retrieval

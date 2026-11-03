@@ -153,6 +153,10 @@ export interface SubAgentPivotPlan {
   }[];
 }
 
+export interface SubAgentAuditor {
+  content: string;
+}
+
 export interface SubAgentData {
   is_pipeline?: boolean;
   executive_summary?: string;
@@ -160,6 +164,7 @@ export interface SubAgentData {
   researcher?: SubAgentResearcher;
   judge?: SubAgentJudge;
   planner?: SubAgentPlanner;
+  auditor?: SubAgentAuditor;
   pivot_plan?: SubAgentPivotPlan;
 }
 

@@ -47,6 +47,16 @@ class CopilotService:
                 "4. Hidden Gotchas & Bottlenecks: Real-world failure modes at scale (rate limits, sync conflicts, state bloat).\n"
                 "5. Pragmatic Build Recommendation: The highest-leverage MVP approach."
             )
+        elif agent_role == "auditor":
+            return (
+                "You are DevCommand's Elite Staff Security & Systems Architect (Auditor Sub-Agent).\n"
+                "Conduct a rigorous audit of the feature, architecture, or code.\n"
+                "Provide:\n"
+                "1. Security & Authentication Vulnerabilities (broken access control, token exposure, IDOR, injection)\n"
+                "2. Performance & Database Scalability (N+1 queries, unindexed filters, connection pool limits)\n"
+                "3. Concurrency & Data Integrity Risks (race conditions, unhandled async exceptions, state drift)\n"
+                "4. Actionable Mitigation Matrix: Concrete code changes and defensive patterns to apply."
+            )
         elif agent_role == "judge":
             return (
                 "You are DevCommand's Brutally Honest Judge (Judge Sub-Agent) — an uncompromising Staff Engineer and VC Product Judge.\n"
@@ -105,33 +115,60 @@ class CopilotService:
             )
 
     @classmethod
-    def orchestrate_intent(cls, message: str, mode: str = "auto") -> Tuple[bool, str]:
+    def resolve_skill(cls, message: str, mode: str = "auto") -> Tuple[str, str]:
         """
-        Orchestrator that determines whether to activate the intensive 3-stage evaluation pipeline
-        (Market Researcher + The Judge + Feature Planner) or direct conversational copilot.
-        
+        Resolves slash command skills, tags, and explicit intent:
         Returns:
-            Tuple[is_eval_pipeline: bool, clean_message: str]
+            Tuple[skill: str, clean_message: str]
         """
         trimmed = message.strip()
         lower = trimmed.lower()
 
-        # 1. Explicit /eval or /evaluate skill invocation
-        if lower.startswith("/eval "):
-            return True, trimmed[6:].strip()
-        if lower.startswith("/evaluate "):
-            return True, trimmed[10:].strip()
+        # 1. Explicit slash command skills
+        if lower.startswith("/eval ") or lower.startswith("/evaluate "):
+            clean = re.sub(r"^/(?:eval|evaluate)\s+", "", trimmed, flags=re.IGNORECASE).strip()
+            return "eval", clean or "Evaluate the current project roadmap and advise next high-impact initiatives."
         if lower in ["/eval", "/evaluate"]:
-            return True, "Evaluate the current project roadmap and advise next high-impact initiatives."
+            return "eval", "Evaluate the current project roadmap and advise next high-impact initiatives."
+
+        if lower.startswith("/plan ") or lower == "/plan":
+            clean = re.sub(r"^/plan\s*", "", trimmed, flags=re.IGNORECASE).strip()
+            return "plan", clean or "Draft architectural decomposition and actionable roadmap tasks."
+
+        if lower.startswith("/research ") or lower == "/research":
+            clean = re.sub(r"^/research\s*", "", trimmed, flags=re.IGNORECASE).strip()
+            return "research", clean or "Research competitor benchmarks and existing open-source libraries."
+
+        if lower.startswith("/audit ") or lower == "/audit":
+            clean = re.sub(r"^/audit\s*", "", trimmed, flags=re.IGNORECASE).strip()
+            return "audit", clean or "Conduct a comprehensive security, performance, and architecture audit."
+
+        if lower.startswith("/openui ") or lower == "/openui":
+            clean = re.sub(r"^/openui\s*", "", trimmed, flags=re.IGNORECASE).strip()
+            return "openui", clean or "Interactive analytics and status dashboard."
+
+        if lower.startswith("/stats") or lower in ["/stats"]:
+            clean = re.sub(r"^/stats\s*", "", trimmed, flags=re.IGNORECASE).strip()
+            return "stats", clean or "Synthesize repository metrics, active features, and incubator status."
+
+        if lower.startswith("/pivot ") or lower == "/pivot":
+            clean = re.sub(r"^/pivot\s*", "", trimmed, flags=re.IGNORECASE).strip()
+            return "pivot", clean or "Recommend high-leverage lean MVP alternative."
+
+        if lower.startswith("/help") or lower in ["/help", "help", "/?"]:
+            return "help", "Display guide to slash skills (/), project mentions (@), and idea mentions (#)."
+
+        # Check explicit mode argument
         if mode in ["eval", "pipeline"]:
-            return True, trimmed
+            return "eval", trimmed
+        if mode in ["plan", "research", "audit", "openui", "stats", "pivot", "help"]:
+            return mode, trimmed
 
-        # Explicit conversational overrides
-        if mode in ["chat", "conversational", "general", "openui"]:
-            return False, trimmed
+        # Conversational overrides
+        if mode in ["chat", "conversational", "general"]:
+            return "chat", trimmed
 
-        # 2. Informational, debugging, conversational, status, or codebase inspection queries
-        # These must NEVER trigger the 3-subagent pipeline.
+        # Informational patterns that never trigger eval
         informational_patterns = [
             "what are my stats", "my stats", "stats", "status", "who are you", "what can you do",
             "hello", "hi", "hey", "good morning", "good evening", "howdy",
@@ -141,9 +178,9 @@ class CopilotService:
             "where is", "where are", "tell me about", "summarize"
         ]
         if any(lower.startswith(pat) or lower == pat for pat in informational_patterns):
-            return False, trimmed
+            return "chat", trimmed
 
-        # 3. Explicit evaluation intents (asking for judgment, rating, or critique of a feature idea)
+        # Explicit evaluation triggers
         eval_triggers = [
             "evaluate this idea", "evaluate this feature", "evaluate my idea", "evaluate proposal",
             "evaluate the proposal", "rate this idea", "rate my idea", "rate this proposal",
@@ -153,20 +190,28 @@ class CopilotService:
             "pros and cons of building"
         ]
         if any(t in lower for t in eval_triggers):
-            return True, trimmed
+            return "eval", trimmed
 
-        # 4. Proactive proposal triggers: only if explicitly proposing a new system/architecture
-        # e.g., "Design an automated Stripe subscription billing system with webhooks",
-        # "I want to rebuild Twitter from scratch on a blockchain using 15 microservices"
         proposal_prefixes = [
             "design an automated", "design a", "i want to rebuild", "rebuild ",
             "propose an architecture", "build a new system", "architect a"
         ]
         if any(lower.startswith(p) for p in proposal_prefixes):
-            return True, trimmed
+            return "eval", trimmed
 
-        # By default, keep copilot fast, responsive, and conversational
-        return False, trimmed
+        return "chat", trimmed
+
+    @classmethod
+    def orchestrate_intent(cls, message: str, mode: str = "auto") -> Tuple[bool, str]:
+        """
+        Orchestrator that determines whether to activate the intensive 3-stage evaluation pipeline
+        (Market Researcher + The Judge + Feature Planner) or direct conversational copilot.
+        
+        Returns:
+            Tuple[is_eval_pipeline: bool, clean_message: str]
+        """
+        skill, clean = cls.resolve_skill(message, mode)
+        return (skill in ["eval", "pipeline"]), clean
 
     @classmethod
     def classify_intent(cls, message: str) -> bool:
@@ -238,16 +283,20 @@ class CopilotService:
         project_id: Optional[Any] = None,
         chat_history: Optional[List[Dict[str, str]]] = None,
         session_id: Optional[Any] = None,
+        tagged_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Main entry point for unified chat. Dispatches sub-agents for feature pitches,
-        or handles general queries with Qdrant RAG context.
+        handles specialized slash skills (/plan, /research, /audit, /openui, /stats, /pivot, /help),
+        or handles general queries with Qdrant RAG and tagged context.
         """
-        is_pitch, eval_message = cls.orchestrate_intent(message, mode)
+        skill, clean_message = cls.resolve_skill(message, mode)
+        is_pitch = (skill in ["eval", "pipeline"])
+        eval_message = clean_message
 
         # 1. RAG Vector Search in Qdrant Cloud
         rag_hits = RAGService.search_knowledge(
-            query=eval_message if is_pitch else message,
+            query=clean_message if is_pitch or skill != "chat" else message,
             user_id=user_id,
             project_id=project_id,
             limit=4,
@@ -271,6 +320,14 @@ class CopilotService:
                 + "\n\n".join(rag_context_blocks)
                 + "\n--- END CONTEXT ---\n"
             )
+
+        if tagged_context:
+            tagged_block = (
+                "\n\n--- EXPLICITLY TAGGED REPOSITORIES (@) & INCUBATOR IDEAS (#) ---\n"
+                + tagged_context.strip()
+                + "\n--- END TAGGED CONTEXT ---\n"
+            )
+            rag_prompt_text = tagged_block + rag_prompt_text
 
         # ----------------------------------------------------------------------
         # PIPELINE A: Autonomous 3-Sub-Agent Pipeline (For Feature Pitches & Ideas)
@@ -459,43 +516,214 @@ class CopilotService:
             }
 
         # ----------------------------------------------------------------------
-        # PIPELINE B: Direct Conversational Copilot (For General & Codebase Queries)
+        # PIPELINE B: Specialized Slash Skills & Conversational Copilot
         # ----------------------------------------------------------------------
-        is_ui_request = mode == "openui" or any(kw in message.lower() for kw in ["openui", "interactive ui", "generative ui", "dashboard", "metric card", "checklist", "show ui"])
         openui_code = None
+        suggested_features = []
+        return_mode = skill
 
-        if is_ui_request and settings.OPENUI_ENABLED:
-            openui_prompt = (
-                f"User Request for Generative UI:\n{message}\n"
+        if skill == "plan":
+            planner_prompt = (
+                f"Feature Architecture & Planning Request:\n{clean_message}\n"
                 f"{rag_prompt_text}\n"
-                "Generate an interactive, clean UI screen using openui-lang code. Must start with root = Container(...)."
+                "Draft a production-ready technical architecture, API contracts, database schema, and actionable checklist."
             )
-            raw_oui, tier_used = await cls._execute_cascade_llm(
-                cls.get_system_prompt("openui"),
-                openui_prompt,
+            planner_content, tier_used = await cls._execute_cascade_llm(
+                cls.get_system_prompt("planner"),
+                planner_prompt,
                 is_json=False,
-                is_openui=True,
-                fallback_fn=lambda: cls.generate_fallback_openui(
-                    title=message[:50],
-                    score=95,
-                    signal="BUILD_NOW",
-                    critique="Live interactive component generated via OpenUI.",
-                    tasks=["Inspect connected repositories", "Verify deployment health", "Analyze sprint velocity"],
-                )
+                fallback_fn=lambda: cls._heuristic_fallback(clean_message, "planner", citations)
             )
-            openui_code = cls._clean_openui_code(raw_oui)
-            if not cls._is_valid_openui(openui_code):
-                openui_code = cls.generate_fallback_openui(
-                    title=message[:50],
-                    score=95,
-                    signal="BUILD_NOW",
-                    critique="Live interactive component generated via OpenUI.",
-                    tasks=["Inspect connected repositories", "Verify deployment health", "Analyze sprint velocity"],
-                )
+            suggested_features = cls._extract_planner_features(planner_content, clean_message)
+            tasks = [f.get("title") for f in suggested_features[:4]] or [
+                "Establish architectural boundaries",
+                "Define API contracts and request/response models",
+                "Implement database schema and index optimizations",
+                "Deploy automated unit and integration tests"
+            ]
+            openui_code = cls.generate_fallback_openui(
+                title=clean_message[:45],
+                score=90,
+                signal="BUILD_NOW",
+                critique="Production architectural blueprint and roadmap tasks.",
+                tasks=tasks,
+                features=suggested_features[:2],
+            )
+            subagent_data = {
+                "is_pipeline": False,
+                "planner": {
+                    "content": planner_content,
+                    "suggested_features": suggested_features,
+                },
+                "openui_lang": openui_code,
+            }
+            response_text = f"### 📐 Feature Architecture & Implementation Blueprint\n\n{planner_content}"
+
+        elif skill == "research":
+            researcher_prompt = (
+                f"Market & Feasibility Research Topic:\n{clean_message}\n"
+                f"{rag_prompt_text}\n"
+                "Research competitor benchmarks, technical feasibility, and real-world failure modes."
+            )
+            researcher_content, tier_used = await cls._execute_cascade_llm(
+                cls.get_system_prompt("researcher"),
+                researcher_prompt,
+                is_json=False,
+                fallback_fn=lambda: cls._heuristic_fallback(clean_message, "researcher", citations)
+            )
+            subagent_data = {
+                "is_pipeline": False,
+                "researcher": {
+                    "content": researcher_content,
+                },
+            }
+            response_text = f"### 🔍 Competitive & Feasibility Intelligence\n\n{researcher_content}"
+
+        elif skill == "audit":
+            auditor_prompt = (
+                f"Security, Scalability & Architecture Audit Target:\n{clean_message}\n"
+                f"{rag_prompt_text}\n"
+                "Conduct a rigorous audit evaluating authentication, IDOR, SQL/NoSQL safety, N+1 query patterns, and concurrency edge cases."
+            )
+            auditor_content, tier_used = await cls._execute_cascade_llm(
+                cls.get_system_prompt("auditor"),
+                auditor_prompt,
+                is_json=False,
+                fallback_fn=lambda: cls._heuristic_fallback(clean_message, "auditor", citations)
+            )
+            subagent_data = {
+                "is_pipeline": False,
+                "auditor": {
+                    "content": auditor_content,
+                },
+            }
+            response_text = f"### 🛡️ Security & Architecture Audit Report\n\n{auditor_content}"
+
+        elif skill == "stats":
+            stats_oui = (
+                'root = Container("Workspace & Repository Metrics", "ACTIVE", "default", [metricsRow, checklist])\n'
+                'metricsRow = Stack([m1, m2, m3], "row", "md")\n'
+                'm1 = StatMetric("Knowledge Vectors", "Qdrant Cloud", "Indexed", "healthy")\n'
+                'm2 = StatMetric("Sub-Agent Swarm", "3 Agents", "Ready", "healthy")\n'
+                'm3 = StatMetric("Multi-Chat Threads", "Isolated", "Active", "neutral")\n'
+                'checklist = TaskChecklist("Workspace Health Checklist", ["Sync GitHub repositories", "Verify Qdrant vector indexing", "Review active incubator ideas"], "TASKS")'
+            )
             response_text = (
-                f"Generated interactive interface powered by **OpenUI (OUI-1 DSL Engine)**:\n\n"
-                f"```openui\n{openui_code}\n```"
+                "### 📊 Project & Repository Telemetry\n\n"
+                "Your workspace is actively connected to **Qdrant Cloud Vector Search** and **MongoDB Atlas** with multi-tenant user isolation.\n\n"
+                f"{rag_prompt_text if rag_prompt_text else 'All active projects and roadmap features are indexed for grounded RAG query synthesis.'}\n\n"
+                "**Quick Commands:**\n"
+                "- `@project-name` to inject repository context\n"
+                "- `#idea-title` to inject incubator idea context\n"
+                "- `/eval <idea>` to trigger 3-stage evaluation"
             )
+            subagent_data = {
+                "is_pipeline": False,
+                "openui_lang": stats_oui,
+            }
+            openui_code = stats_oui
+            tier_used = "Tier 0: OpenUI Telemetry"
+
+        elif skill == "pivot":
+            pivot_prompt = (
+                f"Alternative Lean MVP Request:\n{clean_message}\n"
+                f"{rag_prompt_text}\n"
+                "Recommend a high-leverage lean MVP alternative that solves the core need with 80% less complexity."
+            )
+            pivot_content, tier_used = await cls._execute_cascade_llm(
+                cls.get_system_prompt("planner"),
+                pivot_prompt,
+                is_json=False,
+                fallback_fn=lambda: cls._heuristic_fallback(clean_message, "planner", citations)
+            )
+            suggested_features = cls._extract_planner_features(pivot_content, clean_message)
+            response_text = f"### 🎯 Recommended Lean MVP Pivot\n\n{pivot_content}"
+            subagent_data = {
+                "is_pipeline": False,
+                "planner": {
+                    "content": pivot_content,
+                    "suggested_features": suggested_features,
+                },
+            }
+
+        elif skill == "help":
+            help_text = (
+                "### 🤖 DevCommand Copilot Command & Syntax Guide\n\n"
+                "DevCommand Copilot supports **Slash Skills (`/`)**, **Project Mentions (`@`)**, and **Incubator Idea Mentions (`#`)**:\n\n"
+                "| Command / Tag | Type | Description |\n"
+                "| :--- | :--- | :--- |\n"
+                "| `/eval <idea>` | **Skill** | Activates the 3-Sub-Agent Swarm (Researcher + Judge + Planner + OpenUI Prototype) |\n"
+                "| `/plan <feature>` | **Skill** | Drafts technical architecture, API contracts, database schema & 1-click roadmap tasks |\n"
+                "| `/research <topic>` | **Skill** | Benchmarks competitor apps, assesses technical feasibility & evaluates OSS libraries |\n"
+                "| `/audit <target>` | **Skill** | Audits security (OWASP), database scalability, IDOR vulnerabilities & concurrency risks |\n"
+                "| `/openui <brief>` | **Skill** | Generates an interactive generative UI screen powered by OUI-1 / OpenUI DSL |\n"
+                "| `/stats` | **Skill** | Displays workspace telemetry, vector indexing status & system metrics |\n"
+                "| `/pivot <idea>` | **Skill** | Generates a lean MVP alternative to bypass over-engineering trap |\n"
+                "| `/help` | **Skill** | Displays this command and syntax reference guide |\n"
+                "| `@<project-name>` | **Context Tag** | Injects live project schema, repo details, and active roadmap features into prompt |\n"
+                "| `#<idea-title>` | **Context Tag** | Injects incubator idea pitch, target tech stack, and notes into prompt |\n\n"
+                "💡 **Example:** `/audit @notes-management evaluate auth and IDOR edge cases for #AI-concept-importer`"
+            )
+            help_oui = (
+                'root = Container("DevCommand Command Reference", "GUIDE", "default", [metricsRow, checklist])\n'
+                'metricsRow = Stack([m1, m2, m3], "row", "md")\n'
+                'm1 = StatMetric("Slash Skills", "8 Registered", "/eval, /plan, /audit...", "healthy")\n'
+                'm2 = StatMetric("Project Mentions", "@repo", "Grounded Context", "healthy")\n'
+                'm3 = StatMetric("Idea Mentions", "#idea", "Incubator Pitch", "healthy")\n'
+                'checklist = TaskChecklist("Quick Start Actions", ["Try: /eval Realtime Webhooks", "Try: /audit @project", "Try: #idea with /plan"], "GUIDE")'
+            )
+            subagent_data = {
+                "is_pipeline": False,
+                "openui_lang": help_oui,
+            }
+            openui_code = help_oui
+            response_text = help_text
+            tier_used = "Tier 0: Command Registry"
+
+        elif skill == "openui" or mode == "openui" or any(kw in message.lower() for kw in ["openui", "interactive ui", "generative ui", "dashboard", "metric card", "checklist", "show ui"]):
+            if settings.OPENUI_ENABLED:
+                openui_prompt = (
+                    f"User Request for Generative UI:\n{clean_message}\n"
+                    f"{rag_prompt_text}\n"
+                    "Generate an interactive, clean UI screen using openui-lang code. Must start with root = Container(...)."
+                )
+                raw_oui, tier_used = await cls._execute_cascade_llm(
+                    cls.get_system_prompt("openui"),
+                    openui_prompt,
+                    is_json=False,
+                    is_openui=True,
+                    fallback_fn=lambda: cls.generate_fallback_openui(
+                        title=clean_message[:50],
+                        score=95,
+                        signal="BUILD_NOW",
+                        critique="Live interactive component generated via OpenUI.",
+                        tasks=["Inspect connected repositories", "Verify deployment health", "Analyze sprint velocity"],
+                    )
+                )
+                openui_code = cls._clean_openui_code(raw_oui)
+                if not cls._is_valid_openui(openui_code):
+                    openui_code = cls.generate_fallback_openui(
+                        title=clean_message[:50],
+                        score=95,
+                        signal="BUILD_NOW",
+                        critique="Live interactive component generated via OpenUI.",
+                        tasks=["Inspect connected repositories", "Verify deployment health", "Analyze sprint velocity"],
+                    )
+                response_text = (
+                    f"Generated interactive interface powered by **OpenUI (OUI-1 DSL Engine)**:\n\n"
+                    f"```openui\n{openui_code}\n```"
+                )
+            else:
+                response_text = "OpenUI generative engine is not enabled in settings."
+                tier_used = "Local Intelligent Heuristic"
+
+            subagent_data = {
+                "is_pipeline": False,
+                "executive_summary": response_text,
+                "openui_lang": openui_code,
+            }
+            return_mode = "openui"
+
         else:
             copilot_sys = cls.get_system_prompt("general")
             copilot_user = f"User Question:\n{message}\n{rag_prompt_text}"
@@ -505,12 +733,12 @@ class CopilotService:
                 is_json=False,
                 fallback_fn=lambda: f"Based on your codebase context{rag_prompt_text[:120]}:\nHere is the technical guidance for '{message[:50]}'."
             )
-
-        subagent_data = {
-            "is_pipeline": False,
-            "executive_summary": response_text,
-            "openui_lang": openui_code,
-        }
+            subagent_data = {
+                "is_pipeline": False,
+                "executive_summary": response_text,
+                "openui_lang": openui_code,
+            }
+            return_mode = "general"
 
         if user_id:
             try:
@@ -537,14 +765,15 @@ class CopilotService:
                 logger.warning(f"Failed to persist chat to MongoDB: {sync_e}")
 
         return {
-            "mode": "general",
+            "mode": return_mode,
             "session_id": str(session_id) if session_id else None,
             "response": response_text,
             "raw_content": response_text,
             "citations": citations,
             "judge_data": None,
-            "suggested_features": [],
+            "suggested_features": suggested_features,
             "subagent_data": subagent_data,
+            "openui_lang": openui_code,
             "tier_used": tier_used,
         }
 
@@ -671,6 +900,23 @@ class CopilotService:
                 "**2. Feasibility Rating: Moderate (4-7 days solo dev)**\n"
                 "- **Core Challenge:** Ensuring data consistency across concurrent updates and handling external rate limits.\n"
                 "- **Prerequisites:** Stable database schema and clear tenant partitioning."
+            )
+        elif mode == "auditor":
+            return (
+                f"### 🛡️ Security & Architecture Audit Report: {query[:50]}\n\n"
+                f"**1. Authentication & Tenant Boundaries (OWASP A01)**{citation_text}\n"
+                "- Enforce JWT verification and user_id ownership check on all related endpoints.\n"
+                "- Prevent IDOR vulnerabilities: verify user has permissions to modify target records.\n\n"
+                "**2. Database & Performance Scalability**\n"
+                "- Add composite indexes for frequently queried foreign keys (`user_id`, `project_id`).\n"
+                "- Watch for N+1 queries during relationship serialization.\n\n"
+                "**3. Concurrency & State Integrity**\n"
+                "- Wrap state updates in database transactions.\n"
+                "- Implement idempotency keys for external webhooks and side-effect operations.\n\n"
+                "**4. Actionable Mitigation Checklist**\n"
+                "- [ ] Add rate limiting to mutation endpoints\n"
+                "- [ ] Validate payload schemas with strict Pydantic models\n"
+                "- [ ] Run automated tests verifying isolation between tenants"
             )
         else:  # judge
             return json.dumps({

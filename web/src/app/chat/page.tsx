@@ -40,7 +40,98 @@ import {
   PanelLeftOpen,
   Clock,
   UserCheck,
+  AtSign,
+  Hash,
+  Terminal,
+  Shield,
+  HelpCircle,
+  Activity,
 } from 'lucide-react';
+
+interface SlashSkillItem {
+  name: string;
+  command: string;
+  syntax: string;
+  description: string;
+  badge: string;
+  icon: any;
+  color: string;
+}
+
+const AVAILABLE_SLASH_SKILLS: SlashSkillItem[] = [
+  {
+    name: '3-Agent Viability Swarm',
+    command: '/eval',
+    syntax: '/eval <idea proposal>',
+    description: 'Autonomous 3-agent evaluation: The Judge + Researcher + Planner + Live UI',
+    badge: 'SWARM',
+    icon: Scale,
+    color: 'text-[#FF5533]',
+  },
+  {
+    name: 'Feature Planner & Blueprint',
+    command: '/plan',
+    syntax: '/plan <feature or spec>',
+    description: 'Technical architecture, API contracts, database schema & 1-click roadmap tasks',
+    badge: 'ARCHITECT',
+    icon: Layers,
+    color: 'text-amber-500',
+  },
+  {
+    name: 'Market & Tech Feasibility',
+    command: '/research',
+    syntax: '/research <topic or library>',
+    description: 'Competitor benchmarks, open-source library reuse & failure mode scout',
+    badge: 'SCOUT',
+    icon: Search,
+    color: 'text-[#0047FF]',
+  },
+  {
+    name: 'Security & Scalability Audit',
+    command: '/audit',
+    syntax: '/audit <target system or feature>',
+    description: 'OWASP security, IDOR, SQL/NoSQL safety, N+1 query patterns & concurrency audit',
+    badge: 'SECURITY',
+    icon: ShieldCheck,
+    color: 'text-rose-600',
+  },
+  {
+    name: 'OpenUI Generative UI Screen',
+    command: '/openui',
+    syntax: '/openui <ui brief or dashboard>',
+    description: 'Generates live interactive generative UI screens powered by OUI-1 DSL',
+    badge: 'OUI-1',
+    icon: Sparkles,
+    color: 'text-purple-600',
+  },
+  {
+    name: 'Workspace Telemetry & Stats',
+    command: '/stats',
+    syntax: '/stats',
+    description: 'Synthesizes repository status, Qdrant vectors & workspace metrics dashboard',
+    badge: 'TELEMETRY',
+    icon: Activity,
+    color: 'text-emerald-600',
+  },
+  {
+    name: 'Lean MVP Pivot Blueprint',
+    command: '/pivot',
+    syntax: '/pivot <complex feature>',
+    description: 'Generates high-leverage lean MVP alternative to bypass over-engineering',
+    badge: 'PIVOT',
+    icon: Target,
+    color: 'text-indigo-600',
+  },
+  {
+    name: 'Command & Syntax Reference',
+    command: '/help',
+    syntax: '/help',
+    description: 'Displays cheat-sheet for slash skills (/), repo tags (@), and idea tags (#)',
+    badge: 'GUIDE',
+    icon: HelpCircle,
+    color: 'text-neutral-600',
+  },
+];
 
 function generateClientMessageId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -97,9 +188,16 @@ export default function ChatPage() {
   // Planner sub-tab per message ID (pivot vs original)
   const [plannerSubTabPerMessage, setPlannerSubTabPerMessage] = useState<{ [msgId: string]: 'pivot' | 'original' }>({});
 
-  // Projects for Grounded Context
+  // Projects & Incubator Ideas for Grounded Context & Tagging
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [ideas, setIdeas] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+
+  // Slash Skills & Mentions Autocomplete State
+  const [mentionTrigger, setMentionTrigger] = useState<'/' | '@' | '#' | null>(null);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionSelectedIndex, setMentionSelectedIndex] = useState(0);
+  const [showMentions, setShowMentions] = useState(false);
 
   // Qdrant Telemetry State & OpenUI / OUI-1 Status
   const [qdrantStatus, setQdrantStatus] = useState<QdrantStatus | null>(null);
@@ -139,6 +237,15 @@ export default function ChatPage() {
       setProjects(res || []);
     } catch (err) {
       console.warn('Failed to fetch projects list:', err);
+    }
+  };
+
+  const fetchIdeas = async () => {
+    try {
+      const res: any = await api.get('/future-projects');
+      setIdeas(res || []);
+    } catch (err) {
+      console.warn('Failed to fetch incubator ideas list:', err);
     }
   };
 
@@ -279,12 +386,13 @@ export default function ChatPage() {
     }
   }, [authLoading, isAuthenticated, router]);
 
-  // Fetch initial telemetry, project list, and user's isolated chat sessions
+  // Fetch initial telemetry, project list, incubator ideas, and user's isolated chat sessions
   useEffect(() => {
     if (isAuthenticated) {
       fetchQdrantStatus();
       fetchOui1Status();
       fetchProjects();
+      fetchIdeas();
       fetchSessions(true);
     }
   }, [isAuthenticated, selectedProjectId]);
@@ -377,6 +485,21 @@ export default function ChatPage() {
           ...prev,
           [assistantMessage.id]: 'judge',
         }));
+      } else if (response.mode === 'plan' || response.subagent_data?.planner) {
+        setActiveTabPerMessage((prev) => ({
+          ...prev,
+          [assistantMessage.id]: 'planner',
+        }));
+      } else if (response.mode === 'research' || response.subagent_data?.researcher) {
+        setActiveTabPerMessage((prev) => ({
+          ...prev,
+          [assistantMessage.id]: 'researcher',
+        }));
+      } else if (response.mode === 'openui') {
+        setActiveTabPerMessage((prev) => ({
+          ...prev,
+          [assistantMessage.id]: 'openui',
+        }));
       }
     } catch (err: any) {
       const errorMessage: ChatMessage = {
@@ -392,7 +515,151 @@ export default function ChatPage() {
     }
   };
 
+  // Computed filtered items for slash/mentions autocomplete
+  const filteredSkills = AVAILABLE_SLASH_SKILLS.filter(
+    (s) =>
+      s.command.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      s.name.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      s.badge.toLowerCase().includes(mentionQuery.toLowerCase())
+  );
+
+  const filteredProjects = projects.filter(
+    (p) =>
+      p.name.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      (p.primary_language || '').toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      (p.description || '').toLowerCase().includes(mentionQuery.toLowerCase())
+  );
+
+  const filteredIdeas = ideas.filter(
+    (i) =>
+      (i.title || '').toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      (i.elevator_pitch || '').toLowerCase().includes(mentionQuery.toLowerCase()) ||
+      (i.target_tech_stack || '').toLowerCase().includes(mentionQuery.toLowerCase())
+  );
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setInputValue(val);
+
+    const cursor = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursor);
+
+    // Match if user is currently typing a trigger character (/, @, #) at cursor
+    const match = textBeforeCursor.match(/(?:^|\s)([\/@#])([a-zA-Z0-9_\-\.]*)$/);
+    if (match) {
+      const trigger = match[1] as '/' | '@' | '#';
+      const query = match[2] || '';
+      setMentionTrigger(trigger);
+      setMentionQuery(query);
+      setMentionSelectedIndex(0);
+      setShowMentions(true);
+    } else {
+      setShowMentions(false);
+      setMentionTrigger(null);
+      setMentionQuery('');
+    }
+  };
+
+  const handleInsertMention = (insertedText: string) => {
+    if (!textareaRef.current) return;
+    const cursor = textareaRef.current.selectionStart;
+    const textBeforeCursor = inputValue.slice(0, cursor);
+    const textAfterCursor = inputValue.slice(cursor);
+
+    // Locate the start of the current trigger in textBeforeCursor
+    const lastTriggerIdx = textBeforeCursor.search(/(?:^|\s)[/@#][a-zA-Z0-9_\-\.]*$/);
+    if (lastTriggerIdx === -1) {
+      setInputValue((prev) => `${prev} ${insertedText} `);
+      setShowMentions(false);
+      return;
+    }
+
+    const spaceOffset = textBeforeCursor[lastTriggerIdx] === ' ' || textBeforeCursor[lastTriggerIdx] === '\n' ? 1 : 0;
+    const startReplaceIdx = lastTriggerIdx + spaceOffset;
+
+    const newPrefix = inputValue.slice(0, startReplaceIdx) + insertedText + ' ';
+    const newFullText = newPrefix + textAfterCursor;
+
+    setInputValue(newFullText);
+    setShowMentions(false);
+    setMentionTrigger(null);
+    setMentionQuery('');
+
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(newPrefix.length, newPrefix.length);
+      }
+    }, 10);
+  };
+
+  const handleToggleSkill = (skillCmd: string) => {
+    setInputValue((prev) => {
+      const trimmed = prev.trim();
+      if (trimmed.startsWith(skillCmd)) {
+        return trimmed.replace(new RegExp(`^\\${skillCmd}\\s*`), '');
+      }
+      const clean = trimmed.replace(/^\/(?:eval|evaluate|plan|research|audit|openui|stats|pivot|help)\s*/i, '');
+      return clean ? `${skillCmd} ${clean}` : `${skillCmd} `;
+    });
+    textareaRef.current?.focus();
+  };
+
+  const handleTriggerMentionPicker = (char: '@' | '#') => {
+    setInputValue((prev) => {
+      const trimmed = prev.endsWith(' ') || prev.length === 0 ? prev : `${prev} `;
+      return `${trimmed}${char}`;
+    });
+    setMentionTrigger(char);
+    setMentionQuery('');
+    setMentionSelectedIndex(0);
+    setShowMentions(true);
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 10);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (showMentions) {
+      const listCount =
+        mentionTrigger === '/'
+          ? filteredSkills.length
+          : mentionTrigger === '@'
+          ? filteredProjects.length
+          : filteredIdeas.length;
+
+      if (listCount > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setMentionSelectedIndex((prev) => (prev + 1) % listCount);
+          return;
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setMentionSelectedIndex((prev) => (prev - 1 + listCount) % listCount);
+          return;
+        }
+        if (e.key === 'Enter' || e.key === 'Tab') {
+          e.preventDefault();
+          if (mentionTrigger === '/') {
+            handleInsertMention(filteredSkills[mentionSelectedIndex].command);
+          } else if (mentionTrigger === '@') {
+            handleInsertMention(`@${filteredProjects[mentionSelectedIndex].name}`);
+          } else if (mentionTrigger === '#') {
+            handleInsertMention(`#${filteredIdeas[mentionSelectedIndex].title}`);
+          }
+          return;
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setShowMentions(false);
+          return;
+        }
+      }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -926,10 +1193,35 @@ export default function ChatPage() {
                         {/* Copy / Actions Bar */}
                         <div className="flex items-center justify-between pb-3 border-b border-neutral-200/80">
                           <div className="flex items-center gap-2">
-                            {hasSubAgents ? (
+                            {hasSubAgents && subData.judge ? (
                               <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-[#DFFF4F]/90 text-neutral-900 border border-amber-300 rounded-full">
                                 <Bot className="w-3.5 h-3.5 text-black" />
-                                <span>3 Sub-Agents Executed</span>
+                                <span>3 Sub-Agents Executed (/eval)</span>
+                              </div>
+                            ) : subData?.planner ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-amber-50 text-amber-900 border border-amber-300 rounded-full">
+                                <Layers className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Feature Planner (/plan)</span>
+                              </div>
+                            ) : subData?.researcher ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-blue-50 text-blue-900 border border-blue-300 rounded-full">
+                                <Search className="w-3.5 h-3.5 text-[#0047FF]" />
+                                <span>Market Scout (/research)</span>
+                              </div>
+                            ) : subData?.auditor ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-rose-50 text-rose-900 border border-rose-300 rounded-full">
+                                <ShieldCheck className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Security Auditor (/audit)</span>
+                              </div>
+                            ) : msg.mode === 'stats' ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-full">
+                                <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Workspace Telemetry (/stats)</span>
+                              </div>
+                            ) : msg.mode === 'openui' ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-purple-50 text-purple-900 border border-purple-300 rounded-full">
+                                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                                <span>Generative UI (/openui)</span>
                               </div>
                             ) : (
                               <div className="px-2.5 py-0.5 text-[11px] font-mono font-bold uppercase bg-white text-neutral-700 border border-neutral-200 rounded-full">
@@ -1223,13 +1515,70 @@ export default function ChatPage() {
                           </div>
                         )}
 
-                        {/* Conversational Output with OpenUI Generative UI */}
+                        {/* Conversational & Specialized Output with OpenUI Generative UI */}
                         {(!hasSubAgents || !subData.judge) && (
-                          <OpenUIRenderer
-                            content={msg.content}
-                            openuiLang={msg.openui_lang || subData?.openui_lang}
-                            onAction={handleOpenUIAction}
-                          />
+                          <div className="space-y-4">
+                            <OpenUIRenderer
+                              content={msg.content}
+                              openuiLang={msg.openui_lang || subData?.openui_lang}
+                              onAction={handleOpenUIAction}
+                            />
+
+                            {/* Standalone /plan 1-Click Feature Roadmap Additions */}
+                            {subData?.planner?.suggested_features && subData.planner.suggested_features.length > 0 && (
+                              <div className="pt-2 space-y-2">
+                                <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                                  <Layers className="w-3.5 h-3.5 text-[#0047FF]" />
+                                  <span>1-Click Add to Project Roadmap</span>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2">
+                                  {subData.planner.suggested_features.map((feat: any, idx: number) => {
+                                    const itemKey = `standalone-feat-${msg.id}-${idx}`;
+                                    const isAdded = addedItemIds[itemKey];
+                                    return (
+                                      <div
+                                        key={idx}
+                                        className="p-3.5 bg-white rounded-xl border border-neutral-200/90 hover:border-neutral-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs transition-all"
+                                      >
+                                        <div className="space-y-1">
+                                          <div className="flex items-center gap-2">
+                                            <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-neutral-900 text-white rounded-md uppercase">
+                                              {feat.priority || 'P1'}
+                                            </span>
+                                            <span className="font-bold text-neutral-900 text-xs">{feat.title}</span>
+                                          </div>
+                                          <p className="text-[11px] text-neutral-500 leading-normal font-mono">
+                                            {feat.description}
+                                          </p>
+                                        </div>
+                                        <button
+                                          onClick={() => handleAddSuggestedFeature(feat, itemKey)}
+                                          disabled={isAdded}
+                                          className={`px-3.5 py-1.5 text-xs font-bold font-mono uppercase shrink-0 rounded-xl flex items-center gap-1.5 transition cursor-pointer ${
+                                            isAdded
+                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+                                              : 'bg-neutral-900 hover:bg-[#0047FF] text-white shadow-xs active:translate-y-0.5'
+                                          }`}
+                                        >
+                                          {isAdded ? (
+                                            <>
+                                              <Check className="w-3.5 h-3.5" />
+                                              <span>Added</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Plus className="w-3.5 h-3.5" />
+                                              <span>Add to Roadmap</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
 
                         {/* Grounded RAG Citations Bar */}
@@ -1332,37 +1681,287 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Prompt Input Box */}
-        <div className="bg-white border border-neutral-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow space-y-3">
-          {/* Quick Prompts & Skills Row */}
+        {/* Prompt Input Box & Autocomplete Popover */}
+        <div className="relative bg-white border border-neutral-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow space-y-3">
+          {/* Floating Autocomplete Popover */}
+          {showMentions && (
+            <div className="absolute bottom-full left-0 right-0 mb-3 bg-white/95 backdrop-blur-md rounded-2xl border border-neutral-200/90 shadow-2xl overflow-hidden z-30 max-h-80 flex flex-col animate-fade-in">
+              {/* Popover Header */}
+              <div className="px-4 py-2.5 bg-neutral-100/90 border-b border-neutral-200/80 flex items-center justify-between text-xs font-mono font-bold uppercase">
+                <div className="flex items-center gap-2">
+                  {mentionTrigger === '/' && (
+                    <>
+                      <span className="w-5 h-5 rounded-md bg-neutral-900 text-[#DFFF4F] flex items-center justify-center font-bold text-xs">/</span>
+                      <span className="text-neutral-900">Slash Skills</span>
+                      <span className="text-neutral-400 font-normal">({filteredSkills.length} available)</span>
+                    </>
+                  )}
+                  {mentionTrigger === '@' && (
+                    <>
+                      <span className="w-5 h-5 rounded-md bg-[#0047FF] text-white flex items-center justify-center font-bold text-xs">@</span>
+                      <span className="text-neutral-900">Tag Project Repository</span>
+                      <span className="text-neutral-400 font-normal">({filteredProjects.length} repos)</span>
+                    </>
+                  )}
+                  {mentionTrigger === '#' && (
+                    <>
+                      <span className="w-5 h-5 rounded-md bg-amber-500 text-black flex items-center justify-center font-bold text-xs">#</span>
+                      <span className="text-neutral-900">Tag Incubator Idea</span>
+                      <span className="text-neutral-400 font-normal">({filteredIdeas.length} ideas)</span>
+                    </>
+                  )}
+                </div>
+                <span className="text-[10px] text-neutral-400 font-mono font-normal">↑↓ navigate &bull; Enter to select &bull; Esc to dismiss</span>
+              </div>
+
+              {/* Popover Item List */}
+              <div className="overflow-y-auto p-1.5 space-y-1 divide-y divide-neutral-100/50">
+                {mentionTrigger === '/' && (
+                  filteredSkills.length === 0 ? (
+                    <div className="p-4 text-center text-xs font-mono text-neutral-400">No matching slash skills found.</div>
+                  ) : (
+                    filteredSkills.map((skill, idx) => {
+                      const Icon = skill.icon;
+                      const isSelected = idx === mentionSelectedIndex;
+                      return (
+                        <button
+                          key={skill.command}
+                          type="button"
+                          onClick={() => handleInsertMention(skill.command)}
+                          onMouseEnter={() => setMentionSelectedIndex(idx)}
+                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 cursor-pointer ${
+                            isSelected
+                              ? 'bg-neutral-900 text-white shadow-xs'
+                              : 'hover:bg-neutral-100 text-neutral-800'
+                          }`}
+                        >
+                          <div className={`p-2 rounded-lg shrink-0 ${isSelected ? 'bg-neutral-800 text-[#DFFF4F]' : 'bg-neutral-100 text-neutral-700'}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={`font-mono font-bold text-xs ${isSelected ? 'text-[#DFFF4F]' : 'text-neutral-900'}`}>{skill.command}</span>
+                              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-bold uppercase ${
+                                isSelected ? 'bg-neutral-800 text-neutral-200' : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
+                              }`}>
+                                {skill.badge}
+                              </span>
+                              <span className="text-xs font-semibold truncate opacity-90">{skill.name}</span>
+                            </div>
+                            <p className={`text-[11px] truncate mt-0.5 ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                              {skill.description}
+                            </p>
+                          </div>
+                          <span className={`text-[10px] font-mono font-medium shrink-0 pt-0.5 ${isSelected ? 'text-neutral-400' : 'text-neutral-400'}`}>
+                            {skill.syntax}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )
+                )}
+
+                {mentionTrigger === '@' && (
+                  filteredProjects.length === 0 ? (
+                    <div className="p-4 text-center text-xs font-mono text-neutral-400">No matching projects found.</div>
+                  ) : (
+                    filteredProjects.map((proj, idx) => {
+                      const isSelected = idx === mentionSelectedIndex;
+                      return (
+                        <button
+                          key={proj.id}
+                          type="button"
+                          onClick={() => handleInsertMention(`@${proj.name}`)}
+                          onMouseEnter={() => setMentionSelectedIndex(idx)}
+                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                            isSelected
+                              ? 'bg-neutral-900 text-white shadow-xs'
+                              : 'hover:bg-neutral-100 text-neutral-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`p-1.5 rounded-lg shrink-0 ${isSelected ? 'bg-neutral-800 text-blue-300' : 'bg-blue-50 text-[#0047FF]'}`}>
+                              <FolderGit2 className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-mono font-bold text-xs ${isSelected ? 'text-white' : 'text-neutral-900'}`}>@{proj.name}</span>
+                                {proj.primary_language && (
+                                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-semibold ${
+                                    isSelected ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'
+                                  }`}>
+                                    {proj.primary_language}
+                                  </span>
+                                )}
+                              </div>
+                              {proj.description && (
+                                <p className={`text-[11px] truncate max-w-md ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                                  {proj.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <span className={`text-[11px] font-mono shrink-0 font-bold ${isSelected ? 'text-emerald-400' : 'text-neutral-400'}`}>
+                            {proj.project_type || 'PRODUCTION'}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )
+                )}
+
+                {mentionTrigger === '#' && (
+                  filteredIdeas.length === 0 ? (
+                    <div className="p-4 text-center text-xs font-mono text-neutral-400">No matching incubator ideas found.</div>
+                  ) : (
+                    filteredIdeas.map((idea, idx) => {
+                      const isSelected = idx === mentionSelectedIndex;
+                      return (
+                        <button
+                          key={idea.id}
+                          type="button"
+                          onClick={() => handleInsertMention(`#${idea.title}`)}
+                          onMouseEnter={() => setMentionSelectedIndex(idx)}
+                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                            isSelected
+                              ? 'bg-neutral-900 text-white shadow-xs'
+                              : 'hover:bg-neutral-100 text-neutral-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`p-1.5 rounded-lg shrink-0 ${isSelected ? 'bg-neutral-800 text-amber-300' : 'bg-amber-50 text-amber-600'}`}>
+                              <Zap className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-mono font-bold text-xs ${isSelected ? 'text-white' : 'text-neutral-900'}`}>#{idea.title}</span>
+                                <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-bold uppercase ${
+                                  isSelected ? 'bg-neutral-800 text-amber-400' : 'bg-amber-100 text-amber-800'
+                                }`}>
+                                  {idea.priority || 'P1'}
+                                </span>
+                              </div>
+                              {(idea.elevator_pitch || idea.target_tech_stack) && (
+                                <p className={`text-[11px] truncate max-w-md ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                                  {idea.elevator_pitch || idea.target_tech_stack}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <span className={`text-[10px] font-mono shrink-0 uppercase ${isSelected ? 'text-neutral-400' : 'text-neutral-400'}`}>
+                            {idea.status || 'IDEA'}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Prompts, Skills & Mentions Dock */}
           <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs">
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  setInputValue((prev) => {
-                    const trimmed = prev.trim();
-                    if (trimmed.startsWith('/eval ')) {
-                      return trimmed.replace(/^\/eval\s+/, '');
-                    } else if (trimmed.startsWith('/eval')) {
-                      return '';
-                    }
-                    return trimmed ? `/eval ${trimmed}` : '/eval ';
-                  });
-                  textareaRef.current?.focus();
-                }}
-                className={`px-3 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                onClick={() => handleToggleSkill('/eval')}
+                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   inputValue.trim().startsWith('/eval')
-                    ? 'bg-neutral-900 text-[#DFFF4F] border-neutral-900 ring-2 ring-neutral-900/10'
+                    ? 'bg-neutral-900 text-[#DFFF4F] border-neutral-900'
                     : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
                 }`}
-                title="Toggle /eval skill: 3-subagent evaluation pipeline (Researcher + Judge + Planner)"
+                title="/eval: 3-subagent evaluation swarm (Researcher + Judge + Planner)"
               >
-                <Scale className="w-3.5 h-3.5 text-[#FF5533]" />
-                <span>Skill: /eval</span>
-                {inputValue.trim().startsWith('/eval') && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                )}
+                <Scale className="w-3 h-3 text-[#FF5533]" />
+                <span>/eval</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleSkill('/plan')}
+                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                  inputValue.trim().startsWith('/plan')
+                    ? 'bg-neutral-900 text-amber-300 border-neutral-900'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+                }`}
+                title="/plan: Technical architecture and 1-click roadmap tasks"
+              >
+                <Layers className="w-3 h-3 text-amber-500" />
+                <span>/plan</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleSkill('/research')}
+                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                  inputValue.trim().startsWith('/research')
+                    ? 'bg-neutral-900 text-blue-300 border-neutral-900'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+                }`}
+                title="/research: Competitor benchmarks and OSS library scout"
+              >
+                <Search className="w-3 h-3 text-[#0047FF]" />
+                <span>/research</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleSkill('/audit')}
+                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                  inputValue.trim().startsWith('/audit')
+                    ? 'bg-neutral-900 text-rose-300 border-neutral-900'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+                }`}
+                title="/audit: Security, OWASP, IDOR, and database audit"
+              >
+                <ShieldCheck className="w-3 h-3 text-rose-600" />
+                <span>/audit</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleSkill('/openui')}
+                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                  inputValue.trim().startsWith('/openui')
+                    ? 'bg-neutral-900 text-purple-300 border-neutral-900'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+                }`}
+                title="/openui: Interactive UI DSL generator"
+              >
+                <Sparkles className="w-3 h-3 text-purple-600" />
+                <span>/openui</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleSkill('/stats')}
+                className={`px-2.5 py-1 rounded-full border text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
+                  inputValue.trim().startsWith('/stats')
+                    ? 'bg-neutral-900 text-emerald-300 border-neutral-900'
+                    : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-neutral-200'
+                }`}
+                title="/stats: Repository metrics and telemetry"
+              >
+                <Activity className="w-3 h-3 text-emerald-600" />
+                <span>/stats</span>
+              </button>
+
+              <div className="h-4 w-px bg-neutral-300 mx-0.5" />
+
+              <button
+                type="button"
+                onClick={() => handleTriggerMentionPicker('@')}
+                className="px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-800 text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                title="Mention a connected project/repo to inject context"
+              >
+                <AtSign className="w-3 h-3 text-[#0047FF]" />
+                <span>@project</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTriggerMentionPicker('#')}
+                className="px-2.5 py-1 rounded-full border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-amber-900 text-[11px] font-mono font-bold uppercase transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                title="Mention an incubator idea to inject context"
+              >
+                <Hash className="w-3 h-3 text-amber-600" />
+                <span>#idea</span>
               </button>
             </div>
 
@@ -1388,9 +1987,9 @@ export default function ChatPage() {
               ref={textareaRef}
               rows={2}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything, or use /eval <idea> to activate the 3-sub-agent evaluation swarm..."
+              placeholder="Ask anything, or use /plan, /audit, /eval, @project, #idea..."
               className="flex-1 bg-neutral-50/70 border border-neutral-200/90 rounded-xl text-neutral-900 placeholder-neutral-400 text-sm font-sans p-3.5 outline-none focus:bg-white focus:border-[#0047FF] focus:ring-2 focus:ring-[#0047FF]/10 transition-all resize-none leading-relaxed"
             />
             <button

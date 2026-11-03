@@ -47,3 +47,4 @@ class ChatMessageRecord(SQLModel, table=True):
 
     # Relationships
     session: Optional["ChatSession"] = Relationship(back_populates="messages")
+
