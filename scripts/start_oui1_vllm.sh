@@ -28,3 +28,4 @@ vllm serve thesysdev/OUI-1 \
     --served-model-name OUI-1 \
     --port 8001 \
     --host 0.0.0.0
+

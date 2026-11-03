@@ -127,3 +127,4 @@ f2 = FeatureCard("Live WebSocket Stream Dock", "P1", "S", "Client dock connectin
 
 checklistSection = TaskChecklist("Sprint Delivery Checklist", ["Validate Pydantic schema contracts", "Index vectors into Qdrant Cloud", "Run Jest and Turbopack builds", "Deploy to Vercel and Render"], "ENGINEERING")
 ```
+
