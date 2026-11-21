@@ -399,9 +399,8 @@ export default function IdeasPage() {
               <button
                 type="button"
                 onClick={() => setIsCompact(true)}
-                className={`px-2.5 py-0.5 uppercase transition cursor-pointer ${
-                  isCompact ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
-                }`}
+                className={`px-2.5 py-0.5 uppercase transition cursor-pointer ${isCompact ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
+                  }`}
                 title="Compact view - see more ideas without scrolling"
               >
                 Compact
@@ -409,9 +408,8 @@ export default function IdeasPage() {
               <button
                 type="button"
                 onClick={() => setIsCompact(false)}
-                className={`px-2.5 py-0.5 uppercase transition cursor-pointer ${
-                  !isCompact ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
-                }`}
+                className={`px-2.5 py-0.5 uppercase transition cursor-pointer ${!isCompact ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
+                  }`}
                 title="Detailed view - expanded notes & scope"
               >
                 Detailed
@@ -436,9 +434,8 @@ export default function IdeasPage() {
               <div key={prio} className="space-y-3">
                 <div className="flex items-center justify-between px-1 text-xs font-mono">
                   <div className="flex items-center gap-2">
-                    <span className={`w-3 h-3 border border-black ${
-                      prio === 'P0' ? 'bg-[#FF5533]' : prio === 'P1' ? 'bg-amber-300' : 'bg-[#BBF7D0]'
-                    }`} />
+                    <span className={`w-3 h-3 border border-black ${prio === 'P0' ? 'bg-[#FF5533]' : prio === 'P1' ? 'bg-amber-300' : 'bg-[#BBF7D0]'
+                      }`} />
                     <span className="text-black font-black uppercase tracking-wider">{columnTitles[prio]}</span>
                   </div>
                   <span className="text-[11px] font-black px-2 py-0.5 bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000000]">
@@ -446,7 +443,7 @@ export default function IdeasPage() {
                   </span>
                 </div>
 
-                <div className="space-y-3 max-h-[calc(100vh-230px)] overflow-y-auto pr-1">
+                <div className="space-y-3">
                   {columnIdeas.length === 0 ? (
                     <div className="bg-white border-2 border-black p-5 text-center text-xs text-neutral-500 font-mono shadow-sm">
                       No concepts currently in this priority track.
@@ -575,7 +572,7 @@ export default function IdeasPage() {
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-white border-3 border-black w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-[10px_10px_0px_#000000] p-6 space-y-4 text-black">
-            
+
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b-2 border-black">
               <div className="flex items-center gap-2.5">
@@ -589,8 +586,8 @@ export default function IdeasPage() {
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowImportModal(false)} 
+              <button
+                onClick={() => setShowImportModal(false)}
                 className="p-1 bg-[#FAF7EE] border border-black hover:bg-black hover:text-white transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
