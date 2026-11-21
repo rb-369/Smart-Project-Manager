@@ -198,8 +198,6 @@ export default function ChatPage() {
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
 
-  // Active sub-agent tab per message ID
-  const [activeTabPerMessage, setActiveTabPerMessage] = useState<{ [msgId: string]: 'openui' | 'researcher' | 'judge' | 'planner' }>({});
   // Planner sub-tab per message ID (pivot vs original)
   const [plannerSubTabPerMessage, setPlannerSubTabPerMessage] = useState<{ [msgId: string]: 'pivot' | 'original' }>({});
 
@@ -506,28 +504,6 @@ export default function ChatPage() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-
-      if (response.subagent_data?.is_pipeline) {
-        setActiveTabPerMessage((prev) => ({
-          ...prev,
-          [assistantMessage.id]: 'judge',
-        }));
-      } else if (response.mode === 'plan' || response.subagent_data?.planner) {
-        setActiveTabPerMessage((prev) => ({
-          ...prev,
-          [assistantMessage.id]: 'planner',
-        }));
-      } else if (response.mode === 'research' || response.subagent_data?.researcher) {
-        setActiveTabPerMessage((prev) => ({
-          ...prev,
-          [assistantMessage.id]: 'researcher',
-        }));
-      } else if (response.mode === 'openui') {
-        setActiveTabPerMessage((prev) => ({
-          ...prev,
-          [assistantMessage.id]: 'openui',
-        }));
-      }
     } catch (err: any) {
       const errorMessage: ChatMessage = {
         id: generateClientMessageId('err'),
@@ -1238,7 +1214,6 @@ export default function ChatPage() {
             messages.map((msg) => {
               const subData = msg.subagent_data;
               const hasSubAgents = subData && subData.is_pipeline;
-              const activeTab = activeTabPerMessage[msg.id] || (subData?.openui_lang || msg.openui_lang ? 'openui' : 'judge');
               const plannerSubTab = plannerSubTabPerMessage[msg.id] || 'pivot';
 
               return (
@@ -1369,114 +1344,88 @@ export default function ChatPage() {
                               </p>
                             </div>
 
-                            {/* 2. Sub-Agent Interactive Tabs */}
-                            <div className="flex items-center gap-1 p-1 bg-neutral-200/60 rounded-xl border border-neutral-300/50">
-                              {/* Tab 1: The Judge */}
-                              <button
-                                onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'judge' }))}
-                                className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
-                                  activeTab === 'judge'
-                                    ? 'bg-white text-neutral-900 shadow-xs'
-                                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/50'
-                                }`}
-                              >
-                                <Scale className="w-3.5 h-3.5 text-[#FF5533]" />
-                                <span>1. The Judge</span>
-                              </button>
-
-                              {/* Tab 2: Market Researcher */}
-                              <button
-                                onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'researcher' }))}
-                                className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
-                                  activeTab === 'researcher'
-                                    ? 'bg-white text-neutral-900 shadow-xs'
-                                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/50'
-                                }`}
-                              >
-                                <Search className="w-3.5 h-3.5 text-[#0047FF]" />
-                                <span>2. Researcher</span>
-                              </button>
-
-                              {/* Tab 3: Feature Planner */}
-                              <button
-                                onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'planner' }))}
-                                className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
-                                  activeTab === 'planner'
-                                    ? 'bg-white text-neutral-900 shadow-xs'
-                                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-white/50'
-                                }`}
-                              >
-                                <Layers className="w-3.5 h-3.5 text-amber-500" />
-                                <span>3. Feature Planner</span>
-                              </button>
-
-                              {/* Tab 4: OpenUI Interactive UI */}
-                              {(subData.openui_lang || msg.openui_lang || (subData.is_pipeline && subData.judge)) && (
-                                <button
-                                  onClick={() => setActiveTabPerMessage((prev) => ({ ...prev, [msg.id]: 'openui' }))}
-                                  className={`px-3 py-1.5 text-xs font-bold font-mono uppercase flex items-center gap-1.5 rounded-lg transition-all cursor-pointer ${
-                                    activeTab === 'openui'
-                                      ? 'bg-neutral-900 text-white shadow-xs'
-                                      : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/50'
-                                  }`}
-                                >
-                                  <Sparkles className="w-3.5 h-3.5 text-[#DFFF4F]" />
-                                  <span>4. Interactive UI</span>
-                                  <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#DFFF4F] text-black">
-                                    OUI-1
-                                  </span>
-                                </button>
-                              )}
-                            </div>
-
-                            {/* Tab Content 1: The Judge */}
-                            {activeTab === 'judge' && (
-                              <div className="space-y-3 animate-fade-in text-xs">
+                            {/* 2. Critical Evaluation: Assessment, Fatal Flaws & Smart Alternative */}
+                            <div className="space-y-3 text-xs">
+                              {subData.judge.brutal_critique && (
                                 <div className="p-4 bg-white rounded-xl border border-neutral-200/90 space-y-1.5 shadow-xs">
-                                  <div className="font-mono text-neutral-800 uppercase tracking-wider text-[11px] font-bold">
-                                    Unvarnished Assessment
+                                  <div className="font-mono text-neutral-800 uppercase tracking-wider text-[11px] font-bold flex items-center gap-1.5">
+                                    <Scale className="w-3.5 h-3.5 text-[#FF5533]" />
+                                    <span>Unvarnished Assessment</span>
                                   </div>
                                   <p className="text-neutral-700 leading-relaxed font-sans text-xs">
                                     {subData.judge.brutal_critique}
                                   </p>
                                 </div>
+                              )}
 
-                                {/* Strengths vs Fatal Flaws */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  {/* Fatal Flaws */}
-                                  <div className="p-4 bg-rose-50/70 rounded-xl border border-rose-200/80 space-y-2 shadow-xs">
-                                    <div className="font-bold text-rose-800 flex items-center gap-1.5 font-mono text-[11px] uppercase">
-                                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                                      <span>Fatal Flaws &amp; Risks</span>
-                                    </div>
-                                    <ul className="space-y-1.5 text-neutral-800 font-sans text-xs">
-                                      {(subData.judge.failure_modes || []).map((flaw, i) => (
-                                        <li key={i} className="flex items-start gap-1.5">
-                                          <span className="text-rose-500 font-bold">&bull;</span>
-                                          <span>{flaw}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
+                              {/* Strengths vs Fatal Flaws */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {/* Fatal Flaws */}
+                                <div className="p-4 bg-rose-50/70 rounded-xl border border-rose-200/80 space-y-2 shadow-xs">
+                                  <div className="font-bold text-rose-800 flex items-center gap-1.5 font-mono text-[11px] uppercase">
+                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                                    <span>Fatal Flaws &amp; Risks</span>
                                   </div>
+                                  <ul className="space-y-1.5 text-neutral-800 font-sans text-xs">
+                                    {(subData.judge.failure_modes || []).map((flaw: string, i: number) => (
+                                      <li key={i} className="flex items-start gap-1.5">
+                                        <span className="text-rose-500 font-bold">&bull;</span>
+                                        <span>{flaw}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
 
-                                  {/* What To Build Instead */}
-                                  <div className="p-4 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-2 shadow-xs">
-                                    <div className="font-bold text-[#0047FF] flex items-center gap-1.5 font-mono text-[11px] uppercase">
-                                      <Zap className="w-3.5 h-3.5 text-[#0047FF]" />
-                                      <span>Smart Alternative Proposal</span>
-                                    </div>
-                                    <p className="text-neutral-800 leading-relaxed font-sans text-xs">
-                                      {subData.judge.what_to_build_instead || 'Focus on the simplest verifiable MVP slice first.'}
-                                    </p>
+                                {/* What To Build Instead */}
+                                <div className="p-4 bg-blue-50/70 rounded-xl border border-blue-200/80 space-y-2 shadow-xs">
+                                  <div className="font-bold text-[#0047FF] flex items-center gap-1.5 font-mono text-[11px] uppercase">
+                                    <Zap className="w-3.5 h-3.5 text-[#0047FF]" />
+                                    <span>Smart Alternative Proposal</span>
                                   </div>
+                                  <p className="text-neutral-800 leading-relaxed font-sans text-xs">
+                                    {subData.judge.what_to_build_instead || 'Focus on the simplest verifiable MVP slice first.'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 3. Interactive UI Prototype (OpenUI / OUI-1) */}
+                            {(subData.openui_lang || msg.openui_lang || (subData.is_pipeline && subData.judge)) && (
+                              <div className="p-4 bg-neutral-900 rounded-xl border border-neutral-800 text-white space-y-3 shadow-xs">
+                                <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
+                                  <div className="flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4 text-[#DFFF4F]" />
+                                    <span className="font-mono font-bold text-xs uppercase tracking-wider text-white">
+                                      Interactive Prototype Component
+                                    </span>
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#DFFF4F] text-black uppercase">
+                                      OUI-1
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] font-mono text-neutral-400">Live preview &amp; action triggers</span>
+                                </div>
+                                <div className="bg-white rounded-lg p-3 text-neutral-900">
+                                  <OpenUIRenderer
+                                    content=""
+                                    openuiLang={
+                                      subData.openui_lang ||
+                                      msg.openui_lang ||
+                                      generateFallbackOpenUIFromJudge(subData, msg)
+                                    }
+                                    onAction={handleOpenUIAction}
+                                  />
                                 </div>
                               </div>
                             )}
 
-                            {/* Tab Content 2: Market Researcher */}
-                            {activeTab === 'researcher' && subData.researcher && (
-                              <div className="space-y-3 animate-fade-in text-xs">
-                                <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs">
+                            {/* 4. Market & Competitor Feasibility (Researcher) */}
+                            {subData.researcher && (
+                              <div className="space-y-3 text-xs">
+                                <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs space-y-2">
+                                  <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5 pb-2 border-b border-neutral-100">
+                                    <Search className="w-3.5 h-3.5 text-[#0047FF]" />
+                                    <span>Market Research &amp; Technical Feasibility</span>
+                                  </div>
                                   <MarkdownRenderer content={subData.researcher.content} />
                                 </div>
 
@@ -1509,9 +1458,9 @@ export default function ChatPage() {
                               </div>
                             )}
 
-                            {/* Tab Content 3: Feature Planner */}
-                            {activeTab === 'planner' && subData.planner && (
-                              <div className="space-y-3 animate-fade-in text-xs">
+                            {/* 5. Technical Blueprint & 1-Click Feature Roadmap (Planner) */}
+                            {subData.planner && (
+                              <div className="space-y-3 text-xs">
                                 {subData.pivot_plan && (
                                   <div className="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-lg border border-neutral-200">
                                     <button
@@ -1539,7 +1488,11 @@ export default function ChatPage() {
                                 )}
 
                                 {/* Blueprint Content */}
-                                <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs">
+                                <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs space-y-2">
+                                  <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5 pb-2 border-b border-neutral-100">
+                                    <Layers className="w-3.5 h-3.5 text-amber-500" />
+                                    <span>Architecture Blueprint &amp; Execution Specification</span>
+                                  </div>
                                   <MarkdownRenderer
                                     content={
                                       subData.pivot_plan && plannerSubTab === 'pivot'
@@ -1562,7 +1515,7 @@ export default function ChatPage() {
                                       {(subData.pivot_plan && plannerSubTab === 'pivot'
                                         ? subData.pivot_plan.suggested_features
                                         : subData.planner.suggested_features
-                                      ).map((feat, idx) => {
+                                      ).map((feat: any, idx: number) => {
                                         const itemKey = `feat-${msg.id}-${plannerSubTab}-${idx}`;
                                         const isAdded = addedItemIds[itemKey];
                                         return (
@@ -1608,21 +1561,6 @@ export default function ChatPage() {
                                     </div>
                                   </div>
                                 )}
-                              </div>
-                            )}
-
-                            {/* Tab Content 4: OpenUI Interactive UI */}
-                            {activeTab === 'openui' && (subData.openui_lang || msg.openui_lang || (subData.is_pipeline && subData.judge)) && (
-                              <div className="space-y-3 animate-fade-in text-xs">
-                                <OpenUIRenderer
-                                  content=""
-                                  openuiLang={
-                                    subData.openui_lang ||
-                                    msg.openui_lang ||
-                                    generateFallbackOpenUIFromJudge(subData, msg)
-                                  }
-                                  onAction={handleOpenUIAction}
-                                />
                               </div>
                             )}
                           </div>
