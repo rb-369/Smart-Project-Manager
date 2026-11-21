@@ -228,6 +228,7 @@ export default function ChatPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const mentionListRef = useRef<HTMLDivElement>(null);
 
   const fetchQdrantStatus = async () => {
     try {
@@ -562,6 +563,44 @@ export default function ChatPage() {
       (i.elevator_pitch || '').toLowerCase().includes(mentionQuery.toLowerCase()) ||
       (i.target_tech_stack || '').toLowerCase().includes(mentionQuery.toLowerCase())
   );
+
+  const activeMentionListCount =
+    mentionTrigger === '/'
+      ? filteredSkills.length
+      : mentionTrigger === '@'
+      ? filteredProjects.length
+      : filteredIdeas.length;
+
+  // Auto-scroll highlighted mention item into view during keyboard navigation
+  useEffect(() => {
+    if (!showMentions || !mentionListRef.current) return;
+    const container = mentionListRef.current;
+    if (activeMentionListCount === 0) return;
+
+    if (mentionSelectedIndex === 0) {
+      container.scrollTop = 0;
+      return;
+    }
+
+    if (mentionSelectedIndex === activeMentionListCount - 1) {
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    const activeEl = container.querySelector<HTMLElement>(
+      `[data-mention-item][data-index="${mentionSelectedIndex}"]`
+    );
+    if (activeEl) {
+      const containerRect = container.getBoundingClientRect();
+      const activeRect = activeEl.getBoundingClientRect();
+
+      if (activeRect.top < containerRect.top) {
+        container.scrollTop += (activeRect.top - containerRect.top - 8);
+      } else if (activeRect.bottom > containerRect.bottom) {
+        container.scrollTop += (activeRect.bottom - containerRect.bottom + 8);
+      }
+    }
+  }, [mentionSelectedIndex, showMentions, mentionTrigger, activeMentionListCount]);
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -1785,7 +1824,7 @@ export default function ChatPage() {
         <div className="relative bg-white border border-neutral-200/90 rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2 shrink-0">
           {/* Floating Autocomplete Popover */}
           {showMentions && (
-            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white/95 backdrop-blur-md rounded-2xl border border-neutral-200/90 shadow-2xl overflow-hidden z-30 max-h-72 flex flex-col animate-fade-in">
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-white/95 backdrop-blur-md rounded-2xl border border-neutral-200/90 shadow-2xl overflow-hidden z-30 max-h-80 flex flex-col animate-fade-in">
               {/* Popover Header */}
               <div className="px-3.5 py-2 bg-neutral-100/90 border-b border-neutral-200/80 flex items-center justify-between text-xs font-mono font-bold uppercase">
                 <div className="flex items-center gap-2">
@@ -1811,11 +1850,18 @@ export default function ChatPage() {
                     </>
                   )}
                 </div>
-                <span className="text-[10px] text-neutral-400 font-mono font-normal">↑↓ navigate &bull; Enter to select &bull; Esc to dismiss</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-neutral-400 font-mono font-normal">↑↓ navigate &bull; Enter to select &bull; Esc to dismiss</span>
+                  {activeMentionListCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-700 text-[10px] font-mono font-bold">
+                      {mentionSelectedIndex + 1}/{activeMentionListCount}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Popover Item List */}
-              <div className="overflow-y-auto p-1.5 space-y-1 divide-y divide-neutral-100/50">
+              {/* Popover Item List with auto-scroll ref */}
+              <div ref={mentionListRef} className="flex-1 min-h-0 overflow-y-auto p-1.5 space-y-1 divide-y divide-neutral-100/50 scroll-smooth">
                 {mentionTrigger === '/' && (
                   filteredSkills.length === 0 ? (
                     <div className="p-4 text-center text-xs font-mono text-neutral-400">No matching slash skills found.</div>
@@ -1827,12 +1873,14 @@ export default function ChatPage() {
                         <button
                           key={skill.command}
                           type="button"
+                          data-mention-item
+                          data-index={idx}
                           onClick={() => handleInsertMention(skill.command)}
                           onMouseEnter={() => setMentionSelectedIndex(idx)}
-                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 cursor-pointer ${
+                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-start gap-3 cursor-pointer border-l-2 ${
                             isSelected
-                              ? 'bg-neutral-900 text-white shadow-xs'
-                              : 'hover:bg-neutral-100 text-neutral-800'
+                              ? 'bg-neutral-900 text-white shadow-xs border-[#DFFF4F]'
+                              : 'hover:bg-neutral-100 text-neutral-800 border-transparent'
                           }`}
                         >
                           <div className={`p-2 rounded-lg shrink-0 ${isSelected ? 'bg-neutral-800 text-[#DFFF4F]' : 'bg-neutral-100 text-neutral-700'}`}>
@@ -1871,12 +1919,14 @@ export default function ChatPage() {
                         <button
                           key={proj.id}
                           type="button"
+                          data-mention-item
+                          data-index={idx}
                           onClick={() => handleInsertMention(`@${proj.name}`)}
                           onMouseEnter={() => setMentionSelectedIndex(idx)}
-                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between gap-3 cursor-pointer border-l-2 ${
                             isSelected
-                              ? 'bg-neutral-900 text-white shadow-xs'
-                              : 'hover:bg-neutral-100 text-neutral-800'
+                              ? 'bg-neutral-900 text-white shadow-xs border-[#0047FF]'
+                              : 'hover:bg-neutral-100 text-neutral-800 border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
@@ -1920,12 +1970,14 @@ export default function ChatPage() {
                         <button
                           key={idea.id}
                           type="button"
+                          data-mention-item
+                          data-index={idx}
                           onClick={() => handleInsertMention(`#${idea.title}`)}
                           onMouseEnter={() => setMentionSelectedIndex(idx)}
-                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between gap-3 cursor-pointer border-l-2 ${
                             isSelected
-                              ? 'bg-neutral-900 text-white shadow-xs'
-                              : 'hover:bg-neutral-100 text-neutral-800'
+                              ? 'bg-neutral-900 text-white shadow-xs border-amber-400'
+                              : 'hover:bg-neutral-100 text-neutral-800 border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
