@@ -67,7 +67,8 @@ class AIService:
                         resp = await client.post(url, headers=headers, json=payload)
                         if resp.status_code == 200:
                             data = resp.json()
-                            return data["choices"][0]["message"]["content"]
+                            used_model = data.get("model", model_slug)
+                            return data["choices"][0]["message"]["content"], used_model
                         if resp.status_code == 402 and "can only afford" in resp.text and attempt == 0:
                             m_afford = re.search(r"can only afford (\d+)", resp.text)
                             if m_afford:
@@ -178,7 +179,11 @@ class AIService:
         """Execute the 3-tier cascade: OpenRouter -> Gemini -> NVIDIA -> Heuristic Fallback."""
         # 1. Try OpenRouter
         try:
-            content = await cls._call_openrouter(system_prompt, user_prompt, json_mode=True)
+            res = await cls._call_openrouter(system_prompt, user_prompt, json_mode=True)
+            if isinstance(res, (tuple, list)):
+                content, _ = res
+            else:
+                content = res
             return _clean_json_response(content), "openrouter"
         except Exception:
             pass

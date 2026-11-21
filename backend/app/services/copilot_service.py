@@ -280,7 +280,7 @@ class CopilotService:
             try:
                 res = await AIService._call_oui1(system_prompt, user_prompt)
                 if res and len(res.strip()) > 5:
-                    return res, "Tier 0: OUI-1 Diffusion (vLLM)"
+                    return res, "OUI-1 Diffusion (vLLM)"
             except Exception as e:
                 logger.info(f"[Copilot Cascade] OUI-1 endpoint inactive or failed: {e}. Falling back to cascade.")
 
@@ -288,8 +288,13 @@ class CopilotService:
         if settings.OPENROUTER_API_KEY:
             try:
                 res = await AIService._call_openrouter(system_prompt, user_prompt, json_mode=is_json)
-                if res and len(res.strip()) > 5:
-                    return res, "Tier 1: OpenRouter"
+                if isinstance(res, (tuple, list)):
+                    content, model_slug = res
+                else:
+                    content, model_slug = res, "deepseek/deepseek-chat"
+                if content and len(content.strip()) > 5:
+                    model_display = model_slug.split("/")[-1] if "/" in model_slug else model_slug
+                    return content, f"{model_display} (OpenRouter)"
             except Exception as e:
                 logger.warning(f"[Copilot Cascade] OpenRouter attempt failed: {e}")
 
@@ -298,7 +303,7 @@ class CopilotService:
             try:
                 res = await AIService._call_gemini(system_prompt, user_prompt, json_mode=is_json)
                 if res and len(res.strip()) > 5:
-                    return res, "Tier 2: Gemini 2.5 Flash"
+                    return res, "Gemini 2.5 Flash"
             except Exception as e:
                 logger.warning(f"[Copilot Cascade] Gemini attempt failed: {e}")
 
@@ -307,7 +312,7 @@ class CopilotService:
             try:
                 res = await AIService._call_nvidia(system_prompt, user_prompt, json_mode=is_json)
                 if res and len(res.strip()) > 5:
-                    return res, "Tier 3: NVIDIA NIM"
+                    return res, "Llama 3.2 11B (NVIDIA NIM)"
             except Exception as e:
                 logger.warning(f"[Copilot Cascade] NVIDIA attempt failed: {e}")
 
@@ -562,16 +567,21 @@ class CopilotService:
                 "researcher": {
                     "content": researcher_content,
                     "web_sources": web_sources,
+                    "model_used": t1,
                 },
-                "judge": judge_data,
+                "judge": {
+                    **judge_data,
+                    "model_used": t2,
+                },
                 "planner": {
                     "content": planner_content,
                     "suggested_features": suggested_features,
+                    "model_used": t3 if 't3' in locals() else t1,
                 },
                 "pivot_plan": pivot_plan,
             }
 
-            active_tier = tier_tracker[0] if tier_tracker else "Tier 1: OpenRouter"
+            active_tier = tier_tracker[0] if tier_tracker else "Gemini 2.5 Flash"
 
             # Save to MongoDB Atlas Cloud History if user_id present
             if user_id:

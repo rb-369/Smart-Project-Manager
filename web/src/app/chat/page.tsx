@@ -52,6 +52,7 @@ import {
   Shield,
   HelpCircle,
   Activity,
+  Cpu,
 } from 'lucide-react';
 
 interface SlashSkillItem {
@@ -1226,7 +1227,12 @@ export default function ChatPage() {
                     <span>{msg.role === 'user' ? 'YOU' : (hasSubAgents ? 'COPILOT SWARM' : 'DEVCOMMAND AI')}</span>
                     <span>&bull;</span>
                     <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    {msg.tier_used && <span className="text-[#0047FF] font-semibold">[{msg.tier_used}]</span>}
+                    {msg.tier_used && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-[#0047FF] font-semibold text-[10px]">
+                        <Cpu className="w-3 h-3 text-[#0047FF]" />
+                        <span>Model: {msg.tier_used}</span>
+                      </span>
+                    )}
                   </div>
 
                   {/* Message Body */}
@@ -1285,6 +1291,14 @@ export default function ChatPage() {
                                 Conversational Copilot
                               </div>
                             )}
+
+                            {/* Prominent Model Badge */}
+                            {msg.tier_used && (
+                              <div className="hidden sm:flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-mono font-bold bg-neutral-100 text-neutral-700 border border-neutral-200 rounded-full shadow-xs">
+                                <Cpu className="w-3 h-3 text-[#0047FF]" />
+                                <span>{msg.tier_used}</span>
+                              </div>
+                            )}
                           </div>
                           <button
                             onClick={() => copyToClipboard(msg.content, msg.id)}
@@ -1311,8 +1325,14 @@ export default function ChatPage() {
                             <div className="p-4 sm:p-5 rounded-xl bg-neutral-900 text-white border border-neutral-800 shadow-sm space-y-3">
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-800">
                                 <div>
-                                  <div className="text-[10px] font-mono text-[#DFFF4F] uppercase tracking-widest font-bold">
-                                    THE JUDGE SUB-AGENT VERDICT
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-[10px] font-mono text-[#DFFF4F] uppercase tracking-widest font-bold">
+                                      THE JUDGE SUB-AGENT VERDICT
+                                    </span>
+                                    <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700 text-[9px] font-mono font-medium flex items-center gap-1">
+                                      <Cpu className="w-2.5 h-2.5 text-[#DFFF4F]" />
+                                      <span>Model: {subData.judge?.model_used || msg.tier_used || 'Gemini 2.5 Flash'}</span>
+                                    </span>
                                   </div>
                                   <div className="text-base font-bold tracking-tight mt-0.5 text-white uppercase">
                                     {subData.judge.verdict_title || 'Feature Viability Rating'}
@@ -1389,42 +1409,19 @@ export default function ChatPage() {
                               </div>
                             </div>
 
-                            {/* 3. Interactive UI Prototype (OpenUI / OUI-1) */}
-                            {(subData.openui_lang || msg.openui_lang || (subData.is_pipeline && subData.judge)) && (
-                              <div className="p-4 bg-neutral-900 rounded-xl border border-neutral-800 text-white space-y-3 shadow-xs">
-                                <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
-                                  <div className="flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4 text-[#DFFF4F]" />
-                                    <span className="font-mono font-bold text-xs uppercase tracking-wider text-white">
-                                      Interactive Prototype Component
-                                    </span>
-                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-[#DFFF4F] text-black uppercase">
-                                      OUI-1
-                                    </span>
-                                  </div>
-                                  <span className="text-[10px] font-mono text-neutral-400">Live preview &amp; action triggers</span>
-                                </div>
-                                <div className="bg-white rounded-lg p-3 text-neutral-900">
-                                  <OpenUIRenderer
-                                    content=""
-                                    openuiLang={
-                                      subData.openui_lang ||
-                                      msg.openui_lang ||
-                                      generateFallbackOpenUIFromJudge(subData, msg)
-                                    }
-                                    onAction={handleOpenUIAction}
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            {/* 4. Market & Competitor Feasibility (Researcher) */}
+                            {/* 2. Market & Competitor Feasibility (Researcher) */}
                             {subData.researcher && (
                               <div className="space-y-3 text-xs">
                                 <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs space-y-2">
-                                  <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5 pb-2 border-b border-neutral-100">
-                                    <Search className="w-3.5 h-3.5 text-[#0047FF]" />
-                                    <span>Market Research &amp; Technical Feasibility</span>
+                                  <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center justify-between pb-2 border-b border-neutral-100 flex-wrap gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <Search className="w-3.5 h-3.5 text-[#0047FF]" />
+                                      <span>Market Research &amp; Technical Feasibility</span>
+                                    </div>
+                                    <span className="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-[#0047FF] text-[10px] font-mono font-semibold flex items-center gap-1">
+                                      <Cpu className="w-2.5 h-2.5 text-[#0047FF]" />
+                                      <span>Model: {subData.researcher?.model_used || msg.tier_used || 'Gemini 2.5 Flash'}</span>
+                                    </span>
                                   </div>
                                   <MarkdownRenderer content={subData.researcher.content} />
                                 </div>
@@ -1458,7 +1455,7 @@ export default function ChatPage() {
                               </div>
                             )}
 
-                            {/* 5. Technical Blueprint & 1-Click Feature Roadmap (Planner) */}
+                            {/* 3. Technical Blueprint & 1-Click Feature Roadmap (Planner) */}
                             {subData.planner && (
                               <div className="space-y-3 text-xs">
                                 {subData.pivot_plan && (
@@ -1489,9 +1486,15 @@ export default function ChatPage() {
 
                                 {/* Blueprint Content */}
                                 <div className="p-4 sm:p-5 bg-white rounded-xl border border-neutral-200/90 shadow-xs space-y-2">
-                                  <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5 pb-2 border-b border-neutral-100">
-                                    <Layers className="w-3.5 h-3.5 text-amber-500" />
-                                    <span>Architecture Blueprint &amp; Execution Specification</span>
+                                  <div className="font-mono font-bold text-neutral-900 uppercase tracking-wider text-[11px] flex items-center justify-between pb-2 border-b border-neutral-100 flex-wrap gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <Layers className="w-3.5 h-3.5 text-amber-500" />
+                                      <span>Architecture Blueprint &amp; Execution Specification</span>
+                                    </div>
+                                    <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-mono font-semibold flex items-center gap-1">
+                                      <Cpu className="w-2.5 h-2.5 text-amber-600" />
+                                      <span>Model: {subData.planner?.model_used || msg.tier_used || 'Gemini 2.5 Flash'}</span>
+                                    </span>
                                   </div>
                                   <MarkdownRenderer
                                     content={

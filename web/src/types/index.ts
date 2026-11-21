@@ -138,6 +138,7 @@ export interface TavilyStatus {
 export interface SubAgentResearcher {
   content: string;
   web_sources?: WebSource[];
+  model_used?: string;
 }
 
 export interface SubAgentJudge {
@@ -148,10 +149,12 @@ export interface SubAgentJudge {
   failure_modes: string[];
   what_to_build_instead: string;
   summary_verdict: string;
+  model_used?: string;
 }
 
 export interface SubAgentPlanner {
   content: string;
+  model_used?: string;
   suggested_features: {
     title: string;
     priority: string;
