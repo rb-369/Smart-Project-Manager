@@ -22,6 +22,10 @@ import {
   RotateCcw,
   FileText,
   Search,
+  LayoutGrid,
+  List,
+  Columns3,
+  Eye,
 } from 'lucide-react';
 
 function generateIdeaOfflineId(prefix = 'offline'): string {
@@ -57,8 +61,10 @@ export default function IdeasPage() {
   const [, setBackendOffline] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
-  // Density & Search State
-  const [isCompact, setIsCompact] = useState(true);
+  // Density, View Mode & Search State
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'kanban'>('grid');
+  const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'P0' | 'P1' | 'P2'>('ALL');
+  const [selectedIdea, setSelectedIdea] = useState<FutureProject | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Protect route
@@ -293,7 +299,13 @@ export default function IdeasPage() {
     P2: { badge: 'border-2 border-black bg-[#BBF7D0] text-black', dot: 'bg-black', label: 'P2 BACKLOG' },
   };
 
-  const filteredIdeas = ideas.filter((idea: FutureProject) => {
+  const unpromotedIdeas = ideas.filter((i: FutureProject) => i.status !== 'PROMOTED');
+  const p0Count = unpromotedIdeas.filter((i: FutureProject) => i.priority === 'P0').length;
+  const p1Count = unpromotedIdeas.filter((i: FutureProject) => i.priority === 'P1').length;
+  const p2Count = unpromotedIdeas.filter((i: FutureProject) => i.priority === 'P2').length;
+
+  const filteredIdeas = unpromotedIdeas.filter((idea: FutureProject) => {
+    if (priorityFilter !== 'ALL' && idea.priority !== priorityFilter) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
     return (
@@ -367,205 +379,481 @@ export default function IdeasPage() {
           </div>
         </div>
 
-        {/* Filter & View Density Toolbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-2.5 border-2 border-black shadow-[2px_2px_0px_#000000]">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="relative flex-1 max-w-sm">
+        {/* Filter & View Toolbar */}
+        <div className="bg-white p-3 border-2 border-black shadow-[3px_3px_0px_#000000] space-y-2.5">
+          {/* Top row: Priority Quick Filter Tabs & View Mode Switcher */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-neutral-200">
+            {/* Quick Priority Filter Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <span className="text-[10px] font-mono font-black text-neutral-500 uppercase mr-1">Filter:</span>
+              <button
+                type="button"
+                onClick={() => setPriorityFilter('ALL')}
+                className={`px-2.5 py-1 text-[10px] font-mono font-black uppercase border border-black transition cursor-pointer ${
+                  priorityFilter === 'ALL'
+                    ? 'bg-black text-[#DFFF4F] shadow-[1px_1px_0px_#000000]'
+                    : 'bg-[#FAF7EE] text-neutral-700 hover:text-black hover:bg-white'
+                }`}
+              >
+                All ({unpromotedIdeas.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setPriorityFilter('P0')}
+                className={`px-2.5 py-1 text-[10px] font-mono font-black uppercase border border-black transition cursor-pointer ${
+                  priorityFilter === 'P0'
+                    ? 'bg-[#FF5533] text-black shadow-[1px_1px_0px_#000000]'
+                    : 'bg-[#FAF7EE] text-neutral-700 hover:text-black hover:bg-white'
+                }`}
+              >
+                P0 Immediate ({p0Count})
+              </button>
+              <button
+                type="button"
+                onClick={() => setPriorityFilter('P1')}
+                className={`px-2.5 py-1 text-[10px] font-mono font-black uppercase border border-black transition cursor-pointer ${
+                  priorityFilter === 'P1'
+                    ? 'bg-amber-300 text-black shadow-[1px_1px_0px_#000000]'
+                    : 'bg-[#FAF7EE] text-neutral-700 hover:text-black hover:bg-white'
+                }`}
+              >
+                P1 Upcoming ({p1Count})
+              </button>
+              <button
+                type="button"
+                onClick={() => setPriorityFilter('P2')}
+                className={`px-2.5 py-1 text-[10px] font-mono font-black uppercase border border-black transition cursor-pointer ${
+                  priorityFilter === 'P2'
+                    ? 'bg-[#BBF7D0] text-black shadow-[1px_1px_0px_#000000]'
+                    : 'bg-[#FAF7EE] text-neutral-700 hover:text-black hover:bg-white'
+                }`}
+              >
+                P2 Backlog ({p2Count})
+              </button>
+            </div>
+
+            {/* View Mode Switcher */}
+            <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
+              <span className="text-[10px] font-mono font-black uppercase text-neutral-500">Layout:</span>
+              <div className="flex items-center border-2 border-black bg-[#FAF7EE] p-0.5 font-mono text-[10px] font-black shadow-[1px_1px_0px_#000000]">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`px-2.5 py-1 uppercase transition flex items-center gap-1 cursor-pointer ${
+                    viewMode === 'grid' ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
+                  }`}
+                  title="Grid Tiles - see all ideas across the full screen width"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span>Grid</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('table')}
+                  className={`px-2.5 py-1 uppercase transition flex items-center gap-1 cursor-pointer ${
+                    viewMode === 'table' ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
+                  }`}
+                  title="Table View - 20+ ideas per screen with zero scrolling"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span>Table</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('kanban')}
+                  className={`px-2.5 py-1 uppercase transition flex items-center gap-1 cursor-pointer ${
+                    viewMode === 'kanban' ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
+                  }`}
+                  title="Kanban Board - priority columns"
+                >
+                  <Columns3 className="w-3.5 h-3.5" />
+                  <span>Board</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom row: Instant Search Input */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter ideas by title, tech stack, notes..."
+                placeholder="Search ideas by title, tech stack, scope..."
                 className="w-full bg-[#FAF7EE] border border-neutral-300 focus:border-black focus:bg-white pl-8 pr-7 py-1 text-xs font-mono text-black focus:outline-none placeholder-neutral-400"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
               )}
             </div>
-            <span className="text-[11px] font-mono text-neutral-500 font-bold hidden md:inline">
-              {filteredIdeas.length} idea{filteredIdeas.length !== 1 ? 's' : ''} shown
-            </span>
-          </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[10px] font-mono font-bold uppercase text-neutral-500">View Mode:</span>
-            <div className="flex items-center border border-black bg-[#FAF7EE] p-0.5 font-mono text-[10px] font-black">
-              <button
-                type="button"
-                onClick={() => setIsCompact(true)}
-                className={`px-2.5 py-0.5 uppercase transition cursor-pointer ${isCompact ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
-                  }`}
-                title="Compact view - see more ideas without scrolling"
-              >
-                Compact
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCompact(false)}
-                className={`px-2.5 py-0.5 uppercase transition cursor-pointer ${!isCompact ? 'bg-black text-[#DFFF4F]' : 'text-neutral-600 hover:text-black'
-                  }`}
-                title="Detailed view - expanded notes & scope"
-              >
-                Detailed
-              </button>
+            <div className="text-[11px] font-mono text-neutral-500 font-bold shrink-0">
+              Showing <span className="text-black font-black">{filteredIdeas.length}</span> of {unpromotedIdeas.length} concepts
             </div>
           </div>
         </div>
 
-        {/* Ideas Kanban Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
-          {(['P0', 'P1', 'P2'] as const).map((prio) => {
-            const columnIdeas = filteredIdeas.filter((i: FutureProject) => i.priority === prio && i.status !== 'PROMOTED');
-            const columnTitles = {
-              P0: 'P0 // NEXT IMMEDIATE BUILD',
-              P1: 'P1 // UPCOMING PRIORITY',
-              P2: 'P2 // RESEARCH & BACKLOG',
-            };
+        {/* VIEW 1: RESPONSIVE GRID (ZERO SCROLL FOR ALL SCREEN SIZES) */}
+        {viewMode === 'grid' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
+            {filteredIdeas.length === 0 ? (
+              <div className="col-span-full bg-white border-2 border-black p-8 text-center text-xs text-neutral-500 font-mono shadow-sm">
+                No ideas found matching your filter criteria.
+              </div>
+            ) : (
+              filteredIdeas.map((idea: FutureProject) => {
+                const pConfig = priorityStyles[idea.priority];
+                return (
+                  <div
+                    key={idea.id}
+                    className="bg-white text-black border-2 border-black hover:-translate-y-0.5 shadow-sm hover:shadow-[4px_4px_0px_#000000] p-3.5 transition-all flex flex-col justify-between gap-2.5 group"
+                  >
+                    <div className="space-y-2">
+                      {/* Meta badge row */}
+                      <div className="flex items-center justify-between pb-1.5 border-b border-neutral-200">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 uppercase ${pConfig.badge}`}>
+                            {idea.priority}
+                          </span>
+                          <span className="text-[9px] font-mono font-black px-1.5 py-0.5 bg-[#FAF7EE] text-black border border-neutral-300 uppercase">
+                            {idea.project_type}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setSelectedIdea(idea)}
+                            className="p-1 text-neutral-400 hover:text-[#0047FF] transition cursor-pointer"
+                            title="Inspect details"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(idea.id)}
+                            className="p-1 text-neutral-400 hover:text-[#FF5533] transition cursor-pointer"
+                            title="Delete concept"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
 
-            const pConfig = priorityStyles[prio];
+                      {/* Title */}
+                      <h3
+                        onClick={() => setSelectedIdea(idea)}
+                        className="font-black text-sm text-black leading-snug hover:text-[#0047FF] transition cursor-pointer line-clamp-2"
+                      >
+                        {idea.title}
+                      </h3>
 
-            return (
-              <div key={prio} className="space-y-3">
-                <div className="flex items-center justify-between px-1 text-xs font-mono">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-3 h-3 border border-black ${prio === 'P0' ? 'bg-[#FF5533]' : prio === 'P1' ? 'bg-amber-300' : 'bg-[#BBF7D0]'
-                      }`} />
-                    <span className="text-black font-black uppercase tracking-wider">{columnTitles[prio]}</span>
-                  </div>
-                  <span className="text-[11px] font-black px-2 py-0.5 bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000000]">
-                    {columnIdeas.length}
-                  </span>
-                </div>
+                      {/* Pitch */}
+                      {idea.elevator_pitch && (
+                        <p className="text-xs text-neutral-600 leading-relaxed line-clamp-2 font-normal">
+                          {idea.elevator_pitch}
+                        </p>
+                      )}
 
-                <div className="space-y-3">
-                  {columnIdeas.length === 0 ? (
-                    <div className="bg-white border-2 border-black p-5 text-center text-xs text-neutral-500 font-mono shadow-sm">
-                      No concepts currently in this priority track.
-                    </div>
-                  ) : (
-                    columnIdeas.map((idea: FutureProject) => {
-                      return (
-                        <div
-                          key={idea.id}
-                          className="bg-white text-black border-2 border-black hover:-translate-y-0.5 shadow-sm hover:shadow-[3px_3px_0px_#000000] p-3 sm:p-3.5 transition-all flex flex-col justify-between gap-2.5"
+                      {/* Tech stack badge */}
+                      {idea.target_tech_stack && (
+                        <div className="flex items-center gap-1 text-[10px] font-mono text-neutral-700 bg-[#FAF7EE] px-2 py-1 border border-neutral-300">
+                          <Code className="w-3 h-3 text-[#0047FF] shrink-0" />
+                          <span className="font-bold truncate uppercase">{idea.target_tech_stack}</span>
+                        </div>
+                      )}
+
+                      {/* Notes indicator */}
+                      {idea.notes && (
+                        <button
+                          onClick={() => setSelectedIdea(idea)}
+                          className="inline-flex items-center gap-1 text-[10px] font-mono text-[#0047FF] hover:underline cursor-pointer"
                         >
-                          <div className="space-y-2">
-                            {/* Header Meta Row */}
-                            <div className="flex items-center justify-between pb-1.5 border-b border-neutral-200">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-[9px] font-mono font-black px-1.5 py-0.5 bg-[#FAF7EE] text-black border border-neutral-300 uppercase">
-                                  {idea.project_type}
-                                </span>
-                                <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 bg-neutral-100 text-neutral-500 border border-neutral-200 uppercase">
-                                  NO REPO YET
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => handleDelete(idea.id)}
-                                className="text-neutral-400 hover:text-[#FF5533] transition-colors p-0.5 cursor-pointer"
-                                title="Delete concept"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                          <FileText className="w-3 h-3" />
+                          <span>Notes &amp; Scope included &rarr;</span>
+                        </button>
+                      )}
+                    </div>
 
-                            {/* Title */}
-                            <h2 className="font-black text-sm sm:text-base text-black leading-snug hover:text-[#0047FF] transition-colors">
-                              {idea.title}
-                            </h2>
+                    {/* Card footer */}
+                    <div className="pt-2 border-t border-neutral-200 flex items-center justify-between gap-2">
+                      <select
+                        value={idea.priority}
+                        onChange={(e) => handleUpdatePriority(idea.id, e.target.value as FutureProjectPriority)}
+                        className={`text-[9px] font-mono font-black px-1.5 py-0.5 uppercase cursor-pointer border border-black focus:outline-none transition ${pConfig.badge}`}
+                        title="Change priority"
+                      >
+                        <option value="P0" className="bg-white text-black">P0 IMMEDIATE</option>
+                        <option value="P1" className="bg-white text-black">P1 UPCOMING</option>
+                        <option value="P2" className="bg-white text-black">P2 BACKLOG</option>
+                      </select>
 
-                            {/* Pitch: Clamped to 2 lines in compact mode */}
-                            {idea.elevator_pitch && (
-                              <p className={`text-xs text-neutral-600 leading-relaxed font-normal ${isCompact ? 'line-clamp-2' : ''}`}>
-                                {idea.elevator_pitch}
-                              </p>
-                            )}
+                      <button
+                        onClick={() => handlePromote(idea.id, idea.title)}
+                        className="px-2.5 py-1 bg-[#DFFF4F] text-black border border-black hover:bg-black hover:text-[#DFFF4F] text-[11px] font-mono font-black uppercase flex items-center gap-1 transition cursor-pointer shadow-sm active:translate-x-[1px] active:translate-y-[1px]"
+                        title="Convert to active repository"
+                      >
+                        <span>Build</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
 
-                            {/* Notes / MVP Scope: Collapsible accordion in compact mode */}
-                            {idea.notes && (
-                              isCompact ? (
-                                <details className="text-[10px] font-mono group">
-                                  <summary className="cursor-pointer text-neutral-600 hover:text-black flex items-center justify-between font-bold uppercase py-0.5 select-none">
-                                    <span className="flex items-center gap-1 text-[#0047FF]">
-                                      <FileText className="w-3 h-3" />
-                                      <span>Notes / MVP Scope</span>
-                                    </span>
-                                    <span className="text-[8px] text-neutral-400 group-open:rotate-180 transition-transform">▼</span>
-                                  </summary>
-                                  <div className="mt-1 p-2 bg-[#FAF7EE] border-l-2 border-[#0047FF] text-[10px] text-neutral-800 whitespace-pre-wrap max-h-28 overflow-y-auto">
-                                    {idea.notes}
-                                  </div>
-                                </details>
-                              ) : (
-                                <div className="mt-1 p-2 bg-[#FAF7EE] border-l-2 border-[#0047FF] text-[11px] font-mono text-neutral-800 whitespace-pre-wrap max-h-32 overflow-y-auto">
-                                  <span className="font-black text-black block mb-0.5 uppercase text-[10px]">Notes / MVP Scope:</span>
-                                  {idea.notes}
-                                </div>
-                              )
-                            )}
-
-                            {/* Original Message: Collapsible */}
-                            {idea.raw_message && (
-                              <details className="text-[10px] font-mono group">
-                                <summary className="cursor-pointer text-neutral-600 hover:text-black flex items-center justify-between font-bold uppercase py-0.5 select-none">
-                                  <span className="flex items-center gap-1">
-                                    <MessageSquareText className="w-3 h-3 text-[#0047FF]" />
-                                    <span>Original Message</span>
-                                  </span>
-                                  <span className="text-[8px] text-neutral-400 group-open:rotate-180 transition-transform">▼</span>
-                                </summary>
-                                <div className="mt-1 p-2 bg-[#FAF7EE] border border-neutral-300 text-[10px] font-mono text-black whitespace-pre-wrap leading-relaxed max-h-24 overflow-y-auto">
-                                  {idea.raw_message}
-                                </div>
-                              </details>
-                            )}
-
-                            {/* Target Tech Stack */}
-                            {idea.target_tech_stack && (
-                              <div className="flex items-center gap-1 text-[10px] font-mono text-neutral-800 bg-[#FAF7EE] px-2 py-1 border border-neutral-300">
-                                <Code className="w-3 h-3 text-[#0047FF] shrink-0" />
-                                <span className="font-bold truncate uppercase">{idea.target_tech_stack}</span>
-                              </div>
-                            )}
+        {/* VIEW 2: DENSE TABLE (FITS 20+ CONCEPTS WITH ZERO SCROLLING) */}
+        {viewMode === 'table' && (
+          <div className="bg-white border-2 border-black shadow-[4px_4px_0px_#000000] overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr className="border-b-2 border-black bg-[#FAF7EE] text-[10px] font-black uppercase tracking-wider text-black">
+                  <th className="py-2.5 px-3">Priority</th>
+                  <th className="py-2.5 px-3">Concept Title &amp; Pitch</th>
+                  <th className="py-2.5 px-3">Category</th>
+                  <th className="py-2.5 px-3">Target Tech Stack</th>
+                  <th className="py-2.5 px-3">Scope / Notes</th>
+                  <th className="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-200">
+                {filteredIdeas.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-neutral-500">
+                      No concepts found matching your filters.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredIdeas.map((idea: FutureProject) => {
+                    const pConfig = priorityStyles[idea.priority];
+                    return (
+                      <tr key={idea.id} className="hover:bg-[#FAF7EE]/80 transition-colors group">
+                        <td className="py-2 px-3 whitespace-nowrap">
+                          <select
+                            value={idea.priority}
+                            onChange={(e) => handleUpdatePriority(idea.id, e.target.value as FutureProjectPriority)}
+                            className={`text-[9px] font-black px-1.5 py-0.5 uppercase cursor-pointer border border-black focus:outline-none transition ${pConfig.badge}`}
+                          >
+                            <option value="P0" className="bg-white text-black">P0</option>
+                            <option value="P1" className="bg-white text-black">P1</option>
+                            <option value="P2" className="bg-white text-black">P2</option>
+                          </select>
+                        </td>
+                        <td className="py-2 px-3 max-w-sm">
+                          <div
+                            onClick={() => setSelectedIdea(idea)}
+                            className="font-black text-black hover:text-[#0047FF] cursor-pointer truncate text-xs"
+                            title={idea.title}
+                          >
+                            {idea.title}
                           </div>
-
-                          {/* Footer with Priority Selector & Start Building */}
-                          <div className="pt-2 border-t border-neutral-200 flex items-center justify-between gap-2">
-                            <select
-                              value={idea.priority}
-                              onChange={(e) => handleUpdatePriority(idea.id, e.target.value as FutureProjectPriority)}
-                              className={`text-[9px] font-mono font-black px-1.5 py-0.5 uppercase cursor-pointer border border-black focus:outline-none transition ${pConfig.badge}`}
-                              title="Move to another priority track"
+                          {idea.elevator_pitch && (
+                            <p className="text-[10px] text-neutral-500 truncate font-normal">
+                              {idea.elevator_pitch}
+                            </p>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 whitespace-nowrap">
+                          <span className="text-[9px] font-black px-1.5 py-0.5 bg-[#FAF7EE] text-black border border-neutral-300 uppercase">
+                            {idea.project_type}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 max-w-[180px] truncate text-[10px] text-neutral-700">
+                          {idea.target_tech_stack ? (
+                            <span className="font-bold uppercase truncate block">{idea.target_tech_stack}</span>
+                          ) : (
+                            <span className="text-neutral-400 italic">Not set</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 whitespace-nowrap">
+                          {idea.notes ? (
+                            <button
+                              onClick={() => setSelectedIdea(idea)}
+                              className="inline-flex items-center gap-1 text-[10px] text-[#0047FF] hover:underline cursor-pointer"
                             >
-                              <option value="P0" className="bg-white text-black">P0 IMMEDIATE</option>
-                              <option value="P1" className="bg-white text-black">P1 UPCOMING</option>
-                              <option value="P2" className="bg-white text-black">P2 BACKLOG</option>
-                            </select>
-
+                              <FileText className="w-3 h-3" />
+                              <span>View Notes</span>
+                            </button>
+                          ) : (
+                            <span className="text-neutral-400 text-[10px]">-</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => setSelectedIdea(idea)}
+                              className="p-1 text-neutral-500 hover:text-[#0047FF] transition cursor-pointer"
+                              title="Inspect Details"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
                             <button
                               onClick={() => handlePromote(idea.id, idea.title)}
-                              className="px-2.5 py-1 bg-[#DFFF4F] text-black border border-black hover:bg-black hover:text-[#DFFF4F] text-[11px] font-mono font-black uppercase flex items-center gap-1 transition cursor-pointer shadow-sm active:translate-x-[1px] active:translate-y-[1px]"
-                              title="Convert to active repository in Mission Control"
+                              className="px-2.5 py-1 bg-[#DFFF4F] text-black border border-black hover:bg-black hover:text-[#DFFF4F] text-[10px] font-black uppercase flex items-center gap-1 transition cursor-pointer shadow-xs active:translate-x-[1px] active:translate-y-[1px]"
+                              title="Convert to active repository"
                             >
-                              <span>Start Building</span>
+                              <span>Build</span>
                               <ArrowRight className="w-3 h-3" />
                             </button>
+                            <button
+                              onClick={() => handleDelete(idea.id)}
+                              className="p-1 text-neutral-400 hover:text-[#FF5533] transition cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                        </div>
-                      );
-                    })
-                  )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* VIEW 3: COMPACT KANBAN COLUMNS */}
+        {viewMode === 'kanban' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+            {(['P0', 'P1', 'P2'] as const).map((prio) => {
+              const columnIdeas = filteredIdeas.filter((i: FutureProject) => i.priority === prio);
+              const columnTitles = {
+                P0: 'P0 // NEXT IMMEDIATE BUILD',
+                P1: 'P1 // UPCOMING PRIORITY',
+                P2: 'P2 // RESEARCH & BACKLOG',
+              };
+
+              const pConfig = priorityStyles[prio];
+
+              return (
+                <div key={prio} className="space-y-3">
+                  <div className="flex items-center justify-between px-1 text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-3 h-3 border border-black ${prio === 'P0' ? 'bg-[#FF5533]' : prio === 'P1' ? 'bg-amber-300' : 'bg-[#BBF7D0]'
+                        }`} />
+                      <span className="text-black font-black uppercase tracking-wider">{columnTitles[prio]}</span>
+                    </div>
+                    <span className="text-[11px] font-black px-2 py-0.5 bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000000]">
+                      {columnIdeas.length}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {columnIdeas.length === 0 ? (
+                      <div className="bg-white border-2 border-black p-5 text-center text-xs text-neutral-500 font-mono shadow-sm">
+                        No concepts currently in this priority track.
+                      </div>
+                    ) : (
+                      columnIdeas.map((idea: FutureProject) => {
+                        return (
+                          <div
+                            key={idea.id}
+                            className="bg-white text-black border-2 border-black hover:-translate-y-0.5 shadow-sm hover:shadow-[3px_3px_0px_#000000] p-3 transition-all flex flex-col justify-between gap-2"
+                          >
+                            <div className="space-y-1.5">
+                              {/* Header Meta Row */}
+                              <div className="flex items-center justify-between pb-1 border-b border-neutral-200">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-[9px] font-mono font-black px-1.5 py-0.5 bg-[#FAF7EE] text-black border border-neutral-300 uppercase">
+                                    {idea.project_type}
+                                  </span>
+                                  <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 bg-neutral-100 text-neutral-500 border border-neutral-200 uppercase">
+                                    NO REPO YET
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => setSelectedIdea(idea)}
+                                    className="text-neutral-400 hover:text-[#0047FF] transition p-0.5 cursor-pointer"
+                                    title="View full details & notes"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(idea.id)}
+                                    className="text-neutral-400 hover:text-[#FF5533] transition p-0.5 cursor-pointer"
+                                    title="Delete concept"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Title */}
+                              <h2
+                                onClick={() => setSelectedIdea(idea)}
+                                className="font-black text-sm text-black leading-snug hover:text-[#0047FF] transition cursor-pointer line-clamp-1"
+                              >
+                                {idea.title}
+                              </h2>
+
+                              {/* Pitch */}
+                              {idea.elevator_pitch && (
+                                <p className="text-[11px] text-neutral-600 leading-snug line-clamp-1 font-normal">
+                                  {idea.elevator_pitch}
+                                </p>
+                              )}
+
+                              {/* Tech Stack & Scope indicator */}
+                              <div className="flex items-center justify-between gap-1 pt-1">
+                                {idea.target_tech_stack ? (
+                                  <div className="flex items-center gap-1 text-[9px] font-mono text-neutral-700 bg-[#FAF7EE] px-1.5 py-0.5 border border-neutral-300 truncate max-w-[160px]">
+                                    <Code className="w-3 h-3 text-[#0047FF] shrink-0" />
+                                    <span className="font-bold truncate uppercase">{idea.target_tech_stack}</span>
+                                  </div>
+                                ) : (
+                                  <div />
+                                )}
+                                {idea.notes && (
+                                  <button
+                                    onClick={() => setSelectedIdea(idea)}
+                                    className="text-[9px] font-mono text-[#0047FF] font-bold hover:underline shrink-0"
+                                  >
+                                    Notes &rarr;
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Footer with Priority Selector & Start Building */}
+                            <div className="pt-2 border-t border-neutral-200 flex items-center justify-between gap-2">
+                              <select
+                                value={idea.priority}
+                                onChange={(e) => handleUpdatePriority(idea.id, e.target.value as FutureProjectPriority)}
+                                className={`text-[9px] font-mono font-black px-1.5 py-0.5 uppercase cursor-pointer border border-black focus:outline-none transition ${pConfig.badge}`}
+                                title="Move to another priority track"
+                              >
+                                <option value="P0" className="bg-white text-black">P0 IMMEDIATE</option>
+                                <option value="P1" className="bg-white text-black">P1 UPCOMING</option>
+                                <option value="P2" className="bg-white text-black">P2 BACKLOG</option>
+                              </select>
+
+                              <button
+                                onClick={() => handlePromote(idea.id, idea.title)}
+                                className="px-2.5 py-1 bg-[#DFFF4F] text-black border border-black hover:bg-black hover:text-[#DFFF4F] text-[10px] font-mono font-black uppercase flex items-center gap-1 transition cursor-pointer shadow-sm active:translate-x-[1px] active:translate-y-[1px]"
+                                title="Convert to active repository in Mission Control"
+                              >
+                                <span>Build</span>
+                                <ArrowRight className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       {/* Smart Concept / WhatsApp Text Import Modal */}
@@ -888,6 +1176,123 @@ export default function IdeasPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Selected Idea Deep-Dive Modal */}
+      {selectedIdea && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white border-3 border-black w-full max-w-xl max-h-[85vh] overflow-y-auto shadow-[10px_10px_0px_#000000] p-6 space-y-4 text-black font-sans">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-black">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`text-[9px] font-mono font-black px-2 py-0.5 uppercase ${priorityStyles[selectedIdea.priority].badge}`}>
+                  {selectedIdea.priority}
+                </span>
+                <span className="text-[9px] font-mono font-black px-2 py-0.5 bg-[#FAF7EE] text-black border border-neutral-300 uppercase">
+                  {selectedIdea.project_type}
+                </span>
+                <span className="text-[8px] font-mono font-bold px-2 py-0.5 bg-neutral-100 text-neutral-500 border border-neutral-200 uppercase">
+                  NO REPO YET
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedIdea(null)}
+                className="p-1 bg-[#FAF7EE] border border-black hover:bg-black hover:text-white transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <h2 className="text-xl font-black text-black leading-snug">
+                {selectedIdea.title}
+              </h2>
+
+              {selectedIdea.elevator_pitch && (
+                <div>
+                  <label className="text-[10px] font-mono font-black text-neutral-500 uppercase tracking-wider block mb-1">
+                    Elevator Pitch
+                  </label>
+                  <p className="text-xs text-neutral-700 leading-relaxed bg-[#FAF7EE] p-3 border border-neutral-300 font-mono">
+                    {selectedIdea.elevator_pitch}
+                  </p>
+                </div>
+              )}
+
+              {selectedIdea.target_tech_stack && (
+                <div>
+                  <label className="text-[10px] font-mono font-black text-neutral-500 uppercase tracking-wider block mb-1">
+                    Target Tech Stack
+                  </label>
+                  <div className="flex items-center gap-1.5 text-xs font-mono font-black text-black bg-[#FAF7EE] p-2.5 border border-neutral-300 uppercase">
+                    <Code className="w-3.5 h-3.5 text-[#0047FF] shrink-0" />
+                    <span>{selectedIdea.target_tech_stack}</span>
+                  </div>
+                </div>
+              )}
+
+              {selectedIdea.notes && (
+                <div>
+                  <label className="text-[10px] font-mono font-black text-neutral-500 uppercase tracking-wider block mb-1">
+                    Notes &amp; MVP Scope
+                  </label>
+                  <div className="p-3 bg-[#FAF7EE] border-l-3 border-[#0047FF] text-xs font-mono text-neutral-800 whitespace-pre-wrap max-h-48 overflow-y-auto border border-neutral-300">
+                    {selectedIdea.notes}
+                  </div>
+                </div>
+              )}
+
+              {selectedIdea.raw_message && (
+                <div>
+                  <label className="text-[10px] font-mono font-black text-neutral-500 uppercase tracking-wider block mb-1">
+                    Original WhatsApp / Voice Text
+                  </label>
+                  <div className="p-3 bg-[#FAF7EE] border border-neutral-300 text-xs font-mono text-black whitespace-pre-wrap leading-relaxed max-h-32 overflow-y-auto">
+                    {selectedIdea.raw_message}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-3 border-t-2 border-black flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono font-bold uppercase text-neutral-500">Move:</span>
+                <select
+                  value={selectedIdea.priority}
+                  onChange={(e) => {
+                    const newP = e.target.value as FutureProjectPriority;
+                    handleUpdatePriority(selectedIdea.id, newP);
+                    setSelectedIdea({ ...selectedIdea, priority: newP });
+                  }}
+                  className={`text-[9px] font-mono font-black px-2 py-1 uppercase cursor-pointer border border-black focus:outline-none transition ${priorityStyles[selectedIdea.priority].badge}`}
+                >
+                  <option value="P0" className="bg-white text-black">P0 IMMEDIATE</option>
+                  <option value="P1" className="bg-white text-black">P1 UPCOMING</option>
+                  <option value="P2" className="bg-white text-black">P2 BACKLOG</option>
+                </select>
+                <button
+                  onClick={() => {
+                    handleDelete(selectedIdea.id);
+                    setSelectedIdea(null);
+                  }}
+                  className="px-2.5 py-1 text-rose-700 hover:bg-rose-50 text-[10px] font-mono font-bold uppercase border border-rose-300 transition cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
+
+              <button
+                onClick={() => {
+                  handlePromote(selectedIdea.id, selectedIdea.title);
+                  setSelectedIdea(null);
+                }}
+                className="px-4 py-2 bg-[#DFFF4F] text-black border-2 border-black font-mono text-xs font-black uppercase shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none hover:bg-black hover:text-[#DFFF4F] flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <span>Start Building (Promote)</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         </div>
       )}
